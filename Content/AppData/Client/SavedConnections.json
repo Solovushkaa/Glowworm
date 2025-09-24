@@ -1,0 +1,38 @@
+[
+    {
+        "ip": "127.0.0.1",
+        "name": "Test Local Connection",
+        "port": "1234",
+        "protocol": "HTTP"
+    },
+    {
+        "ip": "127.0.0.1",
+        "name": "Second Test Local Connection",
+        "port": "1235",
+        "protocol": "HTTP"
+    },
+    {
+        "ip": "127.0.0.1",
+        "name": "new",
+        "port": "1234",
+        "protocol": "HTTP"
+    },
+    {
+        "ip": "127.0.0.1",
+        "name": "popa",
+        "port": "1234",
+        "protocol": "HTTP"
+    },
+    {
+        "ip": "127.0.0.1",
+        "name": "popa2",
+        "port": "1234",
+        "protocol": "HTTP"
+    },
+    {
+        "ip": "127.0.0.1",
+        "name": "popa 3",
+        "port": "1234",
+        "protocol": "HTTP"
+    }
+]

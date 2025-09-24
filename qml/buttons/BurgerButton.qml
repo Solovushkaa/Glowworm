@@ -1,0 +1,50 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+Button {
+    anchors {
+        top: parent.top
+        left: parent.left
+        margins: 5
+    }
+    width: 40
+    height: 40
+
+    property int borderWidth: 1
+
+    background: Rectangle {
+        radius: 4
+        border {
+            width: borderWidth
+            color: "#cccccc"
+        }
+    }
+
+    ColumnLayout {
+        anchors {
+            fill: parent
+            margins: 8
+        }
+
+        spacing: 3
+        Rectangle {
+            color: "#cfcfcf"
+            Layout.fillWidth: parent
+            height: 4
+            radius: 4
+        }
+        Rectangle {
+            color: "#cfcfcf"
+            Layout.fillWidth: parent
+            height: 4
+            radius: 4
+        }
+        Rectangle {
+            color: "#cfcfcf"
+            Layout.fillWidth: parent
+            height: 4
+            radius: 4
+        }
+    }
+}

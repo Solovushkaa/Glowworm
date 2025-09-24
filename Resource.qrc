@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Content/Images/kitties.jpeg</file>
+
+        <file>Content/Icons/settings.svg</file>
+        <file>Content/Icons/close.svg</file>
+        <file>Content/Icons/plus.svg</file>
+        <file>Content/Icons/pause.svg</file>
+        <file>Content/Icons/play.svg</file>
+        <file>Content/Icons/copy.svg</file>
+        <file>Content/Icons/delete.svg</file>
+    </qresource>
+</RCC>
