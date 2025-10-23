@@ -39,7 +39,7 @@ QList<QVariantHash> fromJsonToHash(const QJsonDocument &jsonDoc)
     QList<QVariantHash> filesInfo;
 
     if(!jsonDoc.isArray()){
-        qWarning() << "JSON Document i'snt JSON Array";
+        qWarning() << "JSON Document isn't JSON Array";
     }
 
     QJsonArray jsonArray = jsonDoc.array();
