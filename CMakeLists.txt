@@ -15,6 +15,7 @@ find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -75,6 +76,9 @@ qt_add_qml_module(appDFSystem
     SOURCES
         include/application/app.h
         src/application/app.cpp
+    SOURCES
+        include/connectors/guihttpclientcoonnector.h
+        src/connectors/guihttpclientcoonnector.cpp
 
     RESOURCES
         Resource.qrc
@@ -107,6 +111,7 @@ target_link_libraries(appDFSystem
         CustomButtonsLib
 )
 target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
+target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
