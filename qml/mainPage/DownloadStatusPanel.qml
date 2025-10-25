@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import HttpClient
-import SavedConnectionManager
+import ClientSavedConnectionManager
 
 Rectangle {
     id: root

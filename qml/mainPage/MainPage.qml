@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import HttpClient
 import CustomButtons
-import SavedConnectionManager
+import ClientSavedConnectionManager
 
 Page {
     id: mainPage

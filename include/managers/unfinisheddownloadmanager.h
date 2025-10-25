@@ -11,7 +11,7 @@ class UnfinishedDownloadManager : public QObject
     QML_SINGLETON
 
 public:
-    explicit UnfinishedDownloadManager();
+    UnfinishedDownloadManager();
 
     bool addDownloadToUnfinished(const DownloadInfo &downloadInfo);
     bool deleteFromUnfinishedDownload(const DownloadInfo &downloadInfo);

@@ -1,18 +1,17 @@
-#include "savedconnectionmanager.h"
+#include "clientsavedconnectionmanager.h"
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
 
-SavedConnectionManager::SavedConnectionManager(HttpClient &client)
-    : m_client(client)
+ClientSavedConnectionManager::ClientSavedConnectionManager()
 {
     // m_presetPath = QStandardPaths::read();
     read();
 }
 
-void SavedConnectionManager::read()
+void ClientSavedConnectionManager::read()
 {
     QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                + "/AppData/Client/SavedConnections.json");
@@ -68,13 +67,13 @@ void SavedConnectionManager::read()
     }
 }
 
-void SavedConnectionManager::setActive(int indx)
+void ClientSavedConnectionManager::setActive(int indx)
 {
     m_activeConnection = &m_savedConnections[indx];
     m_client.setUrl((*m_activeConnection)["url"].toUrl());
 }
 
-void SavedConnectionManager::add(const QString &name,
+void ClientSavedConnectionManager::add(const QString &name,
                                            const QString &protocol,
                                            const QString &ip,
                                            const QString &port)
@@ -103,7 +102,7 @@ void SavedConnectionManager::add(const QString &name,
     emit connectionsLoaded();
 }
 
-void SavedConnectionManager::remove(const QString &name)
+void ClientSavedConnectionManager::remove(const QString &name)
 {
     for (auto it = m_savedConnections.begin(); it != m_savedConnections.end(); ++it) {
         if ((*it)["name"] == name) {
@@ -132,7 +131,7 @@ void SavedConnectionManager::remove(const QString &name)
     }
 }
 
-void SavedConnectionManager::rewriteSavedConnectionsToFile()
+void ClientSavedConnectionManager::rewriteSavedConnectionsToFile()
 {
     QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                + "/AppData/Client/SavedConnections.json");

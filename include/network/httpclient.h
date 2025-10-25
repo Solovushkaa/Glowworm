@@ -12,7 +12,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QtQmlIntegration/qqmlintegration.h>
-#include "downloadinfo.h"
+#include "clientsavedconnectionmanager.h"
 #include "unfinisheddownloadmanager.h"
 
 class HttpClient : public QObject
@@ -67,7 +67,10 @@ private:
     QString m_currentHostKey;
 
     QHash<QString, DownloadInfo> m_downloadInfo; // Информация о каждом скачиваемом файле
+
+    // Managers
     UnfinishedDownloadManager m_downloadManager;
+    ClientSavedConnectionManager m_connManager;
 
 public:
     QList<QString> m_hostKeys;

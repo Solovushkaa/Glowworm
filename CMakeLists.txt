@@ -16,6 +16,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -62,8 +64,8 @@ qt_add_qml_module(appDFSystem
         include/json/jsonhelperfunctions.h
         src/json/jsonhelperfunctions.cpp
     SOURCES
-        include/managers/savedconnectionmanager.h
-        src/managers/savedconnectionmanager.cpp
+        include/managers/clientsavedconnectionmanager.h
+        src/managers/clientsavedconnectionmanager.cpp
     SOURCES
         include/network/downloadinfo.h
         src/network/downloadinfo.cpp
@@ -77,8 +79,14 @@ qt_add_qml_module(appDFSystem
         include/application/app.h
         src/application/app.cpp
     SOURCES
-        include/connectors/guihttpclientcoonnector.h
-        src/connectors/guihttpclientcoonnector.cpp
+        include/connectors/guihttpclientconnector.h
+        src/connectors/guihttpclientconnector.cpp
+    SOURCES
+        include/connectors/guihttpserverconnector.h
+        src/connectors/guihttpserverconnector.cpp
+    SOURCES
+        include/managers/serversavedconnectionmanager.h
+        src/managers/serversavedconnectionmanager.cpp
 
     RESOURCES
         Resource.qrc
@@ -100,6 +108,8 @@ target_include_directories(appDFSystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/network
     ${CMAKE_CURRENT_SOURCE_DIR}/include/json
     ${CMAKE_CURRENT_SOURCE_DIR}/include/managers
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/application
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/connectors
 )
 
 target_link_libraries(appDFSystem
@@ -112,6 +122,8 @@ target_link_libraries(appDFSystem
 )
 target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
+target_link_libraries(appDFSystem PRIVATE Qt6::Core)
+target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

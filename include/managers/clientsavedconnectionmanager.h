@@ -1,16 +1,16 @@
-#ifndef SAVEDCONNECTIONMANAGER_H
-#define SAVEDCONNECTIONMANAGER_H
+#ifndef CLIENTSAVEDCONNECTIONMANAGER_H
+#define CLIENTSAVEDCONNECTIONMANAGER_H
 
 #include <QJsonDocument>
-#include "httpclient.h"
+#include <QQuickItem>
 
-class SavedConnectionManager : public QObject
+class ClientSavedConnectionManager : public QObject
 {
     Q_OBJECT
     QML_SINGLETON
 
 public:
-    explicit SavedConnectionManager(HttpClient &client);
+    ClientSavedConnectionManager();
 
     Q_INVOKABLE void read();
     Q_INVOKABLE QList<QVariantHash> getConnections() { return m_savedConnections; }
@@ -44,8 +44,6 @@ private:
     QList<QVariantHash> m_savedConnections;
     QVariantHash *m_activeConnection;
     bool m_isConnectionPresetsEmpty;
-
-    HttpClient &m_client;
 };
 
-#endif // SAVEDCONNECTIONMANAGER_H
+#endif // CLIENTSAVEDCONNECTIONMANAGER_H

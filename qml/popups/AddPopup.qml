@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import CustomButtons
-import SavedConnectionManager
+import ClientSavedConnectionManager
 
 Popup {
     id: root

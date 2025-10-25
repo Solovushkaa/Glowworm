@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import CustomButtons
-import SavedConnectionManager
+import ClientSavedConnectionManager
 import HttpClient
 
 Rectangle {

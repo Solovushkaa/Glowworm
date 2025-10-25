@@ -3,7 +3,7 @@ import QtQuick.Controls
 import "mainPage"
 import "settingsPage"
 import "popups"
-import SavedConnectionManager
+import ClientSavedConnectionManager
 
 ApplicationWindow {
     id: window

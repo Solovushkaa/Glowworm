@@ -4,10 +4,7 @@
 #include <QQmlContext>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
-#include "httpclient.h"
-#include "httpserver.h"
-#include "initialize.h"
-#include "savedconnectionmanager.h"
+#include "app.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,20 +13,16 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    Initialize initialize;
+    App core;
 
-    HttpServer httpServer;
-    httpServer.startHttpServer();
+    // qmlRegisterSingletonInstance("HttpClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
 
-    HttpClient client;
-    qmlRegisterSingletonInstance("HttpClient", 1, 0, "Client", &client);
-
-    SavedConnectionManager connectionManager(client);
-    qmlRegisterSingletonInstance("SavedConnectionManager",
-                                 1,
-                                 0,
-                                 "ConnectionManager",
-                                 &connectionManager);
+    // ClientSavedConnectionManager connectionManager(client);
+    // qmlRegisterSingletonInstance("ClientSavedConnectionManager",
+    //                              1,
+    //                              0,
+    //                              "ConnectionManager",
+    //                              &connectionManager);
 
     // QLoggingCategory::setFilterRules("*.debug=false");
 
