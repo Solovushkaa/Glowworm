@@ -6,8 +6,6 @@ HttpClient::HttpClient(QObject *parent)
     , m_networkManager(new QNetworkAccessManager(this))
     , m_downloadManager()
 {
-    m_downloadInfo = m_downloadManager.readUnfinishedDownloads();
-
     connect(&m_timer, &QTimer::timeout, this, &HttpClient::startConnectionVerification);
 }
 
@@ -64,7 +62,9 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
         downloadID = downloadID.left(8);
     }
 
-    if (!m_downloadInfo.contains(downloadID)) {
+    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+
+    if (!downloadInfoList.contains(downloadID)) {
         DownloadInfo downloadInfo(downloadID,
                                   m_url,
                                   m_currentHostKey,
@@ -81,9 +81,9 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
 
         m_downloadManager.addDownloadToUnfinished(downloadInfo);
 
-        m_downloadInfo.emplace(downloadID, std::move(downloadInfo));
+        downloadInfoList.emplace(downloadID, std::move(downloadInfo));
 
-        emit newDownload(saveName, downloadID, m_downloadInfo[downloadID].m_fileSize);
+        emit newDownload(saveName, downloadID, downloadInfoList[downloadID].m_fileSize);
 
         startDownload(downloadID);
     } else {
@@ -93,23 +93,26 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
 
 void HttpClient::startDownload(const QString &downloadID)
 {
-    qDebug() << "downloadID:" << m_downloadInfo[downloadID].m_downloadID;
-    qDebug() << "Получение: bytes=" << m_downloadInfo[downloadID].m_fileLastReceivedByte << "-"
-             << m_downloadInfo[downloadID].m_fileSize;
+    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
 
-    m_downloadInfo[downloadID].setDownloadStatus(State::Active);
-    m_downloadManager.deleteFromUnfinishedDownload(m_downloadInfo[downloadID]);
-    m_downloadManager.addDownloadToUnfinished(m_downloadInfo[downloadID]);
+    qDebug() << "downloadID:" << downloadInfoList[downloadID].m_downloadID;
+    qDebug() << "Получение: bytes=" << downloadInfoList[downloadID].m_fileLastReceivedByte << "-"
+             << downloadInfoList[downloadID].m_fileSize;
+
+    downloadInfoList[downloadID].setDownloadStatus(State::Active);
+    m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
+    m_downloadManager.addDownloadToUnfinished(downloadInfoList[downloadID]);
 
     /*
      * Добавить здесь поиск нужного хоста и в случае его отсутствия дать уведомление с подсказкой с какого устройства была загрузка
      */
-    QNetworkRequest request(m_url.toString() + m_downloadInfo[downloadID].m_filePath);
+    QNetworkRequest request(m_url.toString() + downloadInfoList[downloadID].m_filePath);
     request.setRawHeader("Accept", "application/octet-stream");
     request.setRawHeader("Range",
                          "bytes="
-                             + QByteArray::number(m_downloadInfo[downloadID].m_fileLastReceivedByte)
-                             + "-" + QByteArray::number(m_downloadInfo[downloadID].m_fileSize));
+                             + QByteArray::number(
+                                 downloadInfoList[downloadID].m_fileLastReceivedByte)
+                             + "-" + QByteArray::number(downloadInfoList[downloadID].m_fileSize));
     QNetworkReply *reply = m_networkManager->get(request);
 
     reply->setProperty("downloadID", downloadID);
@@ -122,11 +125,13 @@ void HttpClient::startDownload(const QString &downloadID)
 
 void HttpClient::stopDownload(const QString &downloadID)
 {
-    // QNetworkRequest request(m_downloadInfo[downloadID].m_URL+"/stop/...");
+    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+
+    // QNetworkRequest request(downloadInfoList[downloadID].m_URL+"/stop/...");
 
     // QNetworkReply *reply = m_networkManager->post(request, "stop/...");
 
-    m_downloadInfo[downloadID].setDownloadStatus(State::Pause);
+    downloadInfoList[downloadID].setDownloadStatus(State::Pause);
 }
 
 /*
@@ -201,9 +206,11 @@ void HttpClient::onRangeReceived()
 
         QString downloadID = reply->property("downloadID").toString();
 
-        QString path = m_downloadInfo[downloadID].m_filePath;
-        QString savePath = m_downloadInfo[downloadID].m_fileSavePath;
-        QString saveName = m_downloadInfo[downloadID].m_fileSaveName;
+        auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+
+        QString path = downloadInfoList[downloadID].m_filePath;
+        QString savePath = downloadInfoList[downloadID].m_fileSavePath;
+        QString saveName = downloadInfoList[downloadID].m_fileSaveName;
 
         qDebug() << "Место сохранения: " << savePath+saveName;
 
@@ -245,7 +252,7 @@ void HttpClient::onRangeReceived()
         }
 
         if(end+1 == length){
-            m_downloadManager.deleteFromUnfinishedDownload(m_downloadInfo[downloadID]);
+            m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
 
             emit rangeRequestSuccessfulFinished(downloadID);
             qDebug() << "удалённый файл успешно получен";
@@ -270,15 +277,17 @@ void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
     qDebug() << "Download progress: Bytes Received -" << bytesReceived << "B";
 
-    if (m_downloadInfo[downloadID].getDownloadStatus() == State::Pause
+    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+
+    if (downloadInfoList[downloadID].getDownloadStatus() == State::Pause
         && bytesReceived != bytesTotal) {
         QByteArray data = reply->readAll();
         reply->close();
         qDebug() << "Text after reply->readAll()";
 
-        QString path = m_downloadInfo[downloadID].m_filePath;
-        QString savePath = m_downloadInfo[downloadID].m_fileSavePath;
-        QString saveName = m_downloadInfo[downloadID].m_fileSaveName;
+        QString path = downloadInfoList[downloadID].m_filePath;
+        QString savePath = downloadInfoList[downloadID].m_fileSavePath;
+        QString saveName = downloadInfoList[downloadID].m_fileSaveName;
 
         QFile file(savePath + saveName);
 
@@ -288,16 +297,16 @@ void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
             return;
         } else {
             file.write(data);
-            m_downloadInfo[downloadID].m_fileLastReceivedByte = file.size();
-            m_downloadManager.deleteFromUnfinishedDownload(m_downloadInfo[downloadID]);
-            m_downloadManager.addDownloadToUnfinished(m_downloadInfo[downloadID]);
+            downloadInfoList[downloadID].m_fileLastReceivedByte = file.size();
+            m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
+            m_downloadManager.addDownloadToUnfinished(downloadInfoList[downloadID]);
 
             file.close();
         }
 
-        emit stopProgress(downloadID, m_downloadInfo[downloadID].m_fileLastReceivedByte);
+        emit stopProgress(downloadID, downloadInfoList[downloadID].m_fileLastReceivedByte);
     } else {
-        m_downloadInfo[downloadID].m_fileLastReceivedByte = bytesReceived;
+        downloadInfoList[downloadID].m_fileLastReceivedByte = bytesReceived;
 
         emit changeProgress(downloadID, bytesReceived);
     }

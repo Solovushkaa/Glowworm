@@ -4,7 +4,10 @@
 #include <QJsonObject>
 #include <QStandardPaths>
 
-UnfinishedDownloadManager::UnfinishedDownloadManager() {}
+UnfinishedDownloadManager::UnfinishedDownloadManager()
+{
+    m_downloadInfo = readUnfinishedDownloads();
+}
 
 bool UnfinishedDownloadManager::addDownloadToUnfinished(const DownloadInfo &downloadInfo)
 {

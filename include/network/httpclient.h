@@ -25,8 +25,8 @@ public:
 
     Q_INVOKABLE void checkConnectionToServer();
 
-    Q_INVOKABLE QList<QVariantHash> getCurrentDirectory() { return m_currentDirectory; }
-    Q_INVOKABLE void setUrl(const QUrl &newUrl) { m_url = newUrl; }
+    // Будет изменён. Хранение будет в ConnectionInfo
+    void setUrl(const QUrl &newUrl) { m_url = newUrl; }
 
     Q_INVOKABLE void getDirectoryList(const QString &path);
     Q_INVOKABLE void getFile(const QString &path, const QString &savePath, const QString &saveName);
@@ -36,7 +36,8 @@ public:
 
     Q_INVOKABLE QList<QVariantHash> getUnfinishedDownloads()
     {
-        return m_downloadManager.getVariantListUnfinishedDownloads(m_downloadInfo);
+        return m_downloadManager.getVariantListUnfinishedDownloads(
+            m_downloadManager.get_dowloadInfoList());
     }
 
 private:
@@ -65,8 +66,6 @@ private:
 
     QList<QVariantHash> m_currentDirectory;
     QString m_currentHostKey;
-
-    QHash<QString, DownloadInfo> m_downloadInfo; // Информация о каждом скачиваемом файле
 
     // Managers
     UnfinishedDownloadManager m_downloadManager;
