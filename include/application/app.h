@@ -2,8 +2,8 @@
 #define APP_H
 
 #include <QObject>
-#include "guihttpclientconnector.h"
-#include "guihttpserverconnector.h"
+#include "httpclient.h"
+#include "httpserver.h"
 #include "initialize.h"
 
 class App : public QObject
@@ -14,8 +14,8 @@ public:
 
 private:
     Initialize m_initializer;
-    GUIHttpClientConnector m_guiHttpClientConnector;
-    GUIHttpServerConnector m_guiHttpServerConnector;
+    HttpClient m_httpClient;
+    HttpServer m_httpServer;
 };
 
 #endif // APP_H

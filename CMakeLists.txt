@@ -18,6 +18,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -81,6 +82,9 @@ qt_add_qml_module(appDFSystem
     SOURCES
         include/managers/serversavedconnectionmanager.h
         src/managers/serversavedconnectionmanager.cpp
+    SOURCES
+        include/network/connectioninfo.h
+        src/network/connectioninfo.cpp
 
     RESOURCES
         Resource.qrc
@@ -103,7 +107,6 @@ target_include_directories(appDFSystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/json
     ${CMAKE_CURRENT_SOURCE_DIR}/include/managers
     ${CMAKE_CURRENT_SOURCE_DIR}/include/application
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/connectors
 )
 
 target_link_libraries(appDFSystem
@@ -116,8 +119,6 @@ target_link_libraries(appDFSystem
 )
 target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
-target_link_libraries(appDFSystem PRIVATE Qt6::Core)
-target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

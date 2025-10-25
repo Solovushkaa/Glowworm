@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    App core;
+    App application;
 
     // qmlRegisterSingletonInstance("HttpClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
 
