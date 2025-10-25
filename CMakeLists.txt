@@ -79,12 +79,6 @@ qt_add_qml_module(appDFSystem
         include/application/app.h
         src/application/app.cpp
     SOURCES
-        include/connectors/guihttpclientconnector.h
-        src/connectors/guihttpclientconnector.cpp
-    SOURCES
-        include/connectors/guihttpserverconnector.h
-        src/connectors/guihttpserverconnector.cpp
-    SOURCES
         include/managers/serversavedconnectionmanager.h
         src/managers/serversavedconnectionmanager.cpp
 

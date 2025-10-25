@@ -25,8 +25,10 @@ public:
 
     Q_INVOKABLE void checkConnectionToServer();
 
+    Q_INVOKABLE QList<QVariantHash> getCurrentDirectory() { return m_currentDirectory; }
+
     // Будет изменён. Хранение будет в ConnectionInfo
-    void setUrl(const QUrl &newUrl) { m_url = newUrl; }
+    Q_INVOKABLE void setUrl(const QUrl &newUrl) { m_url = newUrl; }
 
     Q_INVOKABLE void getDirectoryList(const QString &path);
     Q_INVOKABLE void getFile(const QString &path, const QString &savePath, const QString &saveName);

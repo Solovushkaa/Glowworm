@@ -64,6 +64,7 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
 
     auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
 
+    // Можно запихать создание объекта и прочее в DownloadInfo
     if (!downloadInfoList.contains(downloadID)) {
         DownloadInfo downloadInfo(downloadID,
                                   m_url,
