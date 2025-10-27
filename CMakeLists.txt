@@ -13,12 +13,6 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -34,7 +28,9 @@ qt_add_executable(appDFSystem
 
 qt_add_qml_module(appDFSystem
     URI DFSystem
+
     VERSION 1.0
+
     QML_FILES
         qml/Main.qml
     QML_FILES
@@ -56,11 +52,11 @@ qt_add_qml_module(appDFSystem
         qml/popups/StartAddPopup.qml
 
     SOURCES
-        include/network/httpclient.h
-        src/network/httpclient.cpp
+        include/network/client/httpclient.h
+        src/network/client/httpclient.cpp
     SOURCES
-        include/network/httpserver.h
-        src/network/httpserver.cpp
+        include/network/server/httpserver.h
+        src/network/server/httpserver.cpp
     SOURCES
         include/json/jsonhelperfunctions.h
         src/json/jsonhelperfunctions.cpp
@@ -68,8 +64,8 @@ qt_add_qml_module(appDFSystem
         include/managers/clientsavedconnectionmanager.h
         src/managers/clientsavedconnectionmanager.cpp
     SOURCES
-        include/network/downloadinfo.h
-        src/network/downloadinfo.cpp
+        include/managers/downloadinfo.h
+        src/managers/downloadinfo.cpp
     SOURCES
         include/managers/unfinisheddownloadmanager.h
         src/managers/unfinisheddownloadmanager.cpp
@@ -83,8 +79,16 @@ qt_add_qml_module(appDFSystem
         include/managers/serversavedconnectionmanager.h
         src/managers/serversavedconnectionmanager.cpp
     SOURCES
-        include/network/connectioninfo.h
-        src/network/connectioninfo.cpp
+        include/managers/connectioninfo.h
+        src/managers/connectioninfo.cpp
+    SOURCES
+        include/connectors/guiclientconnector.h
+        src/connectors/guiclientconnector.cpp
+    SOURCES
+        include/managers/client.h
+        src/managers/client.cpp
+    SOURCES
+        include/network/client/baseclient.h
 
     RESOURCES
         Resource.qrc
@@ -103,10 +107,12 @@ set_target_properties(appDFSystem PROPERTIES
 )
 
 target_include_directories(appDFSystem PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/network
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/network/server
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/network/client
     ${CMAKE_CURRENT_SOURCE_DIR}/include/json
     ${CMAKE_CURRENT_SOURCE_DIR}/include/managers
     ${CMAKE_CURRENT_SOURCE_DIR}/include/application
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/connectors
 )
 
 target_link_libraries(appDFSystem
@@ -118,7 +124,6 @@ target_link_libraries(appDFSystem
         CustomButtonsLib
 )
 target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
-target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

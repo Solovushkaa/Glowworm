@@ -122,3 +122,26 @@ QList<QVariantHash> UnfinishedDownloadManager::getVariantListUnfinishedDownloads
 
     return unfinishedDownloads;
 }
+
+void UnfinishedDownloadManager::onDownloadAdded(QString &saveName,
+                                                QString &downloadID,
+                                                QVariantHash &refFileInfo)
+{
+    DownloadInfo downloadInfo(downloadID,
+                              m_url,
+                              m_currentHostKey,
+                              refFileInfo["name"].toString(),
+                              refFileInfo["path"].toString(),
+                              saveName,
+                              savePath,
+                              refFileInfo["size"].toLongLong(),
+                              0,
+                              refFileInfo["created"].toString(),
+                              refFileInfo["modified"].toString(),
+                              refFileInfo["accessed"].toString(),
+                              State::Active);
+
+    addDownloadToUnfinished(downloadInfo);
+
+    m_downloadInfo.emplace(downloadID, std::move(downloadInfo));
+}

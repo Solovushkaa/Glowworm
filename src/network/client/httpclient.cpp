@@ -1,12 +1,14 @@
 #include "httpclient.h"
-#include "jsonhelperfunctions.h"
+
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 HttpClient::HttpClient(QObject *parent)
     : QObject(parent)
     , m_networkManager(new QNetworkAccessManager(this))
-    , m_downloadManager()
 {
-    connect(&m_timer, &QTimer::timeout, this, &HttpClient::startConnectionVerification);
 }
 
 void HttpClient::checkConnectionToServer()
@@ -62,29 +64,29 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
         downloadID = downloadID.left(8);
     }
 
-    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
-
     // Можно запихать создание объекта и прочее в DownloadInfo
-    if (!downloadInfoList.contains(downloadID)) {
-        DownloadInfo downloadInfo(downloadID,
-                                  m_url,
-                                  m_currentHostKey,
-                                  refFileInfo["name"].toString(),
-                                  refFileInfo["path"].toString(),
-                                  saveName,
-                                  savePath,
-                                  refFileInfo["size"].toLongLong(),
-                                  0,
-                                  refFileInfo["created"].toString(),
-                                  refFileInfo["modified"].toString(),
-                                  refFileInfo["accessed"].toString(),
-                                  State::Active);
-
-        m_downloadManager.addDownloadToUnfinished(downloadInfo);
-
-        downloadInfoList.emplace(downloadID, std::move(downloadInfo));
-
+    if (!m_downloadInfoDict.contains(downloadID)) {
         emit newDownload(saveName, downloadID, downloadInfoList[downloadID].m_fileSize);
+
+        // Всё это внутри слота DownloadManager получающего newDownload
+
+        // DownloadInfo downloadInfo(downloadID,
+        //                           m_url,
+        //                           m_currentHostKey,
+        //                           refFileInfo["name"].toString(),
+        //                           refFileInfo["path"].toString(),
+        //                           saveName,
+        //                           savePath,
+        //                           refFileInfo["size"].toLongLong(),
+        //                           0,
+        //                           refFileInfo["created"].toString(),
+        //                           refFileInfo["modified"].toString(),
+        //                           refFileInfo["accessed"].toString(),
+        //                           State::Active);
+
+        // m_downloadManager.addDownloadToUnfinished(downloadInfo);
+
+        // downloadInfoList.emplace(downloadID, std::move(downloadInfo));
 
         startDownload(downloadID);
     } else {
@@ -94,7 +96,7 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
 
 void HttpClient::startDownload(const QString &downloadID)
 {
-    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+    auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
     qDebug() << "downloadID:" << downloadInfoList[downloadID].m_downloadID;
     qDebug() << "Получение: bytes=" << downloadInfoList[downloadID].m_fileLastReceivedByte << "-"
@@ -119,28 +121,20 @@ void HttpClient::startDownload(const QString &downloadID)
     reply->setProperty("downloadID", downloadID);
 
     connect(reply, &QNetworkReply::downloadProgress, this, &HttpClient::onDownloadProgress);
-    connect(reply, &QNetworkReply::finished, this, &HttpClient::onRangeReceived);
+    connect(reply, &QNetworkReply::finished, this, &HttpClient::onFileReceived);
 
     // stopDownload(downloadID);
 }
 
 void HttpClient::stopDownload(const QString &downloadID)
 {
-    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+    auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
     // QNetworkRequest request(downloadInfoList[downloadID].m_URL+"/stop/...");
 
     // QNetworkReply *reply = m_networkManager->post(request, "stop/...");
 
     downloadInfoList[downloadID].setDownloadStatus(State::Pause);
-}
-
-/*
- * Присоединение лямбд к соответствующим сигналам
- */
-void HttpClient::requestAnswersHandler()
-{
-    
 }
 
 void HttpClient::onCheckConnectionReceived()
@@ -189,7 +183,7 @@ void HttpClient::onDirectoryReceived()
     }
 }
 
-void HttpClient::onRangeReceived()
+void HttpClient::onFileReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -207,7 +201,7 @@ void HttpClient::onRangeReceived()
 
         QString downloadID = reply->property("downloadID").toString();
 
-        auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+        auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
         QString path = downloadInfoList[downloadID].m_filePath;
         QString savePath = downloadInfoList[downloadID].m_fileSavePath;
@@ -278,7 +272,7 @@ void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
     qDebug() << "Download progress: Bytes Received -" << bytesReceived << "B";
 
-    auto downloadInfoList = m_downloadManager.get_dowloadInfoList();
+    auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
     if (downloadInfoList[downloadID].getDownloadStatus() == State::Pause
         && bytesReceived != bytesTotal) {
