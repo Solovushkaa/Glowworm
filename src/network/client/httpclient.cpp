@@ -1,27 +1,25 @@
 #include "httpclient.h"
-
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 
-HttpClient::HttpClient(QObject *parent)
-    : QObject(parent)
-    , m_networkManager(new QNetworkAccessManager(this))
+HttpClient::HttpClient()
+    : m_networkManager(new QNetworkAccessManager(this))
 {
 }
 
-void HttpClient::checkConnectionToServer()
+void HttpClient::checkConnectionToServer(const QString &url)
 {
     qDebug() << "Check connection to server:";
 
-    QNetworkRequest request(m_url);
+    QNetworkRequest request(url);
     QNetworkReply *reply = m_networkManager->head(request);
 
-    connect(reply, &QNetworkReply::finished, this, &HttpClient::onCheckConnectionReceived);
+    connect(reply, &QNetworkReply::finished, this, &HttpClient::onConnectionStatusReceived);
 }
 
-void HttpClient::getDirectoryList(const QString &path)
+void HttpClient::getDirectoryList(const QString &path, const QString &url)
 {
     /*
      Загрузка старого окна, а после отсылка нового реквеста
@@ -33,7 +31,7 @@ void HttpClient::getDirectoryList(const QString &path)
         send fileGraph[path] to FrontEnd
      }
     */
-    QNetworkRequest request(m_url.toString() + path);
+    QNetworkRequest request(url + path);
     request.setRawHeader("Accept", "application/json");
     qDebug() << "Request active";
 
@@ -42,13 +40,18 @@ void HttpClient::getDirectoryList(const QString &path)
     connect(reply, &QNetworkReply::finished, this, &HttpClient::onDirectoryReceived);
 }
 
-void HttpClient::getFile(const QString &path, const QString &savePath, const QString &saveName)
+void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
+                         const QString &currentHostKey,
+                         QHash<QString, DownloadInfo> &downloadInfoDict,
+                         const QString &path,
+                         const QString &savePath,
+                         const QString &saveName)
 {
     qDebug() << "-------------------------------------------------";
     qDebug() << "Начало отправки запросов на получение файла";
 
     QVariantHash *fileInfo;
-    for (auto &file : m_currentDirectory) {
+    for (auto &file : currentDirectory) {
         if (file["path"] == path) {
             qDebug() << "File finded and already exist for Downloading!";
             fileInfo = &file;
@@ -56,17 +59,18 @@ void HttpClient::getFile(const QString &path, const QString &savePath, const QSt
     }
     QVariantHash &refFileInfo = *fileInfo;
 
+    //-ДОБАВИТЬ В HELPER FUNCTIONS-//
     QString downloadID(
-        QCryptographicHash::hash((path + m_currentHostKey).toUtf8(), QCryptographicHash::Md5)
-            .toHex());
+        QCryptographicHash::hash((path + currentHostKey).toUtf8(), QCryptographicHash::Md5).toHex());
+    //-----------------------------//
 
     if (downloadID.size() > 8) {
         downloadID = downloadID.left(8);
     }
 
     // Можно запихать создание объекта и прочее в DownloadInfo
-    if (!m_downloadInfoDict.contains(downloadID)) {
-        emit newDownload(saveName, downloadID, downloadInfoList[downloadID].m_fileSize);
+    if (!downloadInfoDict.contains(downloadID)) {
+        emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
 
         // Всё это внутри слота DownloadManager получающего newDownload
 

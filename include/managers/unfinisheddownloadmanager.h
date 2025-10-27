@@ -20,19 +20,19 @@ public:
     QList<QVariantHash> getVariantListUnfinishedDownloads(
         const QHash<QString, DownloadInfo> &downloadInfo);
 
-    QHash<QString, DownloadInfo> &getDowloadInfoList() { return m_downloadInfo; }
+    QHash<QString, DownloadInfo> &getDownloadInfoDict() { return m_downloadInfoDict; }
 
     //QML
     QList<QVariantHash> getUnfinishedDownloads()
     {
-        return getVariantListUnfinishedDownloads(m_downloadInfo);
+        return getVariantListUnfinishedDownloads(m_downloadInfoDict);
     }
 
 public slots:
     void onDownloadAdded(QString &saveName, QString &downloadID, QVariantHash &refFileInfo);
 
 private:
-    QHash<QString, DownloadInfo> m_downloadInfo; // Информация о каждом скачиваемом файле
+    QHash<QString, DownloadInfo> m_downloadInfoDict; // Информация о каждом скачиваемом файле
 };
 
 #endif // UNFINISHEDDOWNLOADMANAGER_H

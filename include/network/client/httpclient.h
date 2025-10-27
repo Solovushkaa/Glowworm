@@ -10,12 +10,17 @@ class HttpClient : public BaseClient
     Q_OBJECT
 
 public:
-    HttpClient(QObject *parent = nullptr);
+    HttpClient();
 
-    void checkConnectionToServer();
+    void checkConnectionToServer(const QString &url) override;
 
-    void getDirectoryList(const QString &path) override;
-    void getFile(const QString &path, const QString &savePath, const QString &saveName) override;
+    void getDirectoryList(const QString &path, const QString &url) override;
+    void getFile(QList<QVariantHash> &currentDirectory,
+                 const QString &currentHostKey,
+                 QHash<QString, DownloadInfo> &downloadInfoDict,
+                 const QString &path,
+                 const QString &savePath,
+                 const QString &saveName) override;
 
     void startDownload(const QString &downloadID) override;
     void stopDownload(const QString &downloadID) override;
@@ -24,7 +29,7 @@ private slots:
     void onConnectionStatusReceived() override;
     void onDirectoryReceived() override;
     void onFileReceived() override;
-    void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal) override;
+    void onDownloadProgressed(qint64 bytesReceived, qint64 bytesTotal) override;
 
     /* Members */
 private:
