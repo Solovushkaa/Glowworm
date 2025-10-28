@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QJsonObject>
 #include <QObject>
+#include <QStandardPaths>
 #include <downloadinfo.h>
 
 class UnfinishedDownloadManager : public QObject
@@ -48,6 +49,9 @@ private:
                                              "fileDateCreated",
                                              "fileDateLastModified",
                                              "fileDateLastAccessed"};
+
+    const QString m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                               + "/AppData/Client/UnfinishedDownloads.json";
 };
 
 #endif // UNFINISHEDDOWNLOADMANAGER_H

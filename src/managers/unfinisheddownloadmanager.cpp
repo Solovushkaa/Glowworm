@@ -1,8 +1,5 @@
 #include "unfinisheddownloadmanager.h"
-#include <QDir>
 #include <QFile>
-#include <QJsonObject>
-#include <QStandardPaths>
 
 UnfinishedDownloadManager::UnfinishedDownloadManager()
 {
@@ -15,8 +12,7 @@ UnfinishedDownloadManager::UnfinishedDownloadManager()
 
 bool UnfinishedDownloadManager::readUnfinishedDownloads()
 {
-    QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-               + "/AppData/Client/UnfinishedDownloads.json");
+    QFile file(m_savePath);
 
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         qWarning() << "Error opening the \"UnfinishedDownloads\" file";
@@ -87,9 +83,7 @@ bool UnfinishedDownloadManager::addDownloadToUnfinished(DownloadInfo &downloadIn
 {
     QString name(downloadInfo.m_hostKey + "_hostKey_" + downloadInfo.m_downloadID);
 
-    QString unfinishedDownloadsPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                                    + "/AppData/Client/UnfinishedDownloads.json");
-    QFile file(unfinishedDownloadsPath);
+    QFile file(m_savePath);
 
     if (!file.open(QIODevice::WriteOnly)) {
         qDebug().nospace() << "Error opening the \"UnfinishedDownloads\" file to add \"" << name
@@ -126,10 +120,7 @@ bool UnfinishedDownloadManager::deleteFromUnfinishedDownload(const DownloadInfo 
 {
     QString name(downloadInfo.m_hostKey + "_hostKey_" + downloadInfo.m_downloadID);
 
-    QString unfinishedDownloadsPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                                    + "/AppData/Client/UnfinishedDownloads.json");
-
-    QFile file(unfinishedDownloadsPath);
+    QFile file(m_savePath);
 
     if (!file.open(QIODevice::WriteOnly)) {
         qDebug().nospace() << "Error opening the \"UnfinishedDownloads\" file to delete \"" << name
