@@ -13,5 +13,5 @@ Client::Client(QObject *parent)
 
 void Client::checkConnectionToServer()
 {
-    
+    m_currentProtocol->checkConnectionToServer(m_connInfo.m_url);
 }

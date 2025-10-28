@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS HttpServer)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -89,6 +88,8 @@ qt_add_qml_module(appDFSystem
         src/managers/client.cpp
     SOURCES
         include/network/client/baseclient.h
+    SOURCES
+        include/managers/log.h
 
     RESOURCES
         Resource.qrc
@@ -123,8 +124,6 @@ target_link_libraries(appDFSystem
         Qt6::HttpServer
         CustomButtonsLib
 )
-target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
-target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS appDFSystem

@@ -9,7 +9,14 @@ class ConnectionInfo : public QObject
 public:
     explicit ConnectionInfo(QObject *parent = nullptr);
 
+    /* Members */
+public:
+    QString m_url;
+    QString m_name;
+    QString m_protocol;
+
 signals:
+    void connectionInfoChanged();
 };
 
 #endif // CONNECTIONINFO_H

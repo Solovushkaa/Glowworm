@@ -2,9 +2,9 @@
 #define APP_H
 
 #include <QObject>
-#include "httpclient.h"
-#include "httpserver.h"
+#include "client.h"
 #include "initialize.h"
+#include "server.h"
 
 class App : public QObject
 {
@@ -14,8 +14,8 @@ public:
 
 private:
     Initialize m_initializer;
-    HttpClient m_httpClient;
-    HttpServer m_httpServer;
+    Client m_client;
+    Server m_server;
 };
 
 #endif // APP_H

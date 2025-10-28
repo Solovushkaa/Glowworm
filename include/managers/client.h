@@ -8,6 +8,9 @@
 #include "httpclient.h"
 #include "unfinisheddownloadmanager.h"
 
+// A class for combining the entire client part of the application.
+// The class sends requests to the server and receives responses,
+// as well as interacts with the GUI
 class Client : public QObject
 {
     Q_OBJECT
@@ -25,7 +28,6 @@ private:
     UnfinishedDownloadManager m_downloadManager;
     HttpClient m_httpClient;
 
-private:
     ConnectionInfo m_connInfo;
     BaseClient *m_currentProtocol;
 
@@ -33,7 +35,7 @@ private:
     // QString m_currentHostKey;
 
     /* Verifications */
-public:
+private:
     void startConnectionVerification()
     {
         checkConnectionToServer();
@@ -41,7 +43,6 @@ public:
     }
     void stopConnectionVerification() { m_timer.stop(); }
 
-private:
     QTimer m_timer;
     int m_pingTime = 5'000;
 };

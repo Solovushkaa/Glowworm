@@ -1,11 +1,14 @@
 #include "initialize.h"
 #include <QDir>
 #include <QStandardPaths>
+#include "log.h"
 
 Initialize::Initialize()
 {
     loadPath("/AppData/Client/", "Client");
     loadPath("/AppData/Server/", "Server");
+
+    qInstallMessageHandler(messageHandler);
 }
 
 void Initialize::loadPath(const char *path, const char *directoryName)

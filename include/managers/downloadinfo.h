@@ -27,40 +27,12 @@ public:
                  const QString &fileDateLastModified,
                  const QString &fileDateLastAccessed,
                  State downloadStatus);
+
     DownloadInfo(const DownloadInfo &downloadInfo) { *this = downloadInfo; }
-    DownloadInfo &operator=(const DownloadInfo &downloadInfo)
-    {
-        m_downloadID = downloadInfo.m_downloadID;
-        m_URL = downloadInfo.m_URL;
-        m_hostKey = downloadInfo.m_hostKey;
-        m_fileName = downloadInfo.m_fileName;
-        m_filePath = downloadInfo.m_filePath;
-        m_fileSaveName = downloadInfo.m_fileSaveName;
-        m_fileSavePath = downloadInfo.m_fileSavePath;
-        m_fileSize = downloadInfo.m_fileSize;
-        m_fileLastReceivedByte = downloadInfo.m_fileLastReceivedByte;
-        m_fileDateCreated = downloadInfo.m_fileDateCreated;
-        m_fileDateLastModified = downloadInfo.m_fileDateLastModified;
-        m_fileDateLastAccessed = downloadInfo.m_fileDateLastAccessed;
-        return *this;
-    }
+    DownloadInfo &operator=(const DownloadInfo &downloadInfo);
+
     DownloadInfo(DownloadInfo &&downloadInfo) { *this = std::move(downloadInfo); }
-    DownloadInfo &operator=(DownloadInfo &&downloadInfo)
-    {
-        m_downloadID = std::move(downloadInfo.m_downloadID);
-        m_URL = std::move(downloadInfo.m_URL);
-        m_hostKey = std::move(downloadInfo.m_hostKey);
-        m_fileName = std::move(downloadInfo.m_fileName);
-        m_filePath = std::move(downloadInfo.m_filePath);
-        m_fileSaveName = std::move(downloadInfo.m_fileSaveName);
-        m_fileSavePath = std::move(downloadInfo.m_fileSavePath);
-        m_fileSize = std::move(downloadInfo.m_fileSize);
-        m_fileLastReceivedByte = std::move(downloadInfo.m_fileLastReceivedByte);
-        m_fileDateCreated = std::move(downloadInfo.m_fileDateCreated);
-        m_fileDateLastModified = std::move(downloadInfo.m_fileDateLastModified);
-        m_fileDateLastAccessed = std::move(downloadInfo.m_fileDateLastAccessed);
-        return *this;
-    }
+    DownloadInfo &operator=(DownloadInfo &&downloadInfo);
 
     /* Methods */
 public:
@@ -81,9 +53,7 @@ public:
     QString m_fileDateCreated;          // время создания файла
     QString m_fileDateLastModified;     // время последнего имзменения
     QString m_fileDateLastAccessed;     // время последнего использования файла
-
-private:
-    State m_downloadStatus; // статус установки
+    State m_downloadStatus;             // статус установки
 
     /* Signals */
 signals:
