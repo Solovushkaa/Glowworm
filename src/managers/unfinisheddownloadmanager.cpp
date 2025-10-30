@@ -16,13 +16,17 @@ bool UnfinishedDownloadManager::readUnfinishedDownloads()
 
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         qWarning() << "Error opening the \"UnfinishedDownloads\" file";
-
         return false;
     }
 
-    QJsonDocument unfinishedDownloadInfo(QJsonDocument::fromJson(file.readAll()));
+    QJsonParseError parseError;
+    QJsonDocument unfinishedDownloadInfo(QJsonDocument::fromJson(file.readAll(), &parseError));
 
-    if (unfinishedDownloadInfo.isObject()) {
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parsing error:" << parseError.errorString();
+        qWarning() << "Error position:" << parseError.offset;
+        return false;
+    } else if (unfinishedDownloadInfo.isObject()) {
         m_jsonDownloadInfo = unfinishedDownloadInfo.object();
     } else {
         qWarning() << "JSON is not an object";

@@ -1,76 +1,81 @@
 #include "clientsavedconnectionmanager.h"
 #include <QFile>
-#include <QJsonArray>
 #include <QJsonDocument>
-#include <QJsonObject>
 #include <QStandardPaths>
 
 ClientSavedConnectionManager::ClientSavedConnectionManager()
 {
-    // m_presetPath = QStandardPaths::read();
-    read();
+    if (readSavedConnections()) {
+        qDebug() << "Save connections have been successfully read";
+    } else {
+        qWarning() << "Error reading save connections";
+    }
 }
 
-void ClientSavedConnectionManager::read()
+bool ClientSavedConnectionManager::readSavedConnections()
 {
-    QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-               + "/AppData/Client/SavedConnections.json");
+    QFile file(m_savePath);
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "Cannot open SavedConnections";
-        return;
+        qWarning() << "Error opening the \"SavedConnections.json\" file";
+        return false;
     }
 
     QJsonParseError parseError;
-    m_jsonSavedConnection = QJsonDocument::fromJson(file.readAll(), &parseError);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll(), &parseError);
 
-    if (m_jsonSavedConnection.array().isEmpty()) {
-        m_isConnectionPresetsEmpty = true;
-        emit connectionsLoaded();
-        return;
-
-    } else if (parseError.error != QJsonParseError::NoError) {
-        qDebug() << "Ошибка парсинга JSON:" << parseError.errorString();
-        qDebug() << "Позиция ошибки:" << parseError.offset;
-        return;
-    }
-
-    QJsonArray jsonArray = m_jsonSavedConnection.array();
-
-    if (jsonArray.size() == 0) {
-        m_isConnectionPresetsEmpty = true;
-    } else {
-        QJsonValue jsonValue;
-        QJsonObject jsonObject;
-        for(int i = 0; i < jsonArray.size(); ++i) {
-
-            jsonValue = jsonArray[i];
-            if(jsonValue.isObject()){
-                m_savedConnections.push_back(QVariantHash());
-                jsonObject = jsonValue.toObject();
-
-                m_savedConnections[i]["name"] = jsonObject["name"].toString();
-                if(jsonObject["protocol"].toString() == "HTTP"){
-                    m_savedConnections[i]["url"] = "http://" + jsonObject["ip"].toString() + ":"
-                                                   + jsonObject["port"].toString();
-                }
-            }
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parsing error:" << parseError.errorString();
+        qWarning() << "Error position:" << parseError.offset;
+        return false;
+    } else if (jsonDoc.isObject()) {
+        if (m_jsonSavedConnection.isEmpty()) {
+            emit connectionsLoaded();
+            return true;
         }
-        m_isConnectionPresetsEmpty = false;
-        m_activeConnection = &m_savedConnections[0];
-        qDebug() << "Конфиг прочитан:";
-        qDebug() << (*m_activeConnection)["url"].toString();
-
-        // смена url для клиента
-        m_client.setUrl((*m_activeConnection)["url"].toUrl());
-        emit connectionsLoaded();
+    } else {
+        qWarning() << "JSON is not an object";
+        return false;
     }
+
+    m_jsonSavedConnection = jsonDoc.object();
+
+    QList<QString> deleteList;
+    for (auto &key : m_jsonSavedConnection.keys()) {
+        if (!m_jsonSavedConnection[key].isObject()) {
+            qWarning().nospace() << "Saved connection: \"" << key << "\" - has incorrect syntax";
+            deleteList.push_back(key);
+            continue;
+        }
+
+        const QJsonObject &object = m_jsonSavedConnection[key].toObject();
+        m_savedConnections.push_back(ConnectionInfo());
+
+        m_savedConnections.back().m_name = object["name"].toString();
+        if (object["protocol"].toString() == "HTTP") {
+            m_savedConnections.back().m_url = "http://" + object["ip"].toString() + ":"
+                                              + object["port"].toString();
+        } else if (object["protocol"].toString() == "HTTPS") {
+            // ----------------------------------------- //
+        }
+    }
+    m_activeConnection = &m_savedConnections[0];
+    qDebug() << "SavedConnections.json have been read:" << (*m_activeConnection).m_url;
+
+    // Delete incorrect connections
+    for (auto &key : deleteList) {
+        m_jsonSavedConnection.remove(key);
+    }
+
+    emit connectionsLoaded();
+
+    return true;
 }
 
 void ClientSavedConnectionManager::setActive(int indx)
 {
     m_activeConnection = &m_savedConnections[indx];
-    m_client.setUrl((*m_activeConnection)["url"].toUrl());
+    emit activeConnectionsChanged();
 }
 
 void ClientSavedConnectionManager::add(const QString &name,
@@ -78,13 +83,13 @@ void ClientSavedConnectionManager::add(const QString &name,
                                            const QString &ip,
                                            const QString &port)
 {
-    m_savedConnections.push_back(QVariantHash());
-    m_savedConnections.back()["name"] = name;
+    m_savedConnections.push_back(ConnectionInfo());
+    m_savedConnections.back().m_name = name;
     if(protocol == "HTTP"){
-        m_savedConnections.back()["url"] = "http://" + ip + ":" + port;
+        m_savedConnections.back().m_url = "http://" + ip + ":" + port;
+    } else if (protocol == "HTTPS") {
+        // -------------------------------- //
     }
-
-    QJsonArray jsonArray = m_jsonSavedConnection.array();
 
     QJsonObject jsonObj;
     jsonObj["name"] = name;
@@ -92,54 +97,39 @@ void ClientSavedConnectionManager::add(const QString &name,
     jsonObj["ip"] = ip;
     jsonObj["port"] = port;
 
-    jsonArray.append(jsonObj);
-    m_jsonSavedConnection.setArray(jsonArray);
+    m_jsonSavedConnection[name] = jsonObj;
 
-    rewriteSavedConnectionsToFile();
-
-    m_isConnectionPresetsEmpty = false;
+    overwriteSavedConnectionsToFile();
 
     emit connectionsLoaded();
 }
 
-void ClientSavedConnectionManager::remove(const QString &name)
+// Доделать
+void ClientSavedConnectionManager::remove(qint64 deleteIndex, qint64 activeIndex)
 {
-    for (auto it = m_savedConnections.begin(); it != m_savedConnections.end(); ++it) {
-        if ((*it)["name"] == name) {
-            if (name == (*m_activeConnection)["name"]) {
-                m_activeConnection = nullptr;
-            }
-            m_savedConnections.erase(it);
-            if (m_activeConnection == nullptr && m_savedConnections.size() != 0) {
-                m_activeConnection = &m_savedConnections[0];
-            }
-        }
+    if (activeIndex == deleteIndex) {
+        m_activeConnection = nullptr;
     }
 
-    QJsonArray jsonArray = m_jsonSavedConnection.array();
-    for (auto it = jsonArray.begin(); it != jsonArray.end(); ++it) {
-        if ((*it).toObject()["name"].toString() == name) {
-            jsonArray.erase(it);
-        }
+    m_jsonSavedConnection.remove(m_savedConnections[deleteIndex].m_name);
+    m_savedConnections.remove(deleteIndex);
+
+    if (m_activeConnection == nullptr && m_savedConnections.size() != 0) {
+        m_activeConnection = &m_savedConnections[0];
     }
 
-    m_jsonSavedConnection = QJsonDocument(jsonArray);
-    rewriteSavedConnectionsToFile();
-
-    if (m_savedConnections.size() == 0) {
-        m_isConnectionPresetsEmpty = true;
-    }
+    overwriteSavedConnectionsToFile();
 }
 
-void ClientSavedConnectionManager::rewriteSavedConnectionsToFile()
+void ClientSavedConnectionManager::overwriteSavedConnectionsToFile()
 {
-    QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-               + "/AppData/Client/SavedConnections.json");
+    QFile file(m_savePath);
 
     if (!file.open(QIODevice::WriteOnly)) {
-        qDebug() << "Cannot open presets";
+        qDebug() << "Cannot open SavedConnections.json";
         return;
     }
+
     file.resize(0);
-    file.write(m_jsonSavedConnection.toJson());
+    file.write(QJsonDocument(m_jsonSavedConnection).toJson());
 }

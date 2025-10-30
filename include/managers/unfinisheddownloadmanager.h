@@ -12,11 +12,12 @@ class UnfinishedDownloadManager : public QObject
     Q_OBJECT
 
 public:
+    // Сonstructor for reading UnfinishedDownload.json file
     UnfinishedDownloadManager();
 
-    //Read imcomlplit downloads from file
+    // Read imcomlplit downloads from file
     bool readUnfinishedDownloads();
-    //Checking the correctness of objects
+    // Checking the correctness of objects
     bool isCorrectDownloadInfoObject(const QJsonObject &object);
 
     // Adding download to a file and RAM
@@ -50,6 +51,7 @@ private:
                                              "fileDateLastModified",
                                              "fileDateLastAccessed"};
 
+    // Path to save imcomplited downloads
     const QString m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                                + "/AppData/Client/UnfinishedDownloads.json";
 };

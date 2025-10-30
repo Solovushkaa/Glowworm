@@ -1,45 +1,57 @@
 #ifndef CLIENTSAVEDCONNECTIONMANAGER_H
 #define CLIENTSAVEDCONNECTIONMANAGER_H
 
-#include <QJsonDocument>
+#include <QJsonObject>
 #include <QObject>
-#include <QVariantHash>
+#include <QStandardPaths>
+#include "connectioninfo.h"
 
 class ClientSavedConnectionManager : public QObject
 {
     Q_OBJECT
 
 public:
+    // Сonstructor for reading SavedConnections.json file
     ClientSavedConnectionManager();
 
-    void read();
-    QList<QVariantHash> getConnections() { return m_savedConnections; }
-    QVariantHash getActive()
-    {
-        emit connectionsChanged();
-        return *m_activeConnection;
-    }
+    // Read saved connections from file
+    bool readSavedConnections();
+    // Get all connections
+    QList<ConnectionInfo> getConnections() { return m_savedConnections; }
+    // Get active connection
+    ConnectionInfo getActive() { return *m_activeConnection; }
+    // Set active connection
     void setActive(int indx);
 
+    // Add connection from list
     void add(const QString &name, const QString &protocol, const QString &ip, const QString &port);
-    void remove(const QString &name);
+    // Remove connection from list
+    void remove(qint64 deleteIndex, qint64 activeIndex);
 
-    bool isEmpty() const { return m_isConnectionPresetsEmpty; }
+    // Checking for empty saved connections
+    bool isEmpty() const { return m_savedConnections.empty(); }
 
 private:
-    void rewriteSavedConnectionsToFile();
-    // void updateHttpClientHostKeys();
+    // Overwriting a file with saved connections
+    void overwriteSavedConnectionsToFile();
 
 signals:
+    // A signal about uploading a file with saved connections
     void connectionsLoaded();
-    void connectionsChanged();
+    // A signal indicating a change the active connection
+    void activeConnectionsChanged();
 
 private:
-    // QString m_presetPath;
-    QJsonDocument m_jsonSavedConnection;
-    QList<QVariantHash> m_savedConnections;
-    QVariantHash *m_activeConnection;
-    bool m_isConnectionPresetsEmpty;
+    QJsonObject m_jsonSavedConnection; // List of a save connections in json for working with file
+    QList<ConnectionInfo> m_savedConnections; // List of a save connections
+    ConnectionInfo *m_activeConnection;       // Pointer to active connection
+
+    // All fields of information about downloads
+    const QList<const char *> m_checkList = {"ip", "port", "protocol"};
+
+    // Path to save connections
+    const QString m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                               + "/AppData/Client/SavedConnections.json";
 };
 
 #endif // CLIENTSAVEDCONNECTIONMANAGER_H
