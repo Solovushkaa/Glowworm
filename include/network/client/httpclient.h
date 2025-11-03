@@ -14,7 +14,7 @@ public:
 
     void checkConnectionToServer(const QString &url) override;
 
-    void getDirectoryList(const QString &path, const QString &url) override;
+    void getDirectoryList(const QString &path, const QString &url, const QString &userID) override;
     void getFile(QList<QVariantHash> &currentDirectory,
                  const QString &currentHostKey,
                  QHash<QString, DownloadInfo> &downloadInfoDict,

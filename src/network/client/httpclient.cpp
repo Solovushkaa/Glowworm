@@ -3,6 +3,7 @@
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include "jsonhelperfunctions.h"
 
 HttpClient::HttpClient()
     : m_networkManager(new QNetworkAccessManager(this))
@@ -19,7 +20,7 @@ void HttpClient::checkConnectionToServer(const QString &url)
     connect(reply, &QNetworkReply::finished, this, &HttpClient::onConnectionStatusReceived);
 }
 
-void HttpClient::getDirectoryList(const QString &path, const QString &url)
+void HttpClient::getDirectoryList(const QString &path, const QString &url, const QString &userID)
 {
     /*
      Загрузка старого окна, а после отсылка нового реквеста
@@ -31,11 +32,15 @@ void HttpClient::getDirectoryList(const QString &path, const QString &url)
         send fileGraph[path] to FrontEnd
      }
     */
-    QNetworkRequest request(url + path);
+    QString absURL = url + path + "?user_id=" + userID;
+
+    QNetworkRequest request(absURL);
     request.setRawHeader("Accept", "application/json");
-    qDebug() << "Request active";
 
     QNetworkReply *reply = m_networkManager->get(request);
+
+    qDebug() << "A new request for the directory has been generated!";
+    qDebug() << "URL:" << absURL;
 
     connect(reply, &QNetworkReply::finished, this, &HttpClient::onDirectoryReceived);
 }
@@ -47,13 +52,13 @@ void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
                          const QString &savePath,
                          const QString &saveName)
 {
-    qDebug() << "-------------------------------------------------";
-    qDebug() << "Начало отправки запросов на получение файла";
+    qDebug() << "Sending a request to receive a file from host:" << currentHostKey;
+    qDebug() << "The received file:" << path;
 
     QVariantHash *fileInfo;
     for (auto &file : currentDirectory) {
         if (file["path"] == path) {
-            qDebug() << "File finded and already exist for Downloading!";
+            qDebug() << "File find and already exist for Downloading!";
             fileInfo = &file;
         }
     }
@@ -70,8 +75,6 @@ void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
 
     // Можно запихать создание объекта и прочее в DownloadInfo
     if (!downloadInfoDict.contains(downloadID)) {
-        emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
-
         // Всё это внутри слота DownloadManager получающего newDownload
 
         // DownloadInfo downloadInfo(downloadID,
@@ -93,8 +96,10 @@ void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
         // downloadInfoList.emplace(downloadID, std::move(downloadInfo));
 
         startDownload(downloadID);
+
+        emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
     } else {
-        qDebug().nospace() << downloadID << ": уже добавлен в загрузки!";
+        qDebug().nospace() << downloadID << ": has already been added to downloads!";
     }
 }
 
@@ -132,7 +137,7 @@ void HttpClient::startDownload(const QString &downloadID)
 
 void HttpClient::stopDownload(const QString &downloadID)
 {
-    auto downloadInfoList = m_downloadManager.getDowloadInfoList();
+    auto &downloadInfoList = m_downloadManager.getDowloadInfoList();
 
     // QNetworkRequest request(downloadInfoList[downloadID].m_URL+"/stop/...");
 
@@ -141,28 +146,36 @@ void HttpClient::stopDownload(const QString &downloadID)
     downloadInfoList[downloadID].setDownloadStatus(State::Pause);
 }
 
-void HttpClient::onCheckConnectionReceived()
+void HttpClient::onConnectionStatusReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    if (reply->url() == m_url) {
-        if (!reply) {
-            qDebug() << "Empty pointer to reply";
-            reply->close();
-            return;
-        }
+    if (!reply) {
+        qWarning() << "Empty pointer to reply";
+        reply->close();
+        return;
+    }
 
-        if (reply->error() == QNetworkReply::NoError) {
-            int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
-                                        .toInt();
-            m_currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
+    if (reply->error() == QNetworkReply::NoError) {
+        int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-            emit changeStatusCode(currentStatusCode);
+        emit statusCodeChanged(currentStatusCode);
 
-            qDebug() << "Current Status Code: " << currentStatusCode;
+        if (currentStatusCode == 200) {
+            QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
+
+            emit currentHostChanged(std::move(
+                currentHostKey)); // Связывается со слотом в Client, который передаёт hostKey в менеджер подключений
+
+            qDebug().nospace() << "The status code of the response from the \"" << currentHostKey
+                               << "\" host: " << currentStatusCode;
+        } else {
+            qWarning() << "Status error code: " << currentStatusCode;
         }
     }
-    reply->close();
+
+    // reply->close(); // Есть непроверенная проблема с закрытием ответа
+    reply->deleteLater();
 }
 
 void HttpClient::onDirectoryReceived()
@@ -179,12 +192,17 @@ void HttpClient::onDirectoryReceived()
 
         QByteArray data = reply->readAll();
 
-        m_currentDirectory = fromJsonToHash(QJsonDocument::fromJson(data));
+        QList<QVariantHash> m_currentDirectory = fromJsonToHash(data);
 
-        emit requestSuccessfulFinished();
+        emit currentDirectoryChanged(std::move(
+            m_currentDirectory)); // Связывается со слотом в Client, который передаёт currentDirectory в сам класс
+
+        emit requestFinished();
     } else {
         emit requestError("Request Error...");
     }
+
+    reply->deleteLater();
 }
 
 void HttpClient::onFileReceived()
@@ -266,6 +284,8 @@ void HttpClient::onFileReceived()
         emit requestError("Request Error...");
         qDebug() << "-------------------------------------------------";
     }
+
+    reply->deleteLater();
 }
 
 void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)

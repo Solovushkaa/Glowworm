@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
 
 QByteArray createJsonFromDirectory(const QString &path)
@@ -34,9 +35,11 @@ QByteArray createJsonFromDirectory(const QString &path)
     return jsonDoc.toJson();
 }
 
-QList<QVariantHash> fromJsonToHash(const QJsonDocument &jsonDoc)
+QList<QVariantHash> fromJsonToHash(QByteArray &data)
 {
     QList<QVariantHash> filesInfo;
+
+    auto jsonDoc = QJsonDocument::fromJson(data);
 
     if(!jsonDoc.isArray()){
         qWarning() << "JSON Document isn't JSON Array";

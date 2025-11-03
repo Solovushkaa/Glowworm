@@ -104,19 +104,18 @@ void ClientSavedConnectionManager::add(const QString &name,
     emit connectionsLoaded();
 }
 
-// Доделать
+// ------
 void ClientSavedConnectionManager::remove(qint64 deleteIndex, qint64 activeIndex)
 {
     if (activeIndex == deleteIndex) {
         m_activeConnection = nullptr;
+        if (m_savedConnections.size() > 1) {
+            m_activeConnection = &m_savedConnections[0];
+        }
     }
 
     m_jsonSavedConnection.remove(m_savedConnections[deleteIndex].m_name);
     m_savedConnections.remove(deleteIndex);
-
-    if (m_activeConnection == nullptr && m_savedConnections.size() != 0) {
-        m_activeConnection = &m_savedConnections[0];
-    }
 
     overwriteSavedConnectionsToFile();
 }

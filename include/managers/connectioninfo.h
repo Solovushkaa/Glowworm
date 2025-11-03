@@ -18,6 +18,7 @@ public:
 
     /* Members */
 public:
+    QString m_currentHostName;
     QString m_url;
     QString m_name;
     QString m_protocol;
