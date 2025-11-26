@@ -47,7 +47,7 @@ void HttpClient::getDirectoryList(const QString &path, const QString &url, const
 
 void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
                          const QString &currentHostKey,
-                         QHash<QString, DownloadInfo> &downloadInfoDict,
+                         UnfinishedDownloadManager &downloadManager,
                          const QString &path,
                          const QString &savePath,
                          const QString &saveName)
@@ -73,34 +73,35 @@ void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
         downloadID = downloadID.left(8);
     }
 
-    // Можно запихать создание объекта и прочее в DownloadInfo
-    if (!downloadInfoDict.contains(downloadID)) {
-        // Всё это внутри слота DownloadManager получающего newDownload
+    // // Можно запихать создание объекта и прочее в DownloadInfo
+    // QHash<QString, DownloadInfo> &downloadInfoDict = downloadManager.getDownloadInfoDict();
+    // if (!downloadInfoDict.contains(downloadID)) {
+    //     // Всё это внутри слота DownloadManager получающего newDownload
 
-        // DownloadInfo downloadInfo(downloadID,
-        //                           m_url,
-        //                           m_currentHostKey,
-        //                           refFileInfo["name"].toString(),
-        //                           refFileInfo["path"].toString(),
-        //                           saveName,
-        //                           savePath,
-        //                           refFileInfo["size"].toLongLong(),
-        //                           0,
-        //                           refFileInfo["created"].toString(),
-        //                           refFileInfo["modified"].toString(),
-        //                           refFileInfo["accessed"].toString(),
-        //                           State::Active);
+    //     DownloadInfo downloadInfo(downloadID,
+    //                               m_url,
+    //                               m_currentHostKey,
+    //                               refFileInfo["name"].toString(),
+    //                               refFileInfo["path"].toString(),
+    //                               saveName,
+    //                               savePath,
+    //                               refFileInfo["size"].toLongLong(),
+    //                               0,
+    //                               refFileInfo["created"].toString(),
+    //                               refFileInfo["modified"].toString(),
+    //                               refFileInfo["accessed"].toString(),
+    //                               State::Active);
 
-        // m_downloadManager.addDownloadToUnfinished(downloadInfo);
+    //     downloadManager.addDownloadToUnfinished(downloadInfo);
 
-        // downloadInfoList.emplace(downloadID, std::move(downloadInfo));
+    //     downloadInfoDict.emplace(downloadID, std::move(downloadInfo));
 
-        startDownload(downloadID);
+    //     startDownload(downloadID);
 
-        emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
-    } else {
-        qDebug().nospace() << downloadID << ": has already been added to downloads!";
-    }
+    //     emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
+    // } else {
+    //     qDebug().nospace() << downloadID << ": has already been added to downloads!";
+    // }
 }
 
 void HttpClient::startDownload(const QString &downloadID)

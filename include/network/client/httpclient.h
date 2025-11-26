@@ -4,6 +4,7 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 #include "baseclient.h"
+#include "unfinisheddownloadmanager.h"
 
 class HttpClient : public BaseClient
 {
@@ -17,7 +18,7 @@ public:
     void getDirectoryList(const QString &path, const QString &url, const QString &userID) override;
     void getFile(QList<QVariantHash> &currentDirectory,
                  const QString &currentHostKey,
-                 QHash<QString, DownloadInfo> &downloadInfoDict,
+                 UnfinishedDownloadManager &downloadManager,
                  const QString &path,
                  const QString &savePath,
                  const QString &saveName) override;
