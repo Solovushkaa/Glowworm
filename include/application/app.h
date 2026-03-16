@@ -4,8 +4,14 @@
 #include <QObject>
 #include "client.h"
 #include "initialize.h"
-#include "server.h"
+// #include "server.h"
 
+/**
+ * @brief The App class
+ * 
+ * The class is responsible for initializing configuration files 
+ * and managing the launch of the server and client parts.
+ */
 class App : public QObject
 {
     Q_OBJECT
@@ -15,7 +21,7 @@ public:
 private:
     Initialize m_initializer;
     Client m_client;
-    Server m_server;
+    // Server m_server;
 };
 
 #endif // APP_H

@@ -8,11 +8,14 @@ set(QML_IMPORT_PATH
 project(DFSystem VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 23)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS HttpServer)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS
+    Quick
+    Core
+    HttpServer
+    Bluetooth
+)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -52,8 +55,8 @@ qt_add_qml_module(appDFSystem
         qml/popups/StartAddPopup.qml
 
     SOURCES
-        include/network/client/httpclient.h
-        src/network/client/httpclient.cpp
+        include/network/client/directclient.h
+        src/network/client/directclient.cpp
     SOURCES
         include/network/server/httpserver.h
         src/network/server/httpserver.cpp
@@ -61,58 +64,60 @@ qt_add_qml_module(appDFSystem
         include/json/jsonhelperfunctions.h
         src/json/jsonhelperfunctions.cpp
     SOURCES
-        include/managers/clientsavedconnectionmanager.h
-        src/managers/clientsavedconnectionmanager.cpp
+        include/managers/client/clientconnectionmanager.h
+        src/managers/client/clientconnectionmanager.cpp
     SOURCES
-        include/managers/downloadinfo.h
-        src/managers/downloadinfo.cpp
+        include/managers/client/downloadinfo.h
     SOURCES
-        include/managers/unfinisheddownloadmanager.h
-        src/managers/unfinisheddownloadmanager.cpp
+        include/managers/client/downloadmanager.h
+        src/managers/client/downloadmanager.cpp
     SOURCES
-        include/managers/initialize.h
-        src/managers/initialize.cpp
+        include/application/initialize.h
+        src/application/initialize.cpp
     SOURCES
         include/application/app.h
         src/application/app.cpp
     SOURCES
-        include/managers/serversavedconnectionmanager.h
-        src/managers/serversavedconnectionmanager.cpp
+        include/managers/server/serverconnectionmanager.h
+        src/managers/server/serverconnectionmanager.cpp
     SOURCES
-        include/managers/connectioninfo.h
-        src/managers/connectioninfo.cpp
+        include/managers/client/connectioninfo.h
     SOURCES
-        include/connectors/guiclientconnector.h
-        src/connectors/guiclientconnector.cpp
-    SOURCES
-        include/managers/client.h
-        src/managers/client.cpp
+        include/managers/client/client.h
+        src/managers/client/client.cpp
     SOURCES
         include/network/client/baseclient.h
     SOURCES
-        include/managers/log.h
+        include/application/log.h
+    SOURCES
+        include/managers/additional.h
 
     RESOURCES
         Resource.qrc
+        SOURCES
+        SOURCES
     )
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting
 # explicit, fixed bundle identifier manually though.
-set_target_properties(appDFSystem PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appDFSystem
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-)
+# set_target_properties(appDFSystem PROPERTIES
+#     MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appDFSystem
+#     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+#     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+#     MACOSX_BUNDLE TRUE
+#     WIN32_EXECUTABLE TRUE
+# )
 
 target_include_directories(appDFSystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/network/server
     ${CMAKE_CURRENT_SOURCE_DIR}/include/network/client
     ${CMAKE_CURRENT_SOURCE_DIR}/include/json
     ${CMAKE_CURRENT_SOURCE_DIR}/include/managers
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/managers/server
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/managers/client
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/managers/client/connectioninfo
     ${CMAKE_CURRENT_SOURCE_DIR}/include/application
     ${CMAKE_CURRENT_SOURCE_DIR}/include/connectors
 )
@@ -123,9 +128,9 @@ target_link_libraries(appDFSystem
         Qt6::Core
         Qt6::Network
         Qt6::HttpServer
+        Qt6::Bluetooth
         CustomButtonsLib
 )
-target_link_libraries(appDFSystem PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS appDFSystem

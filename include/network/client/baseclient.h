@@ -2,7 +2,7 @@
 #define BASECLIENT_H
 
 #include <QObject>
-#include "unfinisheddownloadmanager.h"
+#include "downloadmanager.h"
 
 class BaseClient : public QObject
 {
@@ -16,7 +16,7 @@ public:
     virtual void getDirectoryList(const QString &path, const QString &url, const QString &userID) = 0;
     virtual void getFile(QList<QVariantHash> &currentDirectory,
                          const QString &currentHostKey,
-                         UnfinishedDownloadManager &downloadManager,
+                         DownloadManager &downloadManager,
                          const QString &path,
                          const QString &savePath,
                          const QString &saveName)

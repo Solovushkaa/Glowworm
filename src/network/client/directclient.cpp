@@ -1,26 +1,26 @@
-#include "httpclient.h"
+#include "directclient.h"
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include "jsonhelperfunctions.h"
 
-HttpClient::HttpClient()
+DirectClient::DirectClient()
     : m_networkManager(new QNetworkAccessManager(this))
 {
 }
 
-void HttpClient::checkConnectionToServer(const QString &url)
+void DirectClient::checkConnectionToServer(const QString &url)
 {
     qDebug() << "Check connection to server:";
 
     QNetworkRequest request(url);
     QNetworkReply *reply = m_networkManager->head(request);
 
-    connect(reply, &QNetworkReply::finished, this, &HttpClient::onConnectionStatusReceived);
+    connect(reply, &QNetworkReply::finished, this, &DirectClient::onConnectionStatusReceived);
 }
 
-void HttpClient::getDirectoryList(const QString &path, const QString &url, const QString &userID)
+void DirectClient::getDirectoryList(const QString &path, const QString &url, const QString &userID)
 {
     /*
      Загрузка старого окна, а после отсылка нового реквеста
@@ -42,12 +42,12 @@ void HttpClient::getDirectoryList(const QString &path, const QString &url, const
     qDebug() << "A new request for the directory has been generated!";
     qDebug() << "URL:" << absURL;
 
-    connect(reply, &QNetworkReply::finished, this, &HttpClient::onDirectoryReceived);
+    connect(reply, &QNetworkReply::finished, this, &DirectClient::onDirectoryReceived);
 }
 
-void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
+void DirectClient::getFile(QList<QVariantHash> &currentDirectory,
                          const QString &currentHostKey,
-                         UnfinishedDownloadManager &downloadManager,
+                         DownloadManager &downloadManager,
                          const QString &path,
                          const QString &savePath,
                          const QString &saveName)
@@ -98,19 +98,19 @@ void HttpClient::getFile(QList<QVariantHash> &currentDirectory,
 
     //     startDownload(downloadID);
 
-    //     emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_fileSize);
+    //     emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_size);
     // } else {
     //     qDebug().nospace() << downloadID << ": has already been added to downloads!";
     // }
 }
 
-void HttpClient::startDownload(const QString &downloadID)
+void DirectClient::startDownload(const QString &downloadID)
 {
     auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
     qDebug() << "downloadID:" << downloadInfoList[downloadID].m_downloadID;
-    qDebug() << "Получение: bytes=" << downloadInfoList[downloadID].m_fileLastReceivedByte << "-"
-             << downloadInfoList[downloadID].m_fileSize;
+    qDebug() << "Получение: bytes=" << downloadInfoList[downloadID].m_lastReceivedByte << "-"
+             << downloadInfoList[downloadID].m_size;
 
     downloadInfoList[downloadID].setDownloadStatus(State::Active);
     m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
@@ -119,24 +119,24 @@ void HttpClient::startDownload(const QString &downloadID)
     /*
      * Добавить здесь поиск нужного хоста и в случае его отсутствия дать уведомление с подсказкой с какого устройства была загрузка
      */
-    QNetworkRequest request(m_url.toString() + downloadInfoList[downloadID].m_filePath);
+    QNetworkRequest request(m_url.toString() + downloadInfoList[downloadID].m_path);
     request.setRawHeader("Accept", "application/octet-stream");
     request.setRawHeader("Range",
                          "bytes="
                              + QByteArray::number(
-                                 downloadInfoList[downloadID].m_fileLastReceivedByte)
-                             + "-" + QByteArray::number(downloadInfoList[downloadID].m_fileSize));
+                                 downloadInfoList[downloadID].m_lastReceivedByte)
+                             + "-" + QByteArray::number(downloadInfoList[downloadID].m_size));
     QNetworkReply *reply = m_networkManager->get(request);
 
     reply->setProperty("downloadID", downloadID);
 
-    connect(reply, &QNetworkReply::downloadProgress, this, &HttpClient::onDownloadProgress);
-    connect(reply, &QNetworkReply::finished, this, &HttpClient::onFileReceived);
+    connect(reply, &QNetworkReply::downloadProgress, this, &DirectClient::onDownloadProgress);
+    connect(reply, &QNetworkReply::finished, this, &DirectClient::onFileReceived);
 
     // stopDownload(downloadID);
 }
 
-void HttpClient::stopDownload(const QString &downloadID)
+void DirectClient::stopDownload(const QString &downloadID)
 {
     auto &downloadInfoList = m_downloadManager.getDowloadInfoList();
 
@@ -147,7 +147,7 @@ void HttpClient::stopDownload(const QString &downloadID)
     downloadInfoList[downloadID].setDownloadStatus(State::Pause);
 }
 
-void HttpClient::onConnectionStatusReceived()
+void DirectClient::onConnectionStatusReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -179,7 +179,7 @@ void HttpClient::onConnectionStatusReceived()
     reply->deleteLater();
 }
 
-void HttpClient::onDirectoryReceived()
+void DirectClient::onDirectoryReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -206,7 +206,7 @@ void HttpClient::onDirectoryReceived()
     reply->deleteLater();
 }
 
-void HttpClient::onFileReceived()
+void DirectClient::onFileReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -226,9 +226,9 @@ void HttpClient::onFileReceived()
 
         auto downloadInfoList = m_downloadManager.getDowloadInfoList();
 
-        QString path = downloadInfoList[downloadID].m_filePath;
-        QString savePath = downloadInfoList[downloadID].m_fileSavePath;
-        QString saveName = downloadInfoList[downloadID].m_fileSaveName;
+        QString path = downloadInfoList[downloadID].m_path;
+        QString savePath = downloadInfoList[downloadID].m_savePath;
+        QString saveName = downloadInfoList[downloadID].m_saveName;
 
         qDebug() << "Место сохранения: " << savePath+saveName;
 
@@ -289,7 +289,7 @@ void HttpClient::onFileReceived()
     reply->deleteLater();
 }
 
-void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+void DirectClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -305,9 +305,9 @@ void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         reply->close();
         qDebug() << "Text after reply->readAll()";
 
-        QString path = downloadInfoList[downloadID].m_filePath;
-        QString savePath = downloadInfoList[downloadID].m_fileSavePath;
-        QString saveName = downloadInfoList[downloadID].m_fileSaveName;
+        QString path = downloadInfoList[downloadID].m_path;
+        QString savePath = downloadInfoList[downloadID].m_savePath;
+        QString saveName = downloadInfoList[downloadID].m_saveName;
 
         QFile file(savePath + saveName);
 
@@ -317,16 +317,16 @@ void HttpClient::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
             return;
         } else {
             file.write(data);
-            downloadInfoList[downloadID].m_fileLastReceivedByte = file.size();
+            downloadInfoList[downloadID].m_lastReceivedByte = file.size();
             m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
             m_downloadManager.addDownloadToUnfinished(downloadInfoList[downloadID]);
 
             file.close();
         }
 
-        emit stopProgress(downloadID, downloadInfoList[downloadID].m_fileLastReceivedByte);
+        emit stopProgress(downloadID, downloadInfoList[downloadID].m_lastReceivedByte);
     } else {
-        downloadInfoList[downloadID].m_fileLastReceivedByte = bytesReceived;
+        downloadInfoList[downloadID].m_lastReceivedByte = bytesReceived;
 
         emit changeProgress(downloadID, bytesReceived);
     }

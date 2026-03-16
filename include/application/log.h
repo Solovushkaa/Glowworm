@@ -3,12 +3,20 @@
 
 #include <QFileInfo>
 
+/**
+ * @brief Namespace with logging constants.
+ */
 namespace logs {
-const qint64 MAX_LOG_SIZE = 10 * 1024 * 1024; // 5 MB
-QString LOG_FILE_NAME = "dfs.log";
-QString LOG_ARCHIVE_NAME = "dfs.1";
+
+constinit qint64 MAX_LOG_SIZE = 10 * 1024 * 1024; // 10 MB
+constinit const char *LOG_FILE_NAME = "dfs.log";
+constinit const char *LOG_ARCHIVE_NAME = "dfs.1";
+
 } // namespace logs
 
+/**
+ * @brief Log file cleaner.
+ */
 void rotateLogFileIfNeeded()
 {
     QFileInfo info(logs::LOG_FILE_NAME);
@@ -20,6 +28,12 @@ void rotateLogFileIfNeeded()
     }
 }
 
+/**
+ * @brief Logging stream handler.
+ * @param type Message type
+ * @param context 
+ * @param msg Message
+ */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     // Checking if rotation is needed before recording

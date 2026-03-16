@@ -1,24 +1,24 @@
-#ifndef HTTPCLIENT_H
-#define HTTPCLIENT_H
+#ifndef DIRECTCLIENT_H
+#define DIRECTCLIENT_H
 
 #include <QNetworkAccessManager>
 #include <QObject>
 #include "baseclient.h"
-#include "unfinisheddownloadmanager.h"
+#include "downloadmanager.h"
 
-class HttpClient : public BaseClient
+class DirectClient : public BaseClient
 {
     Q_OBJECT
 
 public:
-    HttpClient();
+    DirectClient();
 
     void checkConnectionToServer(const QString &url) override;
 
     void getDirectoryList(const QString &path, const QString &url, const QString &userID) override;
     void getFile(QList<QVariantHash> &currentDirectory,
                  const QString &currentHostKey,
-                 UnfinishedDownloadManager &downloadManager,
+                 DownloadManager &downloadManager,
                  const QString &path,
                  const QString &savePath,
                  const QString &saveName) override;
@@ -37,4 +37,4 @@ private:
     QNetworkAccessManager *m_networkManager;
 };
 
-#endif // HTTPCLIENT_H
+#endif // DIRECTCLIENT_H

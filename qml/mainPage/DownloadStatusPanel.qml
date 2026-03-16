@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import HttpClient
-import ClientSavedConnectionManager
+import DirectClient
+import ClientConnectionManager
 
 Rectangle {
     id: root
@@ -22,11 +22,11 @@ Rectangle {
         } else {
             for (var i = 0; i < unfinishedDownloads.length; i++) {
                 fileModelDownloadStatus.append({
-                                                   "fileName": unfinishedDownloads[i]["fileName"],
+                                                   "name": unfinishedDownloads[i]["name"],
                                                    "downloadID": unfinishedDownloads[i]["downloadID"],
-                                                   "fileSize": parseInt(
-                                                                   unfinishedDownloads[i]["fileSize"]),
-                                                   "fileLastReceivedByte": parseInt(unfinishedDownloads[i]["fileLastReceivedByte"]),
+                                                   "size": parseInt(
+                                                                   unfinishedDownloads[i]["size"]),
+                                                   "lastReceivedByte": parseInt(unfinishedDownloads[i]["lastReceivedByte"]),
                                                    "isPlayPauseButtonActive": true,
                                                    "isBlockedPlayPause": false
                                                })
@@ -40,8 +40,8 @@ Rectangle {
             if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
                 fileModelDownloadStatus.get(i).isPlayPauseButtonActive = false
                 fileModelDownloadStatus.get(
-                            i).fileLastReceivedByte = fileModelDownloadStatus.get(
-                            i).fileSize
+                            i).lastReceivedByte = fileModelDownloadStatus.get(
+                            i).size
                 break
             }
         }
@@ -53,12 +53,12 @@ Rectangle {
 
     Connections {
         target: Client
-        function onNewDownload(fileName, downloadID, fileSize) {
+        function onNewDownload(name, downloadID, size) {
             fileModelDownloadStatus.append({
-                                               "fileName": fileName,
+                                               "name": name,
                                                "downloadID": downloadID,
-                                               "fileSize": fileSize,
-                                               "fileLastReceivedByte": 0,
+                                               "size": size,
+                                               "lastReceivedByte": 0,
                                                "isPlayPauseButtonActive": true,
                                                "isBlockedPlayPause": false
                                            })
@@ -68,7 +68,7 @@ Rectangle {
             for (var i = 0; i < fileModelDownloadStatus.count; i++) {
                 if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
                     fileModelDownloadStatus.get(
-                                i).fileLastReceivedByte = bytesReceived
+                                i).lastReceivedByte = bytesReceived
                     fileModelDownloadStatus.get(i).isBlockedPlayPause = false
                     break
                 }
@@ -79,7 +79,7 @@ Rectangle {
             for (var i = 0; i < fileModelDownloadStatus.count; i++) {
                 if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
                     fileModelDownloadStatus.get(
-                                i).fileLastReceivedByte = bytesReceived
+                                i).lastReceivedByte = bytesReceived
                     fileModelDownloadStatus.get(i).isBlockedPlayPause = false
                     break
                 }
@@ -188,7 +188,7 @@ Rectangle {
                     left: playPauseBound.right
                     verticalCenter: parent.verticalCenter
                 }
-                text: fileName
+                text: name
                 font.pixelSize: 14
             }
 
@@ -200,8 +200,8 @@ Rectangle {
                     bottom: parent.bottom
                     bottomMargin: parent.height * 0.12
                 }
-                value: (model.fileLastReceivedByte
-                        === 0) ? 0 : (model.fileLastReceivedByte / model.fileSize)
+                value: (model.lastReceivedByte
+                        === 0) ? 0 : (model.lastReceivedByte / model.size)
 
                 width: parent.width * 0.15
             }

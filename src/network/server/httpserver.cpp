@@ -95,7 +95,7 @@ void HttpServer::routeFileSystem()
 
                                QFile file("/" + path.s);
                                if (!file.open(QIODevice::ReadOnly)) {
-                                   qWarning() << "Ошибка доступа к файлу: " << file.fileName();
+                                   qWarning() << "Ошибка доступа к файлу: " << file.name();
                                }
 
                                if (start > end) {
@@ -110,7 +110,11 @@ void HttpServer::routeFileSystem()
 
                                end = std::min(end, file.size() - 1);
 
-                               QByteArray data = file.read(end - start + 1);
+                               // QFile *file = new QFile("large.bin");
+                               // file->open(QIODevice::ReadOnly); // QFile наследует QIODevice → можно передавать напрямую
+                               // auto reply = manager->post(request, file); // Qt будет читать файл по частям внутренним буфером (~64 КБ)
+                               QByteArray data = file.read(end - start
+                                                           + 1); // Не оптимизированный мусор
 
                                QHttpServerResponse response(data);
                                QHttpHeaders responseHeader;
@@ -125,7 +129,18 @@ void HttpServer::routeFileSystem()
 
                                response.setHeaders(responseHeader);
 
-                               return response;
+                               // С помощью потоковой передачи, без подгрузки в RAM можно передавать очень большие файлы
+                               // При необходимости докачать диапазон будет просто выбираться иная логика
+                               // httpServer.route("/download/<arg>", QHttpServerRequest::Method::Get,
+                               //                  [](const QString &filename) -> QHttpServerResponse {
+                               //                      QFile *file = new QFile("/path/" + filename);
+                               //                      if (!file->open(QIODevice::ReadOnly)) {
+                               //                          delete file;
+                               //                          return QHttpServerResponse(QHttpServerResponder::StatusCode::NotFound);
+                               //                      }
+                               //                      return QHttpServerResponse(file); // ← передаём QIODevice
+                               //                  });
+                               return response; // Тоже нужно подумать
                            }
                        }
                    }

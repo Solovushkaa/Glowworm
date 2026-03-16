@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import HttpClient
+import DirectClient
 
 Rectangle {
     color: "transparent"

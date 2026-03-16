@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import CustomButtons
-import ClientSavedConnectionManager
+import ClientConnectionManager
 
 Popup {
     id: root
@@ -129,7 +129,7 @@ Popup {
 
             onClicked: {
 
-                ConnectionManager.add(newPresetName.text, "HTTP",
+                ConnectionManager.add(newPresetName.text, "DIRECT",
                                       newPresetIp.text, newPresetPort.text)
                 startAddPopup.close()
                 root.close()

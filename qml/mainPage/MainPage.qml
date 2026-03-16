@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import HttpClient
+import DirectClient
 import CustomButtons
-import ClientSavedConnectionManager
+import ClientConnectionManager
 
 Page {
     id: mainPage

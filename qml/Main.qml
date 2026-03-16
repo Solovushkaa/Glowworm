@@ -3,7 +3,7 @@ import QtQuick.Controls
 import "mainPage"
 import "settingsPage"
 import "popups"
-import ClientSavedConnectionManager
+import ClientConnectionManager
 
 ApplicationWindow {
     id: window
@@ -16,7 +16,7 @@ ApplicationWindow {
     minimumHeight: Screen.height * 0.48
 
     function loadConfigs() {
-        ConnectionManager.connectionsLoaded()
+        ConnectionManager.connectionListUpdated()
     }
 
     Component.onCompleted: {

@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ * @brief Main function 
+ *  Cross-platform network file manager
+ * @author Solovey Alexey <solovushka.al@yandex.ru>
+ */
+
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
@@ -6,6 +13,12 @@
 #include <QSGRendererInterface>
 #include "app.h"
 
+/**
+ * @brief The main function of the program
+ * @param argc Number of command line arguments
+ * @param argv Сommand line arguments
+ * @return Exit code
+ */
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -15,10 +28,10 @@ int main(int argc, char *argv[])
 
     App application;
 
-    // qmlRegisterSingletonInstance("HttpClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
+    // qmlRegisterSingletonInstance("DirectClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
 
-    // ClientSavedConnectionManager connectionManager(client);
-    // qmlRegisterSingletonInstance("ClientSavedConnectionManager",
+    // ClientConnectionManager connectionManager(client);
+    // qmlRegisterSingletonInstance("ClientConnectionManager",
     //                              1,
     //                              0,
     //                              "ConnectionManager",

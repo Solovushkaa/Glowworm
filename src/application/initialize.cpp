@@ -8,6 +8,7 @@ Initialize::Initialize()
     loadPath("/AppData/Client/", "Client");
     loadPath("/AppData/Server/", "Server");
 
+    // Install custom message handler
     qInstallMessageHandler(messageHandler);
 }
 

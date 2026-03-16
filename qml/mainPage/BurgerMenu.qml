@@ -3,8 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import CustomButtons
-import ClientSavedConnectionManager
-import HttpClient
+import ClientConnectionManager
+import DirectClient
 
 Rectangle {
     id: root
