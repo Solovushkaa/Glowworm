@@ -9,15 +9,33 @@
 #ifndef DOWNLOADINFO_H
 #define DOWNLOADINFO_H
 
-#include <QHash>
 #include <QObject>
 #include <QString>
+#include <string_view>
 #include <QUrl>
 
 struct BadMemberName
 {
     constexpr const char *what() { return "Bad member name!"; }
 };
+
+namespace constants {
+
+extern std::string_view DOWNLOADID;
+extern std::string_view HOSTKEY;
+extern std::string_view URL;
+extern std::string_view NAME;
+extern std::string_view PATH;
+extern std::string_view SAVENAME;
+extern std::string_view SAVEPATH;
+extern std::string_view SIZE;
+extern std::string_view LASTRECEIVEDBYTE;
+extern std::string_view CREATED;
+extern std::string_view MODIFIED;
+extern std::string_view ACCESSED;
+extern std::string_view DOWNLOADSTATUS;
+
+} // namespace constants
 
 /**
  * @enum State
@@ -30,24 +48,6 @@ enum class State {
     Finish, ///< Download finished successfully
     Error   ///< Download failed due to error
 };
-
-namespace constants {
-
-constinit const char *DOWNLOADID = "DOWNLOADID";
-constinit const char *HOSTKEY = "HOSTKEY";
-constinit const char *URL = "URL";
-constinit const char *NAME = "NAME";
-constinit const char *PATH = "PATH";
-constinit const char *SAVENAME = "SAVENAME";
-constinit const char *SAVEPATH = "SAVEPATH";
-constinit const char *SIZE = "SIZE";
-constinit const char *LASTRECEIVEDBYTE = "LASTRECEIVEDBYTE";
-constinit const char *CREATED = "CREATED";
-constinit const char *MODIFIED = "MODIFIED";
-constinit const char *ACCESSED = "ACCESSED";
-constinit const char *DOWNLOADSTATUS = "DOWNLOADSTATUS";
-
-} // namespace constants
 
 /**
  * @brief All fields of information about downloads.
@@ -74,41 +74,7 @@ enum class DownloadInfoMember {
  * @param member Enum
  * @return Enum type converted into const char *
  */
-const char *getDownloadInfoMemberName(DownloadInfoMember member)
-{
-    using enum DownloadInfoMember;
-
-    switch (member) {
-    case DOWNLOADID:
-        return "downloadID";
-    case HOSTKEY:
-        return "hostKey";
-    case URL:
-        return "url";
-    case NAME:
-        return "name";
-    case PATH:
-        return "path";
-    case SAVENAME:
-        return "saveName";
-    case SAVEPATH:
-        return "savePath";
-    case SIZE:
-        return "size";
-    case LASTRECEIVEDBYTE:
-        return "lastReceivedByte";
-    case CREATED:
-        return "created";
-    case MODIFIED:
-        return "modified";
-    case ACCESSED:
-        return "accessed";
-    case DOWNLOADSTATUS:
-        return "downloadStatus";
-    default:
-        throw BadMemberName{};
-    }
-}
+const char *getDownloadInfoMemberName(DownloadInfoMember member);
 
 /**
  * @struct DownloadInfo
