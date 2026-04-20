@@ -1,4 +1,4 @@
-#include "downloadinfo.h"
+#include "downloadinfo.hpp"
 
 namespace constants {
 

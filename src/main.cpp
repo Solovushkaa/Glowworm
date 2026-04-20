@@ -11,7 +11,7 @@
 #include <QQmlContext>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
-#include "app.h"
+// #include "app.h"
 
 /**
  * @brief The main function of the program
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    App application;
+    // App application;
 
     // qmlRegisterSingletonInstance("DirectClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
 
