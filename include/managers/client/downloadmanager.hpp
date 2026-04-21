@@ -9,7 +9,7 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QStandardPaths>
-#include <downloadinfo.h>
+#include "downloadinfo.hpp"
 
 /**
  * @brief -

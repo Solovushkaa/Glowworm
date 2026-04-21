@@ -6,19 +6,16 @@ enable_testing()
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Test)
 find_package(GTest REQUIRED)
 
-qt_standard_project_setup()
+qt_standard_project_setup(REQUIRES 6.8)
 
 # Creating all library targets
 include(cmake/create_libraries.cmake)
-create_libraries() # Return all library targets (${LIB_TARGETS})
+create_libraries(LIB_TARGETS) # Return all library targets in LIB_TARGETS
 
 qt_add_executable(Glowworm ${CMAKE_SOURCE_DIR}/src/main.cpp)
-target_include_directories(Glowworm
-    PRIVATE
-        ${INC_TARGETS}
-)
+
 target_link_libraries(Glowworm
-    PRIVATE
+    PUBLIC
         Qt6::Core
         Qt6::Quick
         ${LIB_TARGETS}

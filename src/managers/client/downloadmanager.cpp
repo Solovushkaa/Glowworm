@@ -1,4 +1,4 @@
-#include "downloadmanager.h"
+#include "downloadmanager.hpp"
 #include <QFile>
 
 DownloadManager::DownloadManager()
@@ -44,7 +44,7 @@ bool DownloadManager::readUnfinishedDownloads()
             return false;
         }
 
-        const QJsonObject &object = m_jsonDownloadInfo[dictKey].toObject();
+        QJsonObject object = m_jsonDownloadInfo[dictKey].toObject();
         if (isCorrectDownloadInfoObject(object)) {
             qWarning() << "Skip the object";
             break;

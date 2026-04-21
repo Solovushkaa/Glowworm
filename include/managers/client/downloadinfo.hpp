@@ -11,7 +11,7 @@
 
 #include <QObject>
 #include <QString>
-#include <string_view>
+#include <QStringView>
 #include <QUrl>
 
 struct BadMemberName
@@ -21,19 +21,19 @@ struct BadMemberName
 
 namespace constants {
 
-extern std::string_view DOWNLOADID;
-extern std::string_view HOSTKEY;
-extern std::string_view URL;
-extern std::string_view NAME;
-extern std::string_view PATH;
-extern std::string_view SAVENAME;
-extern std::string_view SAVEPATH;
-extern std::string_view SIZE;
-extern std::string_view LASTRECEIVEDBYTE;
-extern std::string_view CREATED;
-extern std::string_view MODIFIED;
-extern std::string_view ACCESSED;
-extern std::string_view DOWNLOADSTATUS;
+extern QStringView DOWNLOADID;
+extern QStringView HOSTKEY;
+extern QStringView URL;
+extern QStringView NAME;
+extern QStringView PATH;
+extern QStringView SAVENAME;
+extern QStringView SAVEPATH;
+extern QStringView SIZE;
+extern QStringView LASTRECEIVEDBYTE;
+extern QStringView CREATED;
+extern QStringView MODIFIED;
+extern QStringView ACCESSED;
+extern QStringView DOWNLOADSTATUS;
 
 } // namespace constants
 
@@ -84,16 +84,36 @@ struct DownloadInfo : public QObject
 {
     Q_OBJECT
 
+    // --- Constructors ---
+public:
+    explicit DownloadInfo(QObject *parent = nullptr);
+    DownloadInfo(const QString &downloadID,
+                 const QUrl &URL,
+                 const QString &hostKey,
+                 const QString &fileName,
+                 const QString &filePath,
+                 const QString &fileSaveName,
+                 const QString &fileSavePath,
+                 qint64 fileSize,
+                 qint64 fileLastReceivedByte,
+                 const QString &fileDateCreated,
+                 const QString &fileDateLastModified,
+                 const QString &fileDateLastAccessed,
+                 State downloadStatus);
+
+    DownloadInfo(const DownloadInfo &downloadInfo) { *this = downloadInfo; }
+    DownloadInfo &operator=(const DownloadInfo &downloadInfo);
+
+    DownloadInfo(DownloadInfo &&downloadInfo) { *this = std::move(downloadInfo); }
+    DownloadInfo &operator=(DownloadInfo &&downloadInfo);
+
     // --- Methods ---
 public:
     /**
      * @brief Sets a new download status.
      */
-    void setDownloadStatus(const State newDownloadStatus)
-    {
-        m_downloadStatus = newDownloadStatus;
-        emit downloadStatusChanged();
-    }
+    void setDownloadStatus(const State newDownloadStatus);
+
     /**
      * @brief Provides download status.
      */
