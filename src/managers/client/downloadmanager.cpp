@@ -1,14 +1,9 @@
 #include "downloadmanager.hpp"
 #include <QFile>
 
-DownloadManager::DownloadManager()
-{
-    if (readUnfinishedDownloads()) {
-        qDebug() << "Incomplete downloads have been successfully read";
-    } else {
-        qWarning() << "Error reading incomplete downloads";
-    }
-}
+DownloadManager::DownloadManager(QString savePath)
+    : m_savePath(savePath)
+{}
 
 bool DownloadManager::readUnfinishedDownloads()
 {
@@ -18,16 +13,22 @@ bool DownloadManager::readUnfinishedDownloads()
         qWarning() << R"(Error opening the "UnfinishedDownloads" file)";
         return false;
     }
-
-    QJsonParseError parseError;
     if (file.size() > 1073741824LL) {
-        // file.resize(0); //!!!
+        qWarning() << R"(The "UnfinishedDownloads" file is too large. Clean it up)";
         return false;
     }
-    QJsonDocument unfinishedDownloadInfo(QJsonDocument::fromJson(file.readAll(), &parseError));
+    if (file.size() == 0) {
+        qDebug() << R"("UnfinishedDownload" file is empty)";
+        return true;
+    }
+
+    QByteArray data = std::move(file.readAll());
+
+    QJsonParseError parseError;
+    QJsonDocument unfinishedDownloadInfo(QJsonDocument::fromJson(data, &parseError));
 
     if (parseError.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parsing error:" << parseError.errorString();
+        qWarning() << "JSON parsing error:\n" << parseError.errorString();
         qWarning() << "Error position:" << parseError.offset;
         return false;
     } else if (unfinishedDownloadInfo.isObject()) {
@@ -45,7 +46,7 @@ bool DownloadManager::readUnfinishedDownloads()
         }
 
         QJsonObject object = m_jsonDownloadInfo[dictKey].toObject();
-        if (isCorrectDownloadInfoObject(object)) {
+        if (!isCorrectDownloadInfoObject(object)) {
             qWarning() << "Skip the object";
             break;
         }
@@ -66,7 +67,7 @@ bool DownloadManager::readUnfinishedDownloads()
 
         m_downloadInfoDict.emplace(downloadInfo.m_downloadID, std::move(downloadInfo));
 
-        object[constants::DOWNLOADSTATUS] = static_cast<int>(State::Pause);
+        // object[constants::DOWNLOADSTATUS] = static_cast<int>(State::Pause);
     }
 
     file.resize(0);
@@ -77,16 +78,16 @@ bool DownloadManager::readUnfinishedDownloads()
 
 bool DownloadManager::isCorrectDownloadInfoObject(const QJsonObject &object)
 {
-    // Псевдоним для упрощённого ввода
     using enum DownloadInfoMember;
     auto diToString = getDownloadInfoMemberName;
 
     int size = static_cast<std::underlying_type_t<DownloadInfoMember>>(COUNT);
-    const char *memberName;
+    QStringView memberName;
     for (int memberNum = 0; memberNum < size; ++memberNum) {
         memberName = diToString(static_cast<DownloadInfoMember>(memberNum));
         if (object.find(memberName) == object.end()) {
-            qWarning().nospace() << R"(The ")" << memberName << R"(" object has an incorrect name)";
+            qWarning().nospace().noquote()
+                << R"(The ")" << memberName << R"(" object has an incorrect name)";
             return false;
         }
     }
@@ -101,8 +102,8 @@ bool DownloadManager::addDownloadToUnfinished(DownloadInfo &downloadInfo)
     QFile file(m_savePath);
 
     if (!file.open(QIODevice::WriteOnly)) {
-        qDebug().nospace() << R"(Error opening the "UnfinishedDownloads" file to add ")" << name
-                           << R"(" download)";
+        qWarning().nospace() << R"(Error opening the "UnfinishedDownloads" file to add ")" << name
+                             << R"(" download)";
         return false;
     }
 

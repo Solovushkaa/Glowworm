@@ -22,7 +22,9 @@ public:
     /**
      * @brief Сonstructor for reading UnfinishedDownload.json file.
      */
-    DownloadManager();
+    DownloadManager(
+        QString savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                           + "/AppData/Client/UnfinishedDownloads.json");
 
     /**
      * @brief Read imcomlplit downloads from file.
@@ -59,8 +61,7 @@ private:
     QJsonObject m_jsonDownloadInfo;                  ///< A JSON object to save to a file
 
     // Path to save imcomplited downloads
-    const QString m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                               + "/AppData/Client/UnfinishedDownloads.json";
+    const QString m_savePath;
 };
 
 #endif // DOWNLOADMANAGER_H

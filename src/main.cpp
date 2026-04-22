@@ -13,6 +13,7 @@
 #include <QSGRendererInterface>
 // #include "app.h"
 #include "downloadinfo.hpp"
+#include "downloadmanager.hpp"
 
 /**
  * @brief The main function of the program

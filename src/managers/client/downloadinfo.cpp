@@ -2,53 +2,53 @@
 
 namespace constants {
 
-constinit QStringView DOWNLOADID = u"DOWNLOADID";
-constinit QStringView HOSTKEY = u"HOSTKEY";
-constinit QStringView URL = u"URL";
-constinit QStringView NAME = u"NAME";
-constinit QStringView PATH = u"PATH";
-constinit QStringView SAVENAME = u"SAVENAME";
-constinit QStringView SAVEPATH = u"SAVEPATH";
-constinit QStringView SIZE = u"SIZE";
-constinit QStringView LASTRECEIVEDBYTE = u"LASTRECEIVEDBYTE";
-constinit QStringView CREATED = u"CREATED";
-constinit QStringView MODIFIED = u"MODIFIED";
-constinit QStringView ACCESSED = u"ACCESSED";
-constinit QStringView DOWNLOADSTATUS = u"DOWNLOADSTATUS";
+constinit QStringView DOWNLOADID = u"downloadID";
+constinit QStringView HOSTKEY = u"hostKey";
+constinit QStringView URL = u"url";
+constinit QStringView NAME = u"name";
+constinit QStringView PATH = u"path";
+constinit QStringView SAVENAME = u"saveName";
+constinit QStringView SAVEPATH = u"savePath";
+constinit QStringView SIZE = u"size";
+constinit QStringView LASTRECEIVEDBYTE = u"lastReceivedByte";
+constinit QStringView CREATED = u"created";
+constinit QStringView MODIFIED = u"modified";
+constinit QStringView ACCESSED = u"accessed";
+constinit QStringView DOWNLOADSTATUS = u"downloadStatus";
 
 } // namespace constants
 
-const char *getDownloadInfoMemberName(DownloadInfoMember member)
+QStringView getDownloadInfoMemberName(DownloadInfoMember member)
 {
     using enum DownloadInfoMember;
 
     switch (member) {
     case DOWNLOADID:
-        return "downloadID";
+        return constants::DOWNLOADID;
     case HOSTKEY:
-        return "hostKey";
+        return constants::HOSTKEY;
     case URL:
-        return "url";
+        return constants::URL;
     case NAME:
-        return "name";
+        return constants::NAME;
     case PATH:
-        return "path";
+        return constants::PATH;
     case SAVENAME:
-        return "saveName";
+        return constants::SAVENAME;
     case SAVEPATH:
-        return "savePath";
+        return constants::SAVEPATH;
     case SIZE:
-        return "size";
+        return constants::SIZE;
     case LASTRECEIVEDBYTE:
-        return "lastReceivedByte";
+        return constants::LASTRECEIVEDBYTE;
     case CREATED:
-        return "created";
+        return constants::CREATED;
     case MODIFIED:
-        return "modified";
+        return constants::MODIFIED;
     case ACCESSED:
-        return "accessed";
+        return constants::ACCESSED;
     case DOWNLOADSTATUS:
-        return "downloadStatus";
+        return constants::DOWNLOADSTATUS;
     default:
         throw BadMemberName{};
     }

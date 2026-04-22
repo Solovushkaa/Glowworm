@@ -72,9 +72,9 @@ enum class DownloadInfoMember {
 /**
  * @brief All fields of information about downloads.
  * @param member Enum
- * @return Enum type converted into const char *
+ * @return Enum type converted into QStringView
  */
-const char *getDownloadInfoMemberName(DownloadInfoMember member);
+QStringView getDownloadInfoMemberName(DownloadInfoMember member);
 
 /**
  * @struct DownloadInfo

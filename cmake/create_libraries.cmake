@@ -21,7 +21,7 @@ function(create_libraries LIB_TARGETS)
         message(STATUS "ADDITIONAL_TARGETS: " ${${TRG}})
 
         qt_add_library(${SRC_NAME_WE}
-            OBJECT
+            STATIC
                 ${SRC}
                 ${INC}
         )
@@ -29,15 +29,15 @@ function(create_libraries LIB_TARGETS)
         get_filename_component(INC_PATH "${INC}" PATH)
         target_include_directories(${SRC_NAME_WE} PUBLIC ${INC_PATH})
         target_link_libraries(${SRC_NAME_WE} PUBLIC ${${TRG}})
-        target_compile_features(${SRC_NAME_WE} PUBLIC cxx_std_20)
+        target_compile_features(${SRC_NAME_WE} PUBLIC cxx_std_23)
 
-        # set_target_properties(${SRC_NAME_WE}
-        #     PROPERTIES
-        #         LIBRARY_OUTPUT_DIRECTORY
-        #             ${CMAKE_BINARY_DIR}/libs
-        #         ARCHIVE_OUTPUT_DIRECTORY
-        #             ${CMAKE_BINARY_DIR}/libs
-        # )
+        set_target_properties(${SRC_NAME_WE}
+            PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY
+                    ${CMAKE_BINARY_DIR}/libs
+                ARCHIVE_OUTPUT_DIRECTORY
+                    ${CMAKE_BINARY_DIR}/libs
+        )
 
         LIST(APPEND LIB_TARGETS ${SRC_NAME_WE})
 
