@@ -2,15 +2,15 @@ function(create_tests TEST_FILES)
     include(GoogleTest)
 
     message(STATUS ${TEST_FILES})
-    qt_add_executable(unit ${TEST_FILES})
+    qt_add_executable(ClientManagersTests ${TEST_FILES})
 
-    set_target_properties(unit
+    set_target_properties(ClientManagersTests
         PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY
                 ${CMAKE_BINARY_DIR}/tests
     )
 
-    target_link_libraries(unit
+    target_link_libraries(ClientManagersTests
         PRIVATE
             Qt6::Core
             Qt6::Test
@@ -18,14 +18,22 @@ function(create_tests TEST_FILES)
             downloadinfo
             downloadmanager
     )
-    target_include_directories(unit PRIVATE include/managers/client)
+    target_include_directories(ClientManagersTests
+        PRIVATE
+            include/managers/client
+            tests/unit/
+    )
 
-    target_compile_features(unit PRIVATE cxx_std_23)
+    target_compile_features(ClientManagersTests PRIVATE cxx_std_23)
+    target_compile_definitions(ClientManagersTests PRIVATE QT_NO_DEBUG_OUTPUT)
 
-    gtest_discover_tests(unit
+    gtest_discover_tests(ClientManagersTests
         DISCOVERY_MODE
             PRE_TEST
     )
+
+    # foreach()
+    # endforeach()
 
     # foreach(TEST_FILE ${TEST_FILES})
     #     get_filename_component(TARGET_NAME "${TEST_FILE}" NAME_WE)

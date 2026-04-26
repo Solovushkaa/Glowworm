@@ -30,6 +30,7 @@ function(create_libraries LIB_TARGETS)
         target_include_directories(${SRC_NAME_WE} PUBLIC ${INC_PATH})
         target_link_libraries(${SRC_NAME_WE} PUBLIC ${${TRG}})
         target_compile_features(${SRC_NAME_WE} PUBLIC cxx_std_23)
+        target_compile_definitions(${SRC_NAME_WE} PRIVATE QT_NO_DEBUG_OUTPUT)
 
         set_target_properties(${SRC_NAME_WE}
             PROPERTIES

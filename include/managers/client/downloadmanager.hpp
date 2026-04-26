@@ -6,10 +6,12 @@
 #ifndef DOWNLOADMANAGER_H
 #define DOWNLOADMANAGER_H
 
+#include <QFile>
 #include <QJsonObject>
 #include <QObject>
 #include <QStandardPaths>
 #include "downloadinfo.hpp"
+#include <type_traits>
 
 /**
  * @brief -
@@ -35,10 +37,17 @@ public:
      */
     bool isCorrectDownloadInfoObject(const QJsonObject &object);
 
+    bool rewriteFile(QStringView errorString, QStringView successString);
+    void setDownloadInfoFromJson(DownloadInfo &downloadInfo, QJsonObject &object);
+    void setJsonFromDownloadInfo(QJsonObject &object, DownloadInfo &downloadInfo);
+    QJsonDocument parseJson(QByteArray &data);
+
     /**
      * @brief Adding download to a file and RAM
      */
-    bool addDownloadToUnfinished(DownloadInfo &downloadInfo);
+    template<typename DInfo>
+        requires std::same_as<std::remove_reference_t<DInfo>, DownloadInfo>
+    bool addDownloadToUnfinished(DInfo &&downloadInfo);
     /**
      * @brief Deleting downloads from a file and RAM
      */
