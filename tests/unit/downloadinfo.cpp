@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <limits>
 
-TEST(DownloadInfo, AccessToClassMember)
+TEST(DownloadInfoTest, AccessToClassMember)
 {
     DownloadInfo downloadInfo;
 
@@ -22,11 +22,11 @@ TEST(DownloadInfo, AccessToClassMember)
     downloadInfo.m_accessed = "1992.02.11";
     downloadInfo.m_downloadStatus = State::Pause;
 
-    ASSERT_EQ(downloadInfo.m_hostKey, "host");
+    EXPECT_EQ(downloadInfo.m_hostKey, "host");
     ASSERT_EQ(downloadInfo.m_downloadStatus, State::Pause);
 }
 
-TEST(DownloadInfo, SignalStateChanging)
+TEST(DownloadInfoTest, SignalStateChanging)
 {
     DownloadInfo downloadInfo;
 
@@ -35,5 +35,5 @@ TEST(DownloadInfo, SignalStateChanging)
 
     downloadInfo.setDownloadStatus(State::Active);
 
-    EXPECT_EQ(spy.count(), 1);
+    ASSERT_EQ(spy.count(), 1);
 }

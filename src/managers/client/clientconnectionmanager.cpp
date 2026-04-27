@@ -1,10 +1,10 @@
-#include "clientconnectionmanager.h"
+#include "clientconnectionmanager.hpp"
 #include <QFile>
 #include <QJsonDocument>
 #include <QStandardPaths>
-#include "additional.h"
 
-ClientConnectionManager::ClientConnectionManager()
+ClientConnectionManager::ClientConnectionManager(const QString &savePath)
+    : m_savePath(savePath)
 {
     if (readSavedConnections()) {
         qDebug() << "Save connections have been successfully read";
@@ -54,15 +54,15 @@ bool ClientConnectionManager::readSavedConnections()
         const QJsonObject &object = m_jsonSavedConnection[key].toObject();
         m_savedConnections.push_back(ConnectionInfo());
 
-        m_savedConnections.back().m_name = object[constants::name].toString();
-        if (object[constants::protocol].toString() == constants::DIRECT) {
-            m_savedConnections.back().m_url.setHost(object[constants::address].toString());
-            m_savedConnections.back().m_url.port(object[constants::port].toInt());
-        } else if (object[constants::protocol].toString() == constants::STUN) {
+        m_savedConnections.back().m_name = object[constants::CONNNAME].toString();
+        if (object[constants::PROTOCOL].toString() == constants::DIRECT) {
+            m_savedConnections.back().m_url.setHost(object[constants::ADDRESS].toString());
+            m_savedConnections.back().m_url.port(object[constants::PORT].toInt());
+        } else if (object[constants::PROTOCOL].toString() == constants::STUN) {
             // ----------------------------------------- //
-        } else if (object[constants::protocol].toString() == constants::TURN) {
+        } else if (object[constants::PROTOCOL].toString() == constants::TURN) {
             // ----------------------------------------- //
-        } else if (object[constants::protocol].toString() == constants::BLUETOOTH) {
+        } else if (object[constants::PROTOCOL].toString() == constants::BLUETOOTH) {
             // ----------------------------------------- //
         }
     }
@@ -91,13 +91,13 @@ void ClientConnectionManager::addDirect(const QString &name, const QString &addr
     m_savedConnections.back().m_url.setHost(address);
     m_savedConnections.back().m_url.port(port);
 
-    QJsonObject jsonObj;
-    jsonObj[constants::name] = name;
-    jsonObj[constants::transport] = constants::DIRECT;
-    jsonObj[constants::address] = address;
-    jsonObj[constants::port] = port;
+    QJsonObject object;
+    object[constants::CONNNAME] = name;
+    object[constants::TRANSPORT] = constants::DIRECT.toString();
+    object[constants::ADDRESS] = address;
+    object[constants::PORT] = port;
 
-    insertConnection(std::move(connInfo), std::move(jsonObj), name);
+    insertConnection(std::move(connInfo), std::move(object), name);
 }
 
 void ClientConnectionManager::insertConnection(ConnectionInfo &&connInfo,

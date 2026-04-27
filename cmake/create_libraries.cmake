@@ -1,47 +1,35 @@
 function(create_libraries LIB_TARGETS)
-    set(SRC_PATHS "")
-    set(INC_PATHS "")
-    set(ADDITIONAL_TARGETS "")
-    list(APPEND SRC_PATHS ${CMAKE_SOURCE_DIR}/src/managers/client/downloadinfo.cpp)
-    list(APPEND INC_PATHS ${CMAKE_SOURCE_DIR}/include/managers/client/downloadinfo.hpp)
-    set(DI_TARGETS "Qt6::Core")
-    list(APPEND ADDITIONAL_TARGETS DI_TARGETS)
-
-    list(APPEND SRC_PATHS ${CMAKE_SOURCE_DIR}/src/managers/client/downloadmanager.cpp)
-    list(APPEND INC_PATHS ${CMAKE_SOURCE_DIR}/include/managers/client/downloadmanager.hpp)
-    set(DM_TARGETS "downloadinfo")
-    list(APPEND ADDITIONAL_TARGETS DM_TARGETS)
-
     set(LIB_TARGETS "")
-    foreach(SRC INC TRG IN ZIP_LISTS SRC_PATHS INC_PATHS ADDITIONAL_TARGETS)
-        get_filename_component(SRC_NAME_WE "${SRC}" NAME_WE)
-        get_filename_component(INC_NAME "${INC}" NAME)
 
-        message(STATUS "Configure library target: " ${SRC_NAME_WE})
-        message(STATUS "ADDITIONAL_TARGETS: " ${${TRG}})
+    qt_add_library(ClientManagers STATIC)
+    target_sources(ClientManagers PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/managers/client/downloadinfo.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/downloadinfo.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/downloadmanager.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/downloadmanager.hpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/connectioninfo.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/clientconnectionmanager.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/clientconnectionmanager.hpp
+    )
+    target_include_directories(ClientManagers
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/managers/client
+    )
+    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth)
+    LIST(APPEND LIB_TARGETS ClientManagers)
 
-        qt_add_library(${SRC_NAME_WE}
-            STATIC
-                ${SRC}
-                ${INC}
-        )
 
-        get_filename_component(INC_PATH "${INC}" PATH)
-        target_include_directories(${SRC_NAME_WE} PUBLIC ${INC_PATH})
-        target_link_libraries(${SRC_NAME_WE} PUBLIC ${${TRG}})
-        target_compile_features(${SRC_NAME_WE} PUBLIC cxx_std_23)
-        target_compile_definitions(${SRC_NAME_WE} PRIVATE QT_NO_DEBUG_OUTPUT)
+    foreach(LIB IN LISTS LIB_TARGETS)
+        target_compile_features(${LIB} PUBLIC cxx_std_23)
+        target_compile_definitions(${LIB} PRIVATE QT_NO_DEBUG_OUTPUT)
 
-        set_target_properties(${SRC_NAME_WE}
+        set_target_properties(${LIB}
             PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY
                     ${CMAKE_BINARY_DIR}/libs
                 ARCHIVE_OUTPUT_DIRECTORY
                     ${CMAKE_BINARY_DIR}/libs
         )
-
-        LIST(APPEND LIB_TARGETS ${SRC_NAME_WE})
-
     endforeach()
 
     return(PROPAGATE LIB_TARGETS)

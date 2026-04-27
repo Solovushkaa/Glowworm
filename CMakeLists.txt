@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25)
 project(Glowworm VERSION 0.1 LANGUAGES CXX)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Test Bluetooth)
 find_package(GTest REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.8)

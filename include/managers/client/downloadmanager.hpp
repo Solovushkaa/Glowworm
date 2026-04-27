@@ -1,5 +1,5 @@
 /**
- * @file downloadinfo.h
+ * @file downloadinfo.hpp
  * @brief -
  */
 

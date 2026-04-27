@@ -1,23 +1,5 @@
 #include "downloadinfo.hpp"
 
-namespace constants {
-
-constinit QStringView DOWNLOADID = u"downloadID";
-constinit QStringView HOSTKEY = u"hostKey";
-constinit QStringView URL = u"url";
-constinit QStringView NAME = u"name";
-constinit QStringView PATH = u"path";
-constinit QStringView SAVENAME = u"saveName";
-constinit QStringView SAVEPATH = u"savePath";
-constinit QStringView SIZE = u"size";
-constinit QStringView LASTRECEIVEDBYTE = u"lastReceivedByte";
-constinit QStringView CREATED = u"created";
-constinit QStringView MODIFIED = u"modified";
-constinit QStringView ACCESSED = u"accessed";
-constinit QStringView DOWNLOADSTATUS = u"downloadStatus";
-
-} // namespace constants
-
 QStringView getDownloadInfoMemberName(DownloadInfoMember member)
 {
     using enum DownloadInfoMember;

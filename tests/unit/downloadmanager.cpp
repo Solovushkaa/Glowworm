@@ -1,7 +1,7 @@
 #include "downloadmanager.hpp"
 #include <QByteArray>
 #include <QTemporaryFile>
-#include "unfinisheddownloadformatter.hpp"
+#include "unfinisheddownloaddata.hpp"
 #include <gtest/gtest.h>
 
 struct DownloadManagerTest : ::testing::Test
@@ -17,13 +17,13 @@ struct DownloadManagerTest : ::testing::Test
     void openEmptyConfig() { openConfig(); }
     void openConfigWithOneElement()
     {
-        m_configFile.write(test::oneDownloadData.data());
+        m_configFile.write(test::oneDownloadData.toUtf8());
         m_configFile.flush();
         openConfig();
     }
     void openConfigWithThreeElements()
     {
-        m_configFile.write(test::threeDownloadData.data());
+        m_configFile.write(test::threeDownloadData.toUtf8());
         m_configFile.flush();
         openConfig();
     }
@@ -46,7 +46,7 @@ TEST_F(DownloadManagerTest, OpenConfigFileWithOneElement)
 {
     openConfigWithOneElement();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     ASSERT_EQ(m_downloadManager->getDownloadInfoDict().size(), 1);
 }
@@ -55,7 +55,7 @@ TEST_F(DownloadManagerTest, OpenConfigFileWithThreeElements)
 {
     openConfigWithThreeElements();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     ASSERT_EQ(m_downloadManager->getDownloadInfoDict().size(), 3);
 }
@@ -64,14 +64,14 @@ TEST_F(DownloadManagerTest, ParseAndReadConfigFileWithThreeElements)
 {
     openConfigWithThreeElements();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
-    EXPECT_EQ(m_downloadManager->getDownloadInfoDict().size(), 3);
+    ASSERT_EQ(m_downloadManager->getDownloadInfoDict().size(), 3);
 
     auto &dict = m_downloadManager->getDownloadInfoDict();
     for (int i = 0; i < 3; ++i) {
         EXPECT_EQ(dict[test::downloadID[i]].m_downloadID, test::downloadID[i]);
-        EXPECT_EQ(dict[test::downloadID[i]].m_URL, test::URL[i]);
+        EXPECT_EQ(dict[test::downloadID[i]].m_URL, test::URL[i].toString());
         EXPECT_EQ(static_cast<int>(dict[test::downloadID[i]].m_downloadStatus),
                   test::downloadStatus[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_hostKey, test::hostKey[i]);
@@ -83,7 +83,7 @@ TEST_F(DownloadManagerTest, ParseAndReadConfigFileWithThreeElements)
         EXPECT_EQ(dict[test::downloadID[i]].m_path, test::path[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_saveName, test::saveName[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_savePath, test::savePath[i]);
-        ASSERT_EQ(dict[test::downloadID[i]].m_size, test::size[i]);
+        EXPECT_EQ(dict[test::downloadID[i]].m_size, test::size[i]);
 
         ++i;
     }
@@ -93,7 +93,7 @@ TEST_F(DownloadManagerTest, DeleteDownloadInfo)
 {
     openConfigWithThreeElements();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     auto &dict = m_downloadManager->getDownloadInfoDict();
     auto &saveDownloadInfo = dict[test::downloadID.back()];
@@ -105,21 +105,21 @@ TEST_F(DownloadManagerTest, AddDownloadInfoToEmptyConfig)
 {
     openEmptyConfig();
 
-    m_downloadManager->readUnfinishedDownloads();
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     DownloadInfo downloadInfo;
-    downloadInfo.m_downloadID = test::downloadID.back();
-    downloadInfo.m_URL = test::URL.back();
+    downloadInfo.m_downloadID = test::downloadID.back().toString();
+    downloadInfo.m_URL = test::URL.back().toString();
     downloadInfo.m_downloadStatus = static_cast<State>(test::downloadStatus.back());
-    downloadInfo.m_hostKey = test::hostKey.back();
-    downloadInfo.m_created = test::created.back();
-    downloadInfo.m_accessed = test::accessed.back();
-    downloadInfo.m_modified = test::modified.back();
+    downloadInfo.m_hostKey = test::hostKey.back().toString();
+    downloadInfo.m_created = test::created.back().toString();
+    downloadInfo.m_accessed = test::accessed.back().toString();
+    downloadInfo.m_modified = test::modified.back().toString();
     downloadInfo.m_lastReceivedByte = test::lastReceivedByte.back();
-    downloadInfo.m_name = test::name.back();
-    downloadInfo.m_path = test::path.back();
-    downloadInfo.m_saveName = test::saveName.back();
-    downloadInfo.m_savePath = test::savePath.back();
+    downloadInfo.m_name = test::name.back().toString();
+    downloadInfo.m_path = test::path.back().toString();
+    downloadInfo.m_saveName = test::saveName.back().toString();
+    downloadInfo.m_savePath = test::savePath.back().toString();
     downloadInfo.m_size = test::size.back();
 
     m_downloadManager->addDownloadToUnfinished(downloadInfo);
@@ -130,7 +130,7 @@ TEST_F(DownloadManagerTest, AddDuplicateDownloadInfo)
 {
     openConfigWithThreeElements();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     auto &dict = m_downloadManager->getDownloadInfoDict();
     m_downloadManager->addDownloadToUnfinished(dict[test::downloadID.back()]);
@@ -141,7 +141,7 @@ TEST_F(DownloadManagerTest, DeleteAddDownloadInfo)
 {
     openConfigWithThreeElements();
 
-    EXPECT_TRUE(m_downloadManager->readUnfinishedDownloads());
+    ASSERT_TRUE(m_downloadManager->readUnfinishedDownloads());
 
     auto &dict = m_downloadManager->getDownloadInfoDict();
     auto saveDownloadInfo = dict[test::downloadID.back()];
@@ -153,7 +153,7 @@ TEST_F(DownloadManagerTest, DeleteAddDownloadInfo)
 
     for (int i = 0; i < 3; ++i) {
         EXPECT_EQ(dict[test::downloadID[i]].m_downloadID, test::downloadID[i]);
-        EXPECT_EQ(dict[test::downloadID[i]].m_URL, test::URL[i]);
+        EXPECT_EQ(dict[test::downloadID[i]].m_URL, test::URL[i].toString());
         EXPECT_EQ(static_cast<int>(dict[test::downloadID[i]].m_downloadStatus),
                   test::downloadStatus[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_hostKey, test::hostKey[i]);
@@ -165,7 +165,7 @@ TEST_F(DownloadManagerTest, DeleteAddDownloadInfo)
         EXPECT_EQ(dict[test::downloadID[i]].m_path, test::path[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_saveName, test::saveName[i]);
         EXPECT_EQ(dict[test::downloadID[i]].m_savePath, test::savePath[i]);
-        ASSERT_EQ(dict[test::downloadID[i]].m_size, test::size[i]);
+        EXPECT_EQ(dict[test::downloadID[i]].m_size, test::size[i]);
 
         ++i;
     }

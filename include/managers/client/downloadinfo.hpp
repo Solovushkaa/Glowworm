@@ -1,5 +1,5 @@
 /**
- * @file downloadinfo.h
+ * @file downloadinfo.hpp
  * @brief Represents a single file download task with metadata and state.
  *
  * This class encapsulates all information required to manage,
@@ -21,19 +21,19 @@ struct BadMemberName
 
 namespace constants {
 
-extern QStringView DOWNLOADID;
-extern QStringView HOSTKEY;
-extern QStringView URL;
-extern QStringView NAME;
-extern QStringView PATH;
-extern QStringView SAVENAME;
-extern QStringView SAVEPATH;
-extern QStringView SIZE;
-extern QStringView LASTRECEIVEDBYTE;
-extern QStringView CREATED;
-extern QStringView MODIFIED;
-extern QStringView ACCESSED;
-extern QStringView DOWNLOADSTATUS;
+inline constexpr QStringView DOWNLOADID = u"downloadID";
+inline constexpr QStringView HOSTKEY = u"hostKey";
+inline constexpr QStringView URL = u"url";
+inline constexpr QStringView NAME = u"name";
+inline constexpr QStringView PATH = u"path";
+inline constexpr QStringView SAVENAME = u"saveName";
+inline constexpr QStringView SAVEPATH = u"savePath";
+inline constexpr QStringView SIZE = u"size";
+inline constexpr QStringView LASTRECEIVEDBYTE = u"lastReceivedByte";
+inline constexpr QStringView CREATED = u"created";
+inline constexpr QStringView MODIFIED = u"modified";
+inline constexpr QStringView ACCESSED = u"accessed";
+inline constexpr QStringView DOWNLOADSTATUS = u"downloadStatus";
 
 } // namespace constants
 

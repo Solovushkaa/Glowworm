@@ -8,7 +8,7 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QStandardPaths>
-#include "connectioninfo.h"
+#include "connectioninfo.hpp"
 
 /**
  * @brief The client connection manager class.
@@ -21,7 +21,9 @@ public:
     /**
      * @brief Сonstructor for reading SavedConnections.json file
      */
-    ClientConnectionManager();
+    ClientConnectionManager(
+        const QString &savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                  + "/AppData/Client/SavedConnections.json");
 
     /**
      * @brief Read saved connections from file.
@@ -85,8 +87,7 @@ private:
     ConnectionInfo *m_activeConnection{nullptr}; ///< Pointer to active connection
 
     // Path to save connections
-    const QString m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                               + "/AppData/Client/SavedConnections.json";
+    QString m_savePath;
 };
 
 #endif // CLIENTCONNECTIONMANAGER_H

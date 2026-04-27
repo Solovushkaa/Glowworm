@@ -1,6 +1,6 @@
 #include "downloadmanager.hpp"
 
-DownloadManager::DownloadManager(QString savePath)
+DownloadManager::DownloadManager(const QString &savePath)
     : m_savePath(savePath)
 {}
 
@@ -163,7 +163,6 @@ bool DownloadManager::addDownloadToUnfinished(DInfo &&downloadInfo)
                            + R"(" download)",
                        R"(Added a new ")" + name + R"(" download)");
 }
-
 template bool DownloadManager::addDownloadToUnfinished<DownloadInfo &>(DownloadInfo &);
 template bool DownloadManager::addDownloadToUnfinished<DownloadInfo &&>(DownloadInfo &&);
 
