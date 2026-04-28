@@ -1,16 +1,16 @@
 /**
- * @file downloadinfo.hpp
+ * @file download_manger.hpp
  * @brief -
  */
 
-#ifndef DOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_H
+#ifndef DOWNLOADMANAGER_HPP
+#define DOWNLOADMANAGER_HPP
 
 #include <QFile>
 #include <QJsonObject>
 #include <QObject>
 #include <QStandardPaths>
-#include "downloadinfo.hpp"
+#include "download_info.hpp"
 #include <type_traits>
 
 /**
@@ -25,8 +25,8 @@ public:
      * @brief Сonstructor for reading UnfinishedDownload.json file.
      */
     DownloadManager(
-        QString savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                           + "/AppData/Client/UnfinishedDownloads.json");
+        const QString &savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                  + "/AppData/Client/UnfinishedDownloads.json");
 
     /**
      * @brief Read imcomlplit downloads from file.
@@ -35,11 +35,10 @@ public:
     /**
      * @brief Checking the correctness of objects.
      */
-    bool isCorrectDownloadInfoObject(const QJsonObject &object);
+    bool isCorrectDownloadInfoObject(const QJsonObject &jsonObject);
 
-    bool rewriteFile(QStringView errorString, QStringView successString);
-    void setDownloadInfoFromJson(DownloadInfo &downloadInfo, QJsonObject &object);
-    void setJsonFromDownloadInfo(QJsonObject &object, DownloadInfo &downloadInfo);
+    void setDownloadInfoFromJson(DownloadInfo &downloadInfo, QJsonObject &jsonObject);
+    void setJsonFromDownloadInfo(QJsonObject &jsonObject, DownloadInfo &downloadInfo);
     QJsonDocument parseJson(QByteArray &data);
 
     /**
@@ -47,11 +46,11 @@ public:
      */
     template<typename DInfo>
         requires std::same_as<std::remove_reference_t<DInfo>, DownloadInfo>
-    bool addDownloadToUnfinished(DInfo &&downloadInfo);
+    bool addDownload(DInfo &&downloadInfo);
     /**
      * @brief Deleting downloads from a file and RAM
      */
-    bool deleteFromUnfinishedDownload(const DownloadInfo &downloadInfo);
+    bool deleteDownload(const DownloadInfo &downloadInfo);
 
     /**
      * @brief Creating a list for qml
@@ -73,4 +72,4 @@ private:
     const QString m_savePath;
 };
 
-#endif // DOWNLOADMANAGER_H
+#endif // DOWNLOADMANAGER_HPP

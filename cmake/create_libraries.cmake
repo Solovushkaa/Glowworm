@@ -3,17 +3,24 @@ function(create_libraries LIB_TARGETS)
 
     qt_add_library(ClientManagers STATIC)
     target_sources(ClientManagers PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/managers/client/downloadinfo.cpp
-        ${CMAKE_SOURCE_DIR}/include/managers/client/downloadinfo.hpp
-        ${CMAKE_SOURCE_DIR}/src/managers/client/downloadmanager.cpp
-        ${CMAKE_SOURCE_DIR}/include/managers/client/downloadmanager.hpp
-        ${CMAKE_SOURCE_DIR}/include/managers/client/connectioninfo.hpp
-        ${CMAKE_SOURCE_DIR}/src/managers/client/clientconnectionmanager.cpp
-        ${CMAKE_SOURCE_DIR}/include/managers/client/clientconnectionmanager.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/download_info.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/download_info.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/download_manager.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/download_manager.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/connection_info.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/connection_info.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/client_connection_manager.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/client_connection_manager.hpp
+        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
+        ${CMAKE_SOURCE_DIR}/src/utils/manager_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/manager_utils.hpp
     )
     target_include_directories(ClientManagers
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/client
+            ${CMAKE_SOURCE_DIR}/include/managers
+            ${CMAKE_SOURCE_DIR}/include/utils
     )
     target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth)
     LIST(APPEND LIB_TARGETS ClientManagers)

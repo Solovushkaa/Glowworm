@@ -1,17 +1,16 @@
 /**
- * @file downloadinfo.hpp
+ * @file download_info.hpp
  * @brief Represents a single file download task with metadata and state.
  *
  * This class encapsulates all information required to manage,
  * resume, and track a file download from a remote host.
  */
 
-#ifndef DOWNLOADINFO_H
-#define DOWNLOADINFO_H
+#ifndef DOWNLOADINFO_HPP
+#define DOWNLOADINFO_HPP
 
 #include <QObject>
 #include <QString>
-#include <QStringView>
 #include <QUrl>
 
 struct BadMemberName
@@ -19,29 +18,11 @@ struct BadMemberName
     constexpr const char *what() { return "Bad member name!"; }
 };
 
-namespace constants {
-
-inline constexpr QStringView DOWNLOADID = u"downloadID";
-inline constexpr QStringView HOSTKEY = u"hostKey";
-inline constexpr QStringView URL = u"url";
-inline constexpr QStringView NAME = u"name";
-inline constexpr QStringView PATH = u"path";
-inline constexpr QStringView SAVENAME = u"saveName";
-inline constexpr QStringView SAVEPATH = u"savePath";
-inline constexpr QStringView SIZE = u"size";
-inline constexpr QStringView LASTRECEIVEDBYTE = u"lastReceivedByte";
-inline constexpr QStringView CREATED = u"created";
-inline constexpr QStringView MODIFIED = u"modified";
-inline constexpr QStringView ACCESSED = u"accessed";
-inline constexpr QStringView DOWNLOADSTATUS = u"downloadStatus";
-
-} // namespace constants
-
 /**
  * @enum State
  * @brief Represents the state of a download task.
  */
-enum class State {
+enum class DownloadState {
     Pause,  ///< Download is paused
     Wait,   ///< Task is queued but not started
     Active, ///< Data is being transferred
@@ -53,19 +34,19 @@ enum class State {
  * @brief All fields of information about downloads.
  */
 enum class DownloadInfoMember {
-    DOWNLOADID,
-    HOSTKEY,
+    DownloadID,
+    Hostkey,
     URL,
-    NAME,
-    PATH,
-    SAVENAME,
-    SAVEPATH,
-    SIZE,
-    LASTRECEIVEDBYTE,
-    CREATED,
-    MODIFIED,
-    ACCESSED,
-    DOWNLOADSTATUS,
+    Name,
+    Path,
+    SaveName,
+    SavePath,
+    Size,
+    LastReceivedByte,
+    Created,
+    Modified,
+    Accessed,
+    DownloadState,
     COUNT // To get the size of the enum
 };
 
@@ -90,16 +71,16 @@ public:
     DownloadInfo(const QString &downloadID,
                  const QUrl &URL,
                  const QString &hostKey,
-                 const QString &fileName,
-                 const QString &filePath,
-                 const QString &fileSaveName,
-                 const QString &fileSavePath,
-                 qint64 fileSize,
-                 qint64 fileLastReceivedByte,
-                 const QString &fileDateCreated,
-                 const QString &fileDateLastModified,
-                 const QString &fileDateLastAccessed,
-                 State downloadStatus);
+                 const QString &name,
+                 const QString &path,
+                 const QString &saveName,
+                 const QString &savePath,
+                 qint64 size,
+                 qint64 lastReceivedByte,
+                 const QString &created,
+                 const QString &modified,
+                 const QString &accessed,
+                 DownloadState downloadState);
 
     DownloadInfo(const DownloadInfo &downloadInfo) { *this = downloadInfo; }
     DownloadInfo &operator=(const DownloadInfo &downloadInfo);
@@ -112,12 +93,12 @@ public:
     /**
      * @brief Sets a new download status.
      */
-    void setDownloadStatus(const State newDownloadStatus);
+    void setDownloadState(const DownloadState newDownloadStatus);
 
     /**
      * @brief Provides download status.
      */
-    State getDownloadStatus() const { return m_downloadStatus; }
+    DownloadState getDownloadState() const { return m_downloadState; }
 
     // --- Members ---
 public:
@@ -133,14 +114,14 @@ public:
     QString m_created;              ///< File creation time
     QString m_modified;             ///< File last modification time
     QString m_accessed;             ///< File last access time
-    State m_downloadStatus;         ///< Download status
+    DownloadState m_downloadState;  ///< Download status
 
     // --- Signals ---
 signals:
     /**
-     * @brief Notifies about download status change.
+     * @brief Notifies about download state change.
      */
-    void downloadStatusChanged();
+    void downloadStateChanged();
 };
 
-#endif // DOWNLOADINFO_H
+#endif // DOWNLOADINFO_HPP

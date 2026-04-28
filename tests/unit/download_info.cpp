@@ -1,6 +1,6 @@
-#include "downloadinfo.hpp"
 #include <QCoreApplication>
 #include <QSignalSpy>
+#include "download_info.hpp"
 #include <gtest/gtest.h>
 #include <limits>
 
@@ -20,20 +20,20 @@ TEST(DownloadInfoTest, AccessToClassMember)
     downloadInfo.m_created = "1992.02.11";
     downloadInfo.m_modified = "1992.02.11";
     downloadInfo.m_accessed = "1992.02.11";
-    downloadInfo.m_downloadStatus = State::Pause;
+    downloadInfo.m_downloadState = DownloadState::Pause;
 
     EXPECT_EQ(downloadInfo.m_hostKey, "host");
-    ASSERT_EQ(downloadInfo.m_downloadStatus, State::Pause);
+    ASSERT_EQ(downloadInfo.m_downloadState, DownloadState::Pause);
 }
 
 TEST(DownloadInfoTest, SignalStateChanging)
 {
     DownloadInfo downloadInfo;
 
-    QSignalSpy spy(&downloadInfo, &DownloadInfo::downloadStatusChanged);
+    QSignalSpy spy(&downloadInfo, &DownloadInfo::downloadStateChanged);
     ASSERT_TRUE(spy.isValid());
 
-    downloadInfo.setDownloadStatus(State::Active);
+    downloadInfo.setDownloadState(DownloadState::Active);
 
     ASSERT_EQ(spy.count(), 1);
 }

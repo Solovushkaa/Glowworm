@@ -12,8 +12,8 @@
 #include <QQuickWindow>
 #include <QSGRendererInterface>
 // #include "app.h"
-#include "downloadinfo.hpp"
-#include "downloadmanager.hpp"
+// #include "download_info.hpp"
+// #include "download_manager.hpp"
 
 /**
  * @brief The main function of the program

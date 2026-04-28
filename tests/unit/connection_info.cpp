@@ -1,4 +1,4 @@
-#include "connectioninfo.hpp"
+#include "connection_info.hpp"
 #include <gtest/gtest.h>
 
 TEST(ConnectionInfoTest, ClassVariableType)
@@ -12,5 +12,5 @@ TEST(ConnectionInfoTest, ClassVariableType)
     ::testing::StaticAssertTypeEq<decltype(connectionInfo.m_bluetoothAddress), QBluetoothAddress>();
     ::testing::StaticAssertTypeEq<decltype(connectionInfo.m_bluetoothUUID), QBluetoothUuid>();
 
-    ::testing::StaticAssertTypeEq<decltype(connectionInfo.m_userName), QString>();
+    ::testing::StaticAssertTypeEq<decltype(connectionInfo.m_remoteUserName), QString>();
 }

@@ -1,14 +1,14 @@
 /**
- * @file clientconnectionmanager.h
+ * @file client_connection_manager.hpp
  */
 
-#ifndef CLIENTCONNECTIONMANAGER_H
-#define CLIENTCONNECTIONMANAGER_H
+#ifndef CLIENTCONNECTIONMANAGER_HPP
+#define CLIENTCONNECTIONMANAGER_HPP
 
 #include <QJsonObject>
 #include <QObject>
 #include <QStandardPaths>
-#include "connectioninfo.hpp"
+#include "connection_info.hpp"
 
 /**
  * @brief The client connection manager class.
@@ -42,14 +42,19 @@ public:
      */
     void setActive(int indx);
 
-    /**
-     * @brief Saved direct connection.
-     */
-    void addDirect(const QString &name, const QString &address, int port);
+    void setConnectionInfoFromJson(ConnectionInfo &connectionInfo, QJsonObject &jsonObject);
+    void setJsonFromSavedConnections(QJsonObject &jsonObject, ConnectionInfo &connectionInfo);
+
+    // /**
+    //  * @brief Saved direct connection.
+    //  */
+    // void addDirect(const QString &name, const QString &address, int port);
     /**
      * @brief Insert connection into m_savedConnections and m_jsonSavedConnection.
      */
-    void insertConnection(ConnectionInfo &&connInfo, QJsonObject &&jsonObj, const QString &name);
+    template<typename ConnInfo>
+        requires std::same_as<std::remove_reference_t<ConnInfo>, ConnectionInfo>
+    bool addConnection(ConnInfo &&connInfo);
     /**
      * @brief Remove connection from list .
      */
@@ -59,17 +64,6 @@ public:
      * @brief Checking for empty saved connections.
      */
     bool isEmptyListConnections() const { return m_savedConnections.empty(); }
-
-    /**
-     * @brief Checking connections.
-     */
-    bool isConnected() const { return (m_activeConnection != nullptr); }
-
-private:
-    /**
-     * @brief Overwriting a file with saved connections.
-     */
-    void overwriteSavedConnectionsToFile();
 
 signals:
     /**
@@ -84,10 +78,10 @@ signals:
 private:
     QJsonObject m_jsonSavedConnection; ///< List of a save connections in json for working with file
     QList<ConnectionInfo> m_savedConnections;    ///< List of a save connections
-    ConnectionInfo *m_activeConnection{nullptr}; ///< Pointer to active connection
+    ConnectionInfo *m_activeConnection;          ///< Pointer to active connection
 
     // Path to save connections
     QString m_savePath;
 };
 
-#endif // CLIENTCONNECTIONMANAGER_H
+#endif // CLIENTCONNECTIONMANAGER_HPP

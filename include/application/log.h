@@ -8,9 +8,9 @@
  */
 namespace logs {
 
-constinit qint64 MAX_LOG_SIZE = 10 * 1024 * 1024; // 10 MB
-constinit const char *LOG_FILE_NAME = "dfs.log";
-constinit const char *LOG_ARCHIVE_NAME = "dfs.1";
+constexpr qint64 MAX_LOG_SIZE = 10 * 1024 * 1024; // 10 MB
+constexpr const char *LOG_FILE_NAME = "dfs.log";
+constexpr const char *LOG_ARCHIVE_NAME = "dfs.1";
 
 } // namespace logs
 
@@ -53,25 +53,25 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     QString level;
     switch (type) {
     case QtDebugMsg:
-        level = "DEBUG";
+        level = "\033[00mDEBUG\033[0m";
         break;
     case QtInfoMsg:
-        level = "INFO";
+        level = "\033[33mINFO\033[0m";
         break;
     case QtWarningMsg:
-        level = "WARN";
+        level = "\033[33mWARN\033[0m";
         break;
     case QtCriticalMsg:
-        level = "ERROR";
+        level = "\033[31mERROR\033[0m";
         break;
     case QtFatalMsg:
-        level = "FATAL";
+        level = "\033[31mFATAL\033[0m";
         break;
     }
 
     stream << QString("[%1] [%2] %3")
                   .arg(timestamp)
-                  .arg(level, -5) // alignment
+                  .arg(level, -14) // alignment
                   .arg(msg)
            << Qt::endl;
 }

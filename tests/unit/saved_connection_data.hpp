@@ -1,3 +1,6 @@
+#ifndef SAVEDCONNECTIONDATA_HPP
+#define SAVEDCONNECTIONDATA_HPP
+
 #include <QStringView>
 
 namespace test {
@@ -34,3 +37,5 @@ inline constexpr QStringView threeConnectionData = uR"json(
 )json";
 
 } // namespace test
+
+#endif // SAVEDCONNECTIONDATA_HPP

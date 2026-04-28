@@ -1,7 +1,6 @@
 #ifndef UNFINISHEDDOWNLOADDATA_HPP
 #define UNFINISHEDDOWNLOADDATA_HPP
 
-#include <QIntegerForSize>
 #include <QStringView>
 #include <array>
 
@@ -11,7 +10,7 @@ inline constexpr QStringView oneDownloadData = uR"json(
 {
   "ge07f36174_hostKey_jjk12jjk": {
     "downloadID": "jjk12jjk",
-    "downloadStatus": 2,
+    "downloadState": 2,
     "hostKey": "ge07f36174",
     "url": "192.168.0.4",
     "created": "Fri Mar 28 11:44:50 2026",
@@ -31,7 +30,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
 {
   "6e57f36174_hostKey_8xask982": {
     "downloadID": "8xask982",
-    "downloadStatus": 0,
+    "downloadState": 0,
     "hostKey": "6e57f36174",
     "url": "192.168.0.1",
     "created": "Fri Mar 28 20:47:50 2025",
@@ -46,7 +45,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
   },
   "6e57f3hh74_hostKey_57f3617f": {
     "downloadID": "57f3617f",
-    "downloadStatus": 2,
+    "downloadState": 2,
     "hostKey": "6e57f3hh74",
     "url": "192.168.0.4",
     "created": "Fri Mar 28 11:44:50 2026",
@@ -61,7 +60,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
   },
   "ge07f36174_hostKey_jjk12jjk": {
     "downloadID": "jjk12jjk",
-    "downloadStatus": 2,
+    "downloadState": 2,
     "hostKey": "ge07f36174",
     "url": "192.168.0.4",
     "created": "Fri Mar 28 11:44:50 2026",

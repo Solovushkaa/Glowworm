@@ -1,5 +1,5 @@
 /**
- * @file conncetioninfo.hpp
+ * @file conncetion_info.hpp
  * @brief Provides support for network connections.
  */
 
@@ -19,20 +19,24 @@ enum class Transport {
     TURN       ///< Indirect connection with HTTP protocol
 };
 
-namespace constants {
+/**
+ * @brief All fields of information about connections.
+ */
+enum class ConnectionInfoMember {
+    Name,
+    Transport,
+    URL,
+    BluetoothAddress,
+    BluetoothUUID,
+    COUNT // To get the size of the enum
+};
 
-inline constexpr QStringView CONNNAME = u"name";
-inline constexpr QStringView PROTOCOL = u"protocol";
-inline constexpr QStringView TRANSPORT = u"transport";
-inline constexpr QStringView ADDRESS = u"address";
-inline constexpr QStringView PORT = u"port";
-
-inline constexpr QStringView DIRECT = u"DIRECT";       ///< Direct connection with HTTP protocol
-inline constexpr QStringView STUN = u"STUN";           ///< UDP protocol with STUN technology
-inline constexpr QStringView BLUETOOTH = u"BLUETOOTH"; ///< BlueTooth protocol
-inline constexpr QStringView TURN = u"TURN";           ///< Indirect connection with HTTP protocol
-
-} // namespace constants
+/**
+ * @brief All fields of information about downloads.
+ * @param member Enum
+ * @return Enum type converted into QStringView
+ */
+QStringView getConnectionInfoMemberName(ConnectionInfoMember member);
 
 /**
  * @struct ConnectionInfo
@@ -52,7 +56,7 @@ struct ConnectionInfo
     QBluetoothUuid m_bluetoothUUID;       ///< Bluetooth UUID
 
     // --- TURN ---
-    QString m_userName; ///< Remote user
+    QString m_remoteUserName; ///< Remote user
 };
 
 #endif // CONNECTIONINFO_HPP

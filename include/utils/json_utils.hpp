@@ -1,13 +1,13 @@
 /**
- * @file jsonhelperfunctions.h
+ * @file json_utils.hpp
  * @brief A set of functions for working with JSON.
  *
  */
 
-#ifndef JSONHELPERFUNCTIONS_H
-#define JSONHELPERFUNCTIONS_H
+#ifndef JSONUTILS_HPP
+#define JSONUTILS_HPP
 
-#include <QObject>
+#include <QVariantHash>
 
 /**
  * @brief createJsonFromDirectory
@@ -29,4 +29,4 @@ QByteArray createJsonFromDirectory(const QString &path);
  */
 QList<QVariantHash> fromJsonToHash(QByteArray &data);
 
-#endif // JSONHELPERFUNCTIONS_H
+#endif // JSONUTILS_HPP

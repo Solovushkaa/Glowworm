@@ -1,6 +1,6 @@
-#include "clientconnectionmanager.hpp"
 #include <QTemporaryFile>
-#include "savedconnectiondata.hpp"
+#include "client_connection_manager.hpp"
+#include "saved_connection_data.hpp"
 #include <gtest/gtest.h>
 #include <memory>
 
