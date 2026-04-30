@@ -11,8 +11,12 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
         return constants::kName;
     case Transport:
         return constants::kTransport;
-    case URL:
-        return constants::kURL;
+    case Address:
+        return constants::kAddress;
+    case Port:
+        return constants::kPort;
+    case RemoteUserName:
+        return constants::kRemoteUserName;
     case BluetoothAddress:
         return constants::kBluetoothAddress;
     case BluetoothUUID:

@@ -14,7 +14,7 @@
 
 enum class Transport {
     DIRECT,    ///< Direct connection with HTTP protocol
-    STUN,      ///< UDP protocol with STUN technology
+    NATTRAV,   ///<
     BLUETOOTH, ///< BlueTooth protocol
     TURN       ///< Indirect connection with HTTP protocol
 };
@@ -24,8 +24,10 @@ enum class Transport {
  */
 enum class ConnectionInfoMember {
     Name,
+    Address,
+    Port,
     Transport,
-    URL,
+    RemoteUserName,
     BluetoothAddress,
     BluetoothUUID,
     COUNT // To get the size of the enum
@@ -48,15 +50,13 @@ struct ConnectionInfo
     QString m_name;        ///< Connection name
     Transport m_transport; ///< Network transport
 
-    // --- Direct, STUN, TURN ---
+    // --- Network ---
     QUrl m_url; ///< URL
+    QString m_remoteUserName; ///< Remote user (not needed for LAN)
 
     // --- Bluetooth ---
     QBluetoothAddress m_bluetoothAddress; ///< Bluetooth address
     QBluetoothUuid m_bluetoothUUID;       ///< Bluetooth UUID
-
-    // --- TURN ---
-    QString m_remoteUserName; ///< Remote user
 };
 
 #endif // CONNECTIONINFO_HPP

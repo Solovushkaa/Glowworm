@@ -29,14 +29,8 @@ public:
      * @brief Read saved connections from file.
      */
     bool readSavedConnections();
-    /**
-     * @brief Get all connections.
-     */
-    QList<ConnectionInfo> getConnections() { return m_savedConnections; }
-    /**
-     * @brief Get active connection.
-     */
-    ConnectionInfo *getActive() { return m_activeConnection; }
+
+    void initInfo(ConnectionInfo &connectionInfo, QJsonObject &jsonObject);
     /**
      * @brief Set active connection.
      */
@@ -50,20 +44,29 @@ public:
     //  */
     // void addDirect(const QString &name, const QString &address, int port);
     /**
-     * @brief Insert connection into m_savedConnections and m_jsonSavedConnection.
+     * @brief Insert connection into m_savedConnections and m_jsonSavedConnections.
      */
     template<typename ConnInfo>
         requires std::same_as<std::remove_reference_t<ConnInfo>, ConnectionInfo>
-    bool addConnection(ConnInfo &&connInfo);
+    bool addConnection(ConnInfo &&connectionInfo);
     /**
      * @brief Remove connection from list .
      */
-    void remove(qint64 deleteIndex, qint64 activeIndex);
+    bool deleteConnection(qint64 deleteIndex, qint64 activeIndex);
 
     /**
      * @brief Checking for empty saved connections.
      */
     bool isEmptyListConnections() const { return m_savedConnections.empty(); }
+
+    /**
+     * @brief Get all connections.
+     */
+    QList<ConnectionInfo> getConnections() { return m_savedConnections; }
+    /**
+     * @brief Get active connection.
+     */
+    ConnectionInfo *getActive() { return m_activeConnection; }
 
 signals:
     /**
@@ -76,12 +79,15 @@ signals:
     void activeConnectionsChanged();
 
 private:
-    QJsonObject m_jsonSavedConnection; ///< List of a save connections in json for working with file
+    QJsonObject m_jsonSavedConnections; ///< List of a save connections in json for working with file
     QList<ConnectionInfo> m_savedConnections;    ///< List of a save connections
     ConnectionInfo *m_activeConnection;          ///< Pointer to active connection
 
     // Path to save connections
     QString m_savePath;
+
+public:
+    using InfoType = ConnectionInfo;
 };
 
 #endif // CLIENTCONNECTIONMANAGER_HPP

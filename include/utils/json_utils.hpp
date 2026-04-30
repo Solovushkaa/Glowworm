@@ -7,6 +7,7 @@
 #ifndef JSONUTILS_HPP
 #define JSONUTILS_HPP
 
+#include <QJsonObject>
 #include <QVariantHash>
 
 /**
@@ -28,5 +29,7 @@ QByteArray createJsonFromDirectory(const QString &path);
  * @return Array of directory files
  */
 QList<QVariantHash> fromJsonToHash(QByteArray &data);
+
+QJsonObject parseJsonToObject(const QByteArray &data);
 
 #endif // JSONUTILS_HPP

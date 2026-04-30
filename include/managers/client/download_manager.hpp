@@ -32,14 +32,11 @@ public:
      * @brief Read imcomlplit downloads from file.
      */
     bool readUnfinishedDownloads();
-    /**
-     * @brief Checking the correctness of objects.
-     */
-    bool isCorrectDownloadInfoObject(const QJsonObject &jsonObject);
 
-    void setDownloadInfoFromJson(DownloadInfo &downloadInfo, QJsonObject &jsonObject);
-    void setJsonFromDownloadInfo(QJsonObject &jsonObject, DownloadInfo &downloadInfo);
-    QJsonDocument parseJson(QByteArray &data);
+    void initInfo(DownloadInfo &downloadInfo, QJsonObject &jsonObject);
+
+    void setDownloadInfoFromJsonObject(DownloadInfo &downloadInfo, QJsonObject &jsonObject);
+    void setJsonObjectFromDownloadInfo(QJsonObject &jsonObject, DownloadInfo &downloadInfo);
 
     /**
      * @brief Adding download to a file and RAM
@@ -55,7 +52,7 @@ public:
     /**
      * @brief Creating a list for qml
      */
-    QList<QVariantHash> getVariantListUnfinishedDownloads();
+    QList<QVariantHash> getListUIDataUnfinishedDownloads();
     /**
      * @brief Getting information about downloaded files
      */
@@ -66,10 +63,13 @@ public slots:
 
 private:
     QHash<QString, DownloadInfo> m_downloadInfoDict; ///< Information about downloaded files
-    QJsonObject m_jsonDownloadInfo;                  ///< A JSON object to save to a file
+    QJsonObject m_jsonUnfinishedDownloads;           ///< A JSON object to save to a file
 
     // Path to save imcomplited downloads
     const QString m_savePath;
+
+public:
+    using InfoType = DownloadInfo;
 };
 
 #endif // DOWNLOADMANAGER_HPP

@@ -74,3 +74,23 @@ QList<QVariantHash> fromJsonToHash(QByteArray &data)
     }
     return filesInfo;
 }
+
+QJsonObject parseJsonToObject(const QByteArray &jsonFileData)
+{
+    QJsonDocument appDataJsonDoc;
+
+    QJsonParseError parseError;
+    appDataJsonDoc = QJsonDocument::fromJson(jsonFileData, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parsing error:\n" << parseError.errorString();
+        qWarning() << "Error position:" << parseError.offset;
+
+        appDataJsonDoc = QJsonDocument(QJsonObject());
+    } else if (!appDataJsonDoc.isObject()) {
+        qWarning() << "JSON is not an object";
+        appDataJsonDoc = QJsonDocument(QJsonObject());
+    }
+
+    return appDataJsonDoc.object();
+}
