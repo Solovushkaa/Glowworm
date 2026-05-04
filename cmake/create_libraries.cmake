@@ -22,7 +22,7 @@ function(create_libraries LIB_TARGETS)
             ${CMAKE_SOURCE_DIR}/include/managers
             ${CMAKE_SOURCE_DIR}/include/utils
     )
-    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth)
+    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth Qt6::Qml)
     LIST(APPEND LIB_TARGETS ClientManagers)
 
 

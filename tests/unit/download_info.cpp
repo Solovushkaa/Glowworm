@@ -1,4 +1,3 @@
-#include <QCoreApplication>
 #include <QSignalSpy>
 #include "download_info.hpp"
 #include <gtest/gtest.h>
@@ -9,7 +8,7 @@ TEST(DownloadInfoTest, AccessToClassMember)
     DownloadInfo downloadInfo;
 
     downloadInfo.m_downloadID = "11asa";
-    downloadInfo.m_URL = "192.168.0.1:9012";
+    downloadInfo.m_url = "192.168.0.1:9012";
     downloadInfo.m_hostKey = "host";
     downloadInfo.m_name = "name";
     downloadInfo.m_path = "path";
@@ -20,10 +19,10 @@ TEST(DownloadInfoTest, AccessToClassMember)
     downloadInfo.m_created = "1992.02.11";
     downloadInfo.m_modified = "1992.02.11";
     downloadInfo.m_accessed = "1992.02.11";
-    downloadInfo.m_downloadState = DownloadState::Pause;
+    downloadInfo.m_downloadState = DownloadInfo::DownloadState::Pause;
 
     EXPECT_EQ(downloadInfo.m_hostKey, "host");
-    ASSERT_EQ(downloadInfo.m_downloadState, DownloadState::Pause);
+    ASSERT_EQ(downloadInfo.m_downloadState, DownloadInfo::DownloadState::Pause);
 }
 
 TEST(DownloadInfoTest, SignalStateChanging)
@@ -33,7 +32,7 @@ TEST(DownloadInfoTest, SignalStateChanging)
     QSignalSpy spy(&downloadInfo, &DownloadInfo::downloadStateChanged);
     ASSERT_TRUE(spy.isValid());
 
-    downloadInfo.setDownloadState(DownloadState::Active);
+    downloadInfo.setDownloadState(DownloadInfo::DownloadState::Active);
 
     ASSERT_EQ(spy.count(), 1);
 }

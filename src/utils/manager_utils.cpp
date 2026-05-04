@@ -49,7 +49,9 @@ bool isCorrectAppDataKey(const QJsonObject &jsonObject)
         }
     };
 
-    using MemberClass = std::conditional_t<is_downloadInfo, DownloadInfoMember, ConnectionInfoMember>;
+    using MemberClass = std::conditional_t<is_downloadInfo,
+                                           downloads::DownloadInfoMember,
+                                           connections::ConnectionInfoMember>;
 
     int size = static_cast<std::underlying_type_t<MemberClass>>(MemberClass::COUNT);
     QStringView memberName;
@@ -78,7 +80,7 @@ bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo
     jsonInfo = parseJsonToObject(fileData.value());
 
     using InfoType = typename Manager::InfoType;
-    InfoType info;
+    InfoType *info;
 
     QJsonObject jsonObject;
     for (auto &dictKey : jsonInfo.keys()) {
@@ -90,10 +92,11 @@ bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo
         // Validation
         jsonObject = jsonInfo[dictKey].toObject();
         if (!isCorrectAppDataKey<InfoType>(jsonObject)) {
-            qWarning() << "Skip the jsonObject:" << dictKey;
+            qWarning() << "Skip the JSON Object:" << dictKey;
             break;
         }
 
+        info = new InfoType();
         //-------------------
         manager.initInfo(info, jsonObject);
         //-------------------

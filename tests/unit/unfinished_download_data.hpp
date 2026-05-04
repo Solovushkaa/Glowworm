@@ -8,7 +8,7 @@ namespace test {
 
 inline constexpr QStringView oneDownloadData = uR"json(
 {
-  "ge07f36174_hostKey_jjk12jjk": {
+  "ge07f36174jjk12jjk": {
     "downloadID": "jjk12jjk",
     "downloadState": 2,
     "hostKey": "ge07f36174",
@@ -28,7 +28,7 @@ inline constexpr QStringView oneDownloadData = uR"json(
 
 inline constexpr QStringView threeDownloadData = uR"json(
 {
-  "6e57f36174_hostKey_8xask982": {
+  "6e57f361748xask982": {
     "downloadID": "8xask982",
     "downloadState": 0,
     "hostKey": "6e57f36174",
@@ -43,7 +43,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
     "savePath": "/home/user/DownloadDir/",
     "size": 11914
   },
-  "6e57f3hh74_hostKey_57f3617f": {
+  "6e57f3hh7457f3617f": {
     "downloadID": "57f3617f",
     "downloadState": 2,
     "hostKey": "6e57f3hh74",
@@ -58,7 +58,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
     "savePath": "/home/user/tt/DownloadDir/",
     "size": 119324
   },
-  "ge07f36174_hostKey_jjk12jjk": {
+  "ge07f36174jjk12jjk": {
     "downloadID": "jjk12jjk",
     "downloadState": 2,
     "hostKey": "ge07f36174",
@@ -79,7 +79,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
 inline constexpr std::array<QStringView, 3> downloadID = {u"8xask982", u"57f3617f", u"jjk12jjk"};
 inline constexpr std::array<int, 3> downloadStatus = {0, 0, 0};
 inline constexpr std::array<QStringView, 3> hostKey = {u"6e57f36174", u"6e57f3hh74", u"ge07f36174"};
-inline constexpr std::array<QStringView, 3> URL = {u"192.168.0.1", u"192.168.0.4", u"192.168.0.4"};
+inline constexpr std::array<QStringView, 3> url = {u"192.168.0.1", u"192.168.0.4", u"192.168.0.4"};
 inline constexpr std::array<QStringView, 3> created = {u"Fri Mar 28 20:47:50 2025",
                                                        u"Fri Mar 28 11:44:50 2026",
                                                        u"Fri Mar 28 11:44:50 2026"};

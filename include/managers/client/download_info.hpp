@@ -10,24 +10,16 @@
 #define DOWNLOADINFO_HPP
 
 #include <QObject>
+#include <QProperty>
 #include <QString>
 #include <QUrl>
+#include <QtQmlIntegration/qqmlintegration.h>
+
+namespace downloads {
 
 struct BadMemberName
 {
     constexpr const char *what() { return "Bad member name!"; }
-};
-
-/**
- * @enum State
- * @brief Represents the state of a download task.
- */
-enum class DownloadState {
-    Pause,  ///< Download is paused
-    Wait,   ///< Task is queued but not started
-    Active, ///< Data is being transferred
-    Finish, ///< Download finished successfully
-    Error   ///< Download failed due to error
 };
 
 /**
@@ -57,19 +49,58 @@ enum class DownloadInfoMember {
  */
 QStringView getDownloadInfoMemberName(DownloadInfoMember member);
 
+} // namespace downloads
+
 /**
- * @struct DownloadInfo
+ * @class DownloadInfo
  * @brief Manages metadata and state for a single file download.
  */
-struct DownloadInfo : public QObject
+class DownloadInfo : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+    QML_UNCREATABLE("Managed from C++")
+public:
+    Q_PROPERTY(
+        QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged CONSTANT)
+    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged CONSTANT)
+    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged CONSTANT)
+    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged CONSTANT)
+    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged CONSTANT)
+    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged CONSTANT)
+    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged CONSTANT)
+    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged CONSTANT)
+    Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte READ lastReceivedByte NOTIFY
+                   lastReceivedByteChanged CONSTANT)
+    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged CONSTANT)
+    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged CONSTANT)
+    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged CONSTANT)
+
+public:
+    /**
+     * @enum State
+     * @brief Represents the state of a download task.
+     */
+    enum class DownloadState {
+        Pause,  ///< Download is paused
+        Wait,   ///< Task is queued but not started
+        Active, ///< Data is being transferred
+        Finish, ///< Download finished successfully
+        Error   ///< Download failed due to error
+    };
+    Q_ENUM(DownloadState)
+
+private:
+    Q_PROPERTY(DownloadState downloadState READ downloadState WRITE setDownloadState NOTIFY
+                   downloadStateChanged BINDABLE bindableDownloadState)
+
+    QBindable<DownloadState> bindableDownloadState() { return &m_downloadState; }
 
     // --- Constructors ---
 public:
     explicit DownloadInfo(QObject *parent = nullptr);
     DownloadInfo(const QString &downloadID,
-                 const QUrl &URL,
+                 const QUrl &url,
                  const QString &hostKey,
                  const QString &name,
                  const QString &path,
@@ -90,20 +121,44 @@ public:
 
     // --- Methods ---
 public:
-    /**
-     * @brief Sets a new download status.
-     */
-    void setDownloadState(const DownloadState newDownloadStatus);
+    QString downloadID() const { return m_downloadID; }
+    QUrl url() const { return m_url; }
+    QString hostKey() const { return m_hostKey; }
+    QString name() const { return m_name; }
+    QString path() const { return m_path; }
+    QString saveName() const { return m_saveName; }
+    QString savePath() const { return m_savePath; }
+    qint64 size() const { return m_size; }
+    qint64 lastReceivedByte() const { return m_lastReceivedByte; }
+    QString created() const { return m_created; }
+    QString modified() const { return m_modified; }
+    QString accessed() const { return m_accessed; }
+    DownloadState downloadState() const { return m_downloadState; }
 
-    /**
-     * @brief Provides download status.
-     */
-    DownloadState getDownloadState() const { return m_downloadState; }
+    // --- Slots ---
+public slots:
+    void setDownloadState(DownloadState state) { m_downloadState = state; }
+
+    // --- Signals ---
+signals:
+    void downloadStateChanged();
+    void downloadIDChanged();
+    void urlChanged();
+    void hostKeyChanged();
+    void nameChanged();
+    void pathChanged();
+    void saveNameChanged();
+    void savePathChanged();
+    void sizeChanged();
+    void lastReceivedByteChanged();
+    void createdChanged();
+    void modifiedChanged();
+    void accessedChanged();
 
     // --- Members ---
 public:
     QString m_downloadID;           ///< Download ID
-    QUrl m_URL;                     ///< Host URL
+    QUrl m_url;                     ///< Host URL
     QString m_hostKey;              ///< Host key
     QString m_name;                 ///< File name
     QString m_path;                 ///< File path on the host
@@ -114,14 +169,12 @@ public:
     QString m_created;              ///< File creation time
     QString m_modified;             ///< File last modification time
     QString m_accessed;             ///< File last access time
-    DownloadState m_downloadState;  ///< Download status
+    // QProperty<DownloadState> m_downloadState; ///< Download status
 
-    // --- Signals ---
-signals:
-    /**
-     * @brief Notifies about download state change.
-     */
-    void downloadStateChanged();
+    Q_OBJECT_BINDABLE_PROPERTY(DownloadInfo,
+                               DownloadInfo::DownloadState,
+                               m_downloadState,
+                               &DownloadInfo::downloadStateChanged)
 };
 
 #endif // DOWNLOADINFO_HPP

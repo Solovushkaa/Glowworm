@@ -61,7 +61,7 @@ TEST_F(ClientConnectionManagerTest, OpenConnectionFileWithThreeElements)
     ASSERT_EQ(m_clientConnectionManager->getConnections().size(), 3);
 }
 
-TEST_F(ClientConnectionManagerTest, ParseAndReadConnectionFileWithThreeElements)
+TEST_F(ClientConnectionManagerTest, ReadConnectionFileWithThreeElements)
 {
     openConfigWithThreeElements();
 
@@ -70,9 +70,10 @@ TEST_F(ClientConnectionManagerTest, ParseAndReadConnectionFileWithThreeElements)
     ASSERT_EQ(m_clientConnectionManager->getConnections().size(), 3);
 
     auto connectionsList = m_clientConnectionManager->getConnections();
-    for (auto el : connectionsList) {
+    for (auto &el : connectionsList) {
         qDebug() << el.m_name;
         qDebug() << el.m_url.host();
+        qDebug() << el.m_url.port();
         qDebug() << static_cast<int>(el.m_transport);
         qDebug() << el.m_remoteUserName;
         qDebug() << el.m_bluetoothAddress;
@@ -109,8 +110,8 @@ TEST_F(ClientConnectionManagerTest, DeleteConnectionInfo)
 
 //     DownloadInfo downloadInfo;
 //     downloadInfo.m_downloadID = test::downloadID.back().toString();
-//     downloadInfo.m_URL = test::URL.back().toString();
-//     downloadInfo.m_downloadState = static_cast<DownloadState>(test::downloadStatus.back());
+//     downloadInfo.m_url = test::url.back().toString();
+//     downloadInfo.m_downloadState = static_cast<DownloadInfo::DownloadState>(test::downloadStatus.back());
 //     downloadInfo.m_hostKey = test::hostKey.back().toString();
 //     downloadInfo.m_created = test::created.back().toString();
 //     downloadInfo.m_accessed = test::accessed.back().toString();
@@ -153,7 +154,7 @@ TEST_F(ClientConnectionManagerTest, DeleteConnectionInfo)
 
 //     for (int i = 0; i < 3; ++i) {
 //         EXPECT_EQ(dict[test::downloadID[i]].m_downloadID, test::downloadID[i]);
-//         EXPECT_EQ(dict[test::downloadID[i]].m_URL, test::URL[i].toString());
+//         EXPECT_EQ(dict[test::downloadID[i]].m_url, test::url[i].toString());
 //         EXPECT_EQ(static_cast<int>(dict[test::downloadID[i]].m_downloadState),
 //                   test::downloadStatus[i]);
 //         EXPECT_EQ(dict[test::downloadID[i]].m_hostKey, test::hostKey[i]);

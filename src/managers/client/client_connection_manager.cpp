@@ -14,11 +14,11 @@ bool ClientConnectionManager::readSavedConnections()
     return readPreset(*this, m_savePath, m_jsonSavedConnections);
 }
 
-void ClientConnectionManager::initInfo(ConnectionInfo &connectionInfo, QJsonObject &jsonObject)
+void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject)
 {
     setConnectionInfoFromJson(connectionInfo, jsonObject);
 
-    m_savedConnections.push_back(connectionInfo);
+    m_savedConnections.push_back(*connectionInfo);
 }
 
 void ClientConnectionManager::setActive(int indx)
@@ -27,36 +27,38 @@ void ClientConnectionManager::setActive(int indx)
     emit activeConnectionsChanged();
 }
 
-void ClientConnectionManager::setConnectionInfoFromJson(ConnectionInfo &connectionInfo,
+void ClientConnectionManager::setConnectionInfoFromJson(ConnectionInfo *connectionInfo,
                                                         QJsonObject &jsonObject)
 {
-    connectionInfo.m_name = jsonObject[constants::kName].toString();
-    connectionInfo.m_transport = static_cast<Transport>(jsonObject[constants::kTransport].toInt());
+    connectionInfo->m_name = jsonObject[constants::kName].toString();
+    connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(
+        jsonObject[constants::kTransport].toInt());
 
-    connectionInfo.m_url.setHost(jsonObject[constants::kAddress].toString());
-    connectionInfo.m_url.port(jsonObject[constants::kPort].toInt());
+    connectionInfo->m_url.setHost(jsonObject[constants::kAddress].toString());
+    connectionInfo->m_url.setPort(jsonObject[constants::kPort].toInt());
 
     if (!jsonObject[constants::kRemoteUserName].isNull()) {
-        connectionInfo.m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
+        connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
     }
     if (!jsonObject[constants::kBluetoothAddress].isNull()) {
-        connectionInfo.m_bluetoothAddress = QBluetoothAddress(
+        connectionInfo->m_bluetoothAddress = QBluetoothAddress(
             jsonObject[constants::kBluetoothAddress].toString());
     }
     if (!jsonObject[constants::kBluetoothUUID].isNull()) {
-        connectionInfo.m_bluetoothUUID = QBluetoothUuid(
+        connectionInfo->m_bluetoothUUID = QBluetoothUuid(
             jsonObject[constants::kBluetoothUUID].toString());
     }
 }
 
 void ClientConnectionManager::setJsonFromSavedConnections(QJsonObject &jsonObject,
-                                                          ConnectionInfo &connectionInfo)
+                                                          ConnectionInfo *connectionInfo)
 {
-    jsonObject[constants::kTransport] = static_cast<int>(connectionInfo.m_transport);
-    jsonObject[constants::kURL] = connectionInfo.m_url.toString();
-    jsonObject[constants::kURL] = connectionInfo.m_bluetoothAddress.toString();
-    jsonObject[constants::kURL] = connectionInfo.m_bluetoothUUID.toString();
-    jsonObject[constants::kRemoteUserName] = connectionInfo.m_remoteUserName;
+    jsonObject[constants::kTransport] = static_cast<int>(connectionInfo->m_transport);
+    jsonObject[constants::kURL] = connectionInfo->m_url.host();
+    jsonObject[constants::kPort] = connectionInfo->m_url.port();
+    jsonObject[constants::kBluetoothAddress] = connectionInfo->m_bluetoothAddress.toString();
+    jsonObject[constants::kBluetoothUUID] = connectionInfo->m_bluetoothUUID.toString();
+    jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;
 }
 
 // void ClientConnectionManager::addDirect(const QString &name, const QString &address, int port)
@@ -80,7 +82,7 @@ template<typename ConnInfo>
 bool ClientConnectionManager::addConnection(ConnInfo &&connectionInfo)
 {
     QJsonObject jsonObject;
-    setJsonFromSavedConnections(jsonObject, m_savedConnections.back());
+    setJsonFromSavedConnections(jsonObject, &m_savedConnections.back());
 
     m_jsonSavedConnections.insert(m_savedConnections.back().m_name, std::move(jsonObject));
 

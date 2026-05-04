@@ -30,14 +30,14 @@ public:
      */
     bool readSavedConnections();
 
-    void initInfo(ConnectionInfo &connectionInfo, QJsonObject &jsonObject);
+    void initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
     /**
      * @brief Set active connection.
      */
     void setActive(int indx);
 
-    void setConnectionInfoFromJson(ConnectionInfo &connectionInfo, QJsonObject &jsonObject);
-    void setJsonFromSavedConnections(QJsonObject &jsonObject, ConnectionInfo &connectionInfo);
+    void setConnectionInfoFromJson(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
+    void setJsonFromSavedConnections(QJsonObject &jsonObject, ConnectionInfo *connectionInfo);
 
     // /**
     //  * @brief Saved direct connection.

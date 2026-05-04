@@ -2,6 +2,8 @@
 #include "constants.hpp"
 #include <stdexcept>
 
+namespace downloads {
+
 QStringView getDownloadInfoMemberName(DownloadInfoMember member)
 {
     using enum DownloadInfoMember;
@@ -38,12 +40,14 @@ QStringView getDownloadInfoMemberName(DownloadInfoMember member)
     }
 }
 
+} // namespace downloads
+
 DownloadInfo::DownloadInfo(QObject *parent)
     : QObject(parent)
 {}
 
 DownloadInfo::DownloadInfo(const QString &downloadID,
-                           const QUrl &URL,
+                           const QUrl &url,
                            const QString &hostKey,
                            const QString &name,
                            const QString &path,
@@ -54,9 +58,9 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
                            const QString &created,
                            const QString &modified,
                            const QString &accessed,
-                           DownloadState downloadState)
+                           DownloadInfo::DownloadState downloadState)
     : m_downloadID(downloadID)
-    , m_URL(URL)
+    , m_url(url)
     , m_hostKey(hostKey)
     , m_name(name)
     , m_path(path)
@@ -73,7 +77,7 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
 DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
 {
     m_downloadID = downloadInfo.m_downloadID;
-    m_URL = downloadInfo.m_URL;
+    m_url = downloadInfo.m_url;
     m_hostKey = downloadInfo.m_hostKey;
     m_name = downloadInfo.m_name;
     m_path = downloadInfo.m_path;
@@ -84,7 +88,7 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
     m_created = downloadInfo.m_created;
     m_modified = downloadInfo.m_modified;
     m_accessed = downloadInfo.m_accessed;
-    m_downloadState = downloadInfo.m_downloadState;
+    m_downloadState = downloadInfo.m_downloadState.value();
 
     return *this;
 }
@@ -92,7 +96,7 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
 DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
 {
     m_downloadID = std::move(downloadInfo.m_downloadID);
-    m_URL = std::move(downloadInfo.m_URL);
+    m_url = std::move(downloadInfo.m_url);
     m_hostKey = std::move(downloadInfo.m_hostKey);
     m_name = std::move(downloadInfo.m_name);
     m_path = std::move(downloadInfo.m_path);
@@ -103,13 +107,7 @@ DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
     m_created = std::move(downloadInfo.m_created);
     m_modified = std::move(downloadInfo.m_modified);
     m_accessed = std::move(downloadInfo.m_accessed);
-    m_downloadState = downloadInfo.m_downloadState;
+    m_downloadState = downloadInfo.m_downloadState.value();
 
     return *this;
-}
-
-void DownloadInfo::setDownloadState(const DownloadState newDownloadState)
-{
-    m_downloadState = newDownloadState;
-    emit downloadStateChanged();
 }
