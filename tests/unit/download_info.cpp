@@ -10,9 +10,9 @@ TEST(DownloadInfoTest, AccessToClassMember)
     downloadInfo.m_downloadID = "11asa";
     downloadInfo.m_url = "192.168.0.1:9012";
     downloadInfo.m_hostKey = "host";
-    downloadInfo.m_name = "name";
+    downloadInfo.m_name = "fileName";
     downloadInfo.m_path = "path";
-    downloadInfo.m_saveName = "save name";
+    downloadInfo.m_saveName = "save fileName";
     downloadInfo.m_savePath = "save/path";
     downloadInfo.m_size = std::numeric_limits<qint64>::max();
     downloadInfo.m_lastReceivedByte = 5123;

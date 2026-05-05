@@ -60,21 +60,20 @@ class DownloadInfo : public QObject
     Q_OBJECT
     QML_ELEMENT
     QML_UNCREATABLE("Managed from C++")
-public:
-    Q_PROPERTY(
-        QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged CONSTANT)
-    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged CONSTANT)
-    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged CONSTANT)
-    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged CONSTANT)
-    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged CONSTANT)
-    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged CONSTANT)
-    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged CONSTANT)
-    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged CONSTANT)
+
+    Q_PROPERTY(QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
+    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged)
+    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged)
+    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged)
+    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged)
+    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged)
     Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte READ lastReceivedByte NOTIFY
-                   lastReceivedByteChanged CONSTANT)
-    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged CONSTANT)
-    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged CONSTANT)
-    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged CONSTANT)
+                   lastReceivedByteChanged)
+    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged)
+    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged)
+    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged)
 
 public:
     /**
@@ -111,7 +110,8 @@ public:
                  const QString &created,
                  const QString &modified,
                  const QString &accessed,
-                 DownloadState downloadState);
+                 DownloadState downloadState,
+                 QObject *parent = nullptr);
 
     DownloadInfo(const DownloadInfo &downloadInfo) { *this = downloadInfo; }
     DownloadInfo &operator=(const DownloadInfo &downloadInfo);

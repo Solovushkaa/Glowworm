@@ -16,7 +16,7 @@ QVariant DownloadManager::data(const QModelIndex &index, int role) const
 
     DownloadInfo *info = m_downloadInfoList.at(index.row());
     switch (role) {
-    case DownloadRole:
+    case DownloadIDRole:
         return info->downloadID();
     case UrlRole:
         return info->url();
@@ -50,7 +50,7 @@ QVariant DownloadManager::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> DownloadManager::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[DownloadRole] = constants::kDownloadID.toUtf8();
+    roles[DownloadIDRole] = constants::kDownloadID.toUtf8();
     roles[UrlRole] = constants::kURL.toUtf8();
     roles[HostKeyRole] = constants::kHostkey.toUtf8();
     roles[NameRole] = constants::kName.toUtf8();
@@ -69,11 +69,9 @@ QHash<int, QByteArray> DownloadManager::roleNames() const
 bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
 {
     if (downloadInfo == nullptr) {
-        qCritical() << "DownloadInfo * canno't nullptr";
+        qCritical() << "DownloadInfo* cannot be nullptr";
         return false;
     }
-
-    downloadInfo->setParent(this);
 
     const int row = m_downloadInfoList.size();
     beginInsertRows(QModelIndex(), row, row);
@@ -89,6 +87,43 @@ bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
     emit downloadAdded();
 
     return rewriteConfigFile(m_savePath, m_jsonUnfinishedDownloads);
+}
+
+bool DownloadManager::addDownload(const QString &downloadID,
+                                  const QUrl &url,
+                                  const QString &hostKey,
+                                  const QString &name,
+                                  const QString &path,
+                                  const QString &saveName,
+                                  const QString &savePath,
+                                  qint64 size,
+                                  qint64 lastReceivedByte,
+                                  const QString &created,
+                                  const QString &modified,
+                                  const QString &accessed,
+                                  DownloadInfo::DownloadState downloadState)
+{
+    if (m_downloadInfoDict.contains(downloadID)) {
+        qInfo() << "A connection with the downloadID" << downloadID << "already exists";
+        return false;
+    }
+
+    auto downloadInfo = new DownloadInfo(downloadID,
+                                         url,
+                                         hostKey,
+                                         name,
+                                         path,
+                                         saveName,
+                                         savePath,
+                                         size,
+                                         lastReceivedByte,
+                                         created,
+                                         modified,
+                                         accessed,
+                                         downloadState,
+                                         this);
+
+    return addDownload(downloadInfo);
 }
 
 bool DownloadManager::removeDownload(int index)
@@ -116,19 +151,7 @@ bool DownloadManager::removeDownload(int index)
 bool DownloadManager::removeDownload(DownloadInfo *downloadInfo)
 {
     int index = m_downloadInfoList.indexOf(downloadInfo);
-    QString deleteID = std::move(downloadInfo->m_downloadID);
-
-    beginRemoveRows(QModelIndex(), index, index);
-    DownloadInfo *info = m_downloadInfoList.takeAt(index);
-    info->deleteLater();
-    endRemoveRows();
-
-    m_downloadInfoDict.remove(deleteID);
-    m_jsonUnfinishedDownloads.remove(deleteID);
-
-    emit downloadRemoved(index);
-
-    return rewriteConfigFile(m_savePath, m_jsonUnfinishedDownloads);
+    return removeDownload(index);
 }
 
 bool DownloadManager::updateDownload(int index, const QString &property, const QVariant &value)
@@ -144,7 +167,7 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
 
     QVector<int> roles;
     if (property == constants::kDownloadID.toUtf8())
-        roles << DownloadRole;
+        roles << DownloadIDRole;
     if (property == constants::kURL.toUtf8())
         roles << UrlRole;
     if (property == constants::kHostkey.toUtf8())
@@ -170,7 +193,7 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
     if (property == constants::kDownloadState.toUtf8())
         roles << StateRole;
 
-    static const QVector<int> allRoles{DownloadRole,
+    static const QVector<int> allRoles{DownloadIDRole,
                                        UrlRole,
                                        HostKeyRole,
                                        NameRole,

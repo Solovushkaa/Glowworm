@@ -58,7 +58,8 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
                            const QString &created,
                            const QString &modified,
                            const QString &accessed,
-                           DownloadInfo::DownloadState downloadState)
+                           DownloadInfo::DownloadState downloadState,
+                           QObject *parent)
     : m_downloadID(downloadID)
     , m_url(url)
     , m_hostKey(hostKey)
@@ -72,6 +73,7 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
     , m_modified(modified)
     , m_accessed(accessed)
     , m_downloadState(downloadState)
+    , QObject(parent)
 {}
 
 DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
@@ -89,6 +91,7 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
     m_modified = downloadInfo.m_modified;
     m_accessed = downloadInfo.m_accessed;
     m_downloadState = downloadInfo.m_downloadState.value();
+    this->setParent(downloadInfo.parent());
 
     return *this;
 }
@@ -108,6 +111,7 @@ DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
     m_modified = std::move(downloadInfo.m_modified);
     m_accessed = std::move(downloadInfo.m_accessed);
     m_downloadState = downloadInfo.m_downloadState.value();
+    this->setParent(downloadInfo.parent());
 
     return *this;
 }

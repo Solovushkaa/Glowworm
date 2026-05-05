@@ -27,6 +27,7 @@ enum class ConnectionInfoMember {
     RemoteUserName,
     BluetoothAddress,
     BluetoothUUID,
+    ConnectionState,
     COUNT // To get the size of the enum
 };
 
@@ -48,12 +49,16 @@ class ConnectionInfo : public QObject
     Q_OBJECT
     QML_ELEMENT
     QML_UNCREATABLE("Managed from C++")
-    Q_PROPERTY(QString name MEMBER m_name CONSTANT)
-    Q_PROPERTY(Transport transport MEMBER m_transport CONSTANT)
-    Q_PROPERTY(QUrl url MEMBER m_url CONSTANT)
-    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName CONSTANT)
-    Q_PROPERTY(QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress CONSTANT)
-    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID CONSTANT)
+
+    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
+    Q_PROPERTY(Transport transport MEMBER m_transport READ transport NOTIFY transportChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
+    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName READ remoteUserName NOTIFY
+                   remoteUserNameChanged)
+    Q_PROPERTY(QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress READ bluetoothAddress
+                   NOTIFY bluetoothAddressChanged)
+    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID READ bluetoothUUID NOTIFY
+                   bluetoothUUIDChanged)
 
 public:
     enum class Transport {
@@ -80,13 +85,14 @@ private:
     // --- Constructors ---
 public:
     explicit ConnectionInfo(QObject *parent = nullptr);
-    ConnectionInfo(QString name,
+    ConnectionInfo(const QString &name,
                    Transport transport,
-                   QUrl url,
-                   QString remoteUserName,
-                   QBluetoothAddress bluetoothAddress,
-                   QBluetoothUuid bluetoothUUID,
-                   ConnectionState connectionState);
+                   const QUrl &url,
+                   const QString &remoteUserName,
+                   const QBluetoothAddress &bluetoothAddress,
+                   const QBluetoothUuid &bluetoothUUID,
+                   ConnectionState connectionState,
+                   QObject *parent = nullptr);
 
     ConnectionInfo(const ConnectionInfo &connectionInfo) { *this = connectionInfo; }
     ConnectionInfo &operator=(const ConnectionInfo &connectionInfo);
@@ -96,6 +102,12 @@ public:
 
     // --- Methods ---
 public:
+    QString name() const { return m_name; }
+    Transport transport() const { return m_transport; }
+    QUrl url() const { return m_url; }
+    QString remoteUserName() const { return m_remoteUserName; }
+    QBluetoothAddress bluetoothAddress() const { return m_bluetoothAddress; }
+    QBluetoothUuid bluetoothUUID() const { return m_bluetoothUUID; }
     ConnectionState connectionState() const { return m_connectionState; }
 
     // --- Slots ---
@@ -104,6 +116,12 @@ public slots:
 
     // --- Signals ---
 signals:
+    void nameChanged();
+    void transportChanged();
+    void urlChanged();
+    void remoteUserNameChanged();
+    void bluetoothAddressChanged();
+    void bluetoothUUIDChanged();
     void connectionStateChanged();
 
 public:

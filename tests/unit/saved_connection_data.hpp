@@ -15,7 +15,8 @@ inline constexpr QStringView oneConnectionData = uR"json(
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000"
+        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
+        "connectionState": 0
     }
 }
 )json";
@@ -30,7 +31,8 @@ inline constexpr QStringView threeConnectionData = uR"json(
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000"
+        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
+        "connectionState": 0
     },
     "Second Test Local Connection": {
         "name": "Second Test Local Connection",
@@ -39,7 +41,8 @@ inline constexpr QStringView threeConnectionData = uR"json(
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000"
+        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
+        "connectionState": 0
     },
     "Connection": {
         "name": "Connection",
@@ -48,7 +51,8 @@ inline constexpr QStringView threeConnectionData = uR"json(
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000"
+        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
+        "connectionState": 0
     }
 }
 )json";
@@ -69,6 +73,7 @@ inline constexpr std::array<QStringView, 3> bluetoothUUID
     = {u"{00000000-0000-0000-0000-000000000000}",
        u"{00000000-0000-0000-0000-000000000000}",
        u"{00000000-0000-0000-0000-000000000000}"};
+inline constexpr std::array<int, 3> connectionState = {0, 0, 0};
 
 } // namespace test
 

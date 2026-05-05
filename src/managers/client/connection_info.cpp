@@ -23,6 +23,8 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
         return constants::kBluetoothAddress;
     case BluetoothUUID:
         return constants::kBluetoothUUID;
+    case ConnectionState:
+        return constants::kConnectionState;
     default:
         throw std::invalid_argument("Unknown ConnectionInfoMember to convert to string");
     }
@@ -34,13 +36,14 @@ ConnectionInfo::ConnectionInfo(QObject *parent)
     : QObject(parent)
 {}
 
-ConnectionInfo::ConnectionInfo(QString name,
+ConnectionInfo::ConnectionInfo(const QString &name,
                                Transport transport,
-                               QUrl url,
-                               QString remoteUserName,
-                               QBluetoothAddress bluetoothAddress,
-                               QBluetoothUuid bluetoothUUID,
-                               ConnectionState connectionState)
+                               const QUrl &url,
+                               const QString &remoteUserName,
+                               const QBluetoothAddress &bluetoothAddress,
+                               const QBluetoothUuid &bluetoothUUID,
+                               ConnectionState connectionState,
+                               QObject *parent)
     : m_name(name)
     , m_transport(transport)
     , m_url(url)
@@ -48,6 +51,7 @@ ConnectionInfo::ConnectionInfo(QString name,
     , m_bluetoothAddress(bluetoothAddress)
     , m_bluetoothUUID(bluetoothUUID)
     , m_connectionState(connectionState)
+    , QObject(parent)
 {}
 
 ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
@@ -59,6 +63,7 @@ ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
     m_bluetoothAddress = connectionInfo.m_bluetoothAddress;
     m_bluetoothUUID = connectionInfo.m_bluetoothUUID;
     m_connectionState = connectionInfo.m_connectionState.value();
+    this->setParent(connectionInfo.parent());
 
     return *this;
 }
@@ -72,6 +77,7 @@ ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
     m_bluetoothAddress = std::move(connectionInfo.m_bluetoothAddress);
     m_bluetoothUUID = std::move(connectionInfo.m_bluetoothUUID);
     m_connectionState = connectionInfo.m_connectionState.value();
+    this->setParent(connectionInfo.parent());
 
     return *this;
 }

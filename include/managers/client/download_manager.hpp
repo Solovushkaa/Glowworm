@@ -22,7 +22,7 @@ class DownloadManager : public QAbstractListModel
     QML_UNCREATABLE("Managed from C++")
 
     enum DownloadRoles {
-        DownloadRole = Qt::UserRole + 1,
+        DownloadIDRole = Qt::UserRole + 1,
         UrlRole,
         HostKeyRole,
         NameRole,
@@ -44,11 +44,27 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     /**
-     * @brief Adding download to a file and RAM
+     * @brief Adding download
      */
+private:
     bool addDownload(DownloadInfo *info);
+
+public:
+    bool addDownload(const QString &downloadID,
+                     const QUrl &url,
+                     const QString &hostKey,
+                     const QString &name,
+                     const QString &path,
+                     const QString &saveName,
+                     const QString &savePath,
+                     qint64 size,
+                     qint64 lastReceivedByte,
+                     const QString &created,
+                     const QString &modified,
+                     const QString &accessed,
+                     DownloadInfo::DownloadState downloadState);
     /**
-     * @brief Deleting downloads from a file and RAM
+     * @brief Removing download
      */
     Q_INVOKABLE bool removeDownload(int index);
     bool removeDownload(DownloadInfo *downloadInfo);
@@ -77,6 +93,7 @@ public:
      * @brief Getting information about downloaded files
      */
     QHash<QString, DownloadInfo *> &getDownloadInfoDict() { return m_downloadInfoDict; }
+    QList<DownloadInfo *> &getDownloadInfoList() { return m_downloadInfoList; }
 
 signals:
     void downloadAdded();
@@ -87,8 +104,7 @@ private:
     QHash<QString, DownloadInfo *> m_downloadInfoDict; ///< Information about downloaded files
     QJsonObject m_jsonUnfinishedDownloads;           ///< A JSON object to save to a file
 
-    // Path to save imcomplited downloads
-    const QString m_savePath;
+    const QString m_savePath; ///< Path to save unfinished downloads
 
 public:
     using InfoType = DownloadInfo;
