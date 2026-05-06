@@ -50,7 +50,7 @@ public:
     /**
      * @brief Removing connection
      */
-    Q_INVOKABLE bool removeConnection(int activeIndex, int deleteIndex);
+    Q_INVOKABLE bool deleteConnection(int activeIndex, int deleteIndex);
     Q_INVOKABLE bool updateConnection(int index, const QString &property, const QVariant &value);
 
 public:
@@ -86,6 +86,7 @@ public:
      */
     QList<ConnectionInfo *> &getConnectionInfoList() { return m_connectionInfoList; }
     QHash<QString, ConnectionInfo *> &getConnectionInfoDict() { return m_connectionInfoDict; }
+    int getConnectionCount() const { return m_connectionInfoList.size(); };
 
     /**
      * @brief Get active connection.

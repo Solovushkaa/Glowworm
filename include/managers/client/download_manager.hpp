@@ -66,8 +66,8 @@ public:
     /**
      * @brief Removing download
      */
-    Q_INVOKABLE bool removeDownload(int index);
-    bool removeDownload(DownloadInfo *downloadInfo);
+    Q_INVOKABLE bool deleteDownload(int index);
+    bool deleteDownload(DownloadInfo *downloadInfo);
     Q_INVOKABLE bool updateDownload(int index, const QString &property, const QVariant &value);
 
 public:
@@ -94,6 +94,7 @@ public:
      */
     QHash<QString, DownloadInfo *> &getDownloadInfoDict() { return m_downloadInfoDict; }
     QList<DownloadInfo *> &getDownloadInfoList() { return m_downloadInfoList; }
+    int getDownloadCount() const { return m_downloadInfoList.size(); }
 
 signals:
     void downloadAdded();

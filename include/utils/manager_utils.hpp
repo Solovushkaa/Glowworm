@@ -8,7 +8,7 @@ std::optional<QByteArray> readConfigFile(const QString &filePath);
 
 bool rewriteConfigFile(const QString &filePath, const QJsonObject &jsonDownloadInfo);
 
-template<typename infoType>
+template<typename InfoType>
 bool isCorrectAppDataKey(const QJsonObject &jsonObject);
 
 template<typename Manager>

@@ -36,10 +36,10 @@ bool rewriteConfigFile(const QString &filePath, const QJsonObject &jsonDownloadI
     return true;
 }
 
-template<typename infoType>
+template<typename InfoType>
 bool isCorrectAppDataKey(const QJsonObject &jsonObject)
 {
-    constexpr bool is_downloadInfo = std::is_same_v<infoType, DownloadInfo>;
+    constexpr bool is_downloadInfo = std::is_same_v<InfoType, DownloadInfo>;
 
     auto enumMemberToString = [is_downloadInfo](const auto &info) -> QStringView {
         if constexpr (is_downloadInfo) {

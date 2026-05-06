@@ -14,24 +14,35 @@ struct DownloadManagerTest : ::testing::Test
     }
     void TearDown() override { downloadManager.reset(); }
 
-    void openEmptyConfig() { openConfig(); }
-    void openConfigWithOneElement()
+    void openEmptyUnfinishedDownloadsFile()
+    {
+        createNewDownloadManager();
+
+        expectedDownloadCount = 0;
+    }
+    void openUnfinishedDownloadsFileWithOneElement()
     {
         configFile.write(test::oneDownloadData.toUtf8());
-        openConfig();
+
+        createNewDownloadManager();
+
+        expectedDownloadCount = 1;
     }
-    void openConfigWithThreeElements()
+    void openUnfinishedDownloadsFileWithThreeElements()
     {
         configFile.write(test::threeDownloadData.toUtf8());
-        openConfig();
+
+        createNewDownloadManager();
+
+        expectedDownloadCount = 3;
     }
-    void openConfig()
+    void createNewDownloadManager()
     {
         configFile.flush();
         downloadManager = std::make_unique<DownloadManager>(configFile.fileName());
     }
 
-    void compareRealAndEstimateValues(DownloadInfo *downloadInfo, int index)
+    void compareRealAndExpectedValues(DownloadInfo *downloadInfo, int index)
     {
         EXPECT_EQ(downloadInfo->m_downloadID, test::downloadID[index]);
         EXPECT_EQ(downloadInfo->m_url, test::url[index].toString());
@@ -48,7 +59,7 @@ struct DownloadManagerTest : ::testing::Test
         EXPECT_EQ(downloadInfo->m_size, test::size[index]);
     }
 
-    void addDownloadToManager(int index)
+    void addDownloadToManager(int index, bool isDuplicate = false)
     {
         downloadManager->addDownload(test::downloadID[index].toString(),
                                      test::url[index].toString(),
@@ -64,104 +75,132 @@ struct DownloadManagerTest : ::testing::Test
                                      test::accessed[index].toString(),
                                      static_cast<DownloadInfo::DownloadState>(
                                          test::downloadState[index]));
+
+        if (!isDuplicate)
+            ++expectedDownloadCount;
     }
+
+    void deleteDownloadFromManager(int deleteIndex)
+    {
+        downloadManager->deleteDownload(deleteIndex);
+
+        --expectedDownloadCount;
+    }
+    void deleteDownloadFromManager(DownloadInfo *downloadInfo)
+    {
+        downloadManager->deleteDownload(downloadInfo);
+
+        --expectedDownloadCount;
+    }
+
+    int getRealDownloadCount() const { return downloadManager->getDownloadCount(); }
 
     std::unique_ptr<DownloadManager> downloadManager;
     QTemporaryFile configFile;
+    int expectedDownloadCount;
 };
 
 TEST_F(DownloadManagerTest, OpenEmptyDownloadsFile)
 {
-    openEmptyConfig();
+    openEmptyUnfinishedDownloadsFile();
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 }
 
 TEST_F(DownloadManagerTest, OpenDownloadsFileWithOneElement)
 {
-    openConfigWithOneElement();
+    openUnfinishedDownloadsFileWithOneElement();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    ASSERT_EQ(downloadManager->getDownloadInfoDict().size(), 1);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 }
 
 TEST_F(DownloadManagerTest, OpenDownloadsFileWithThreeElements)
 {
-    openConfigWithThreeElements();
+    openUnfinishedDownloadsFileWithThreeElements();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    ASSERT_EQ(downloadManager->getDownloadInfoDict().size(), 3);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 }
 
 TEST_F(DownloadManagerTest, ReadDownloadsFileWithThreeElements)
 {
-    openConfigWithThreeElements();
+    openUnfinishedDownloadsFileWithThreeElements();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    ASSERT_EQ(downloadManager->getDownloadInfoDict().size(), 3);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 
     auto &downloadInfoDict = downloadManager->getDownloadInfoDict();
     for (int i = 0; i < 3; ++i) {
-        compareRealAndEstimateValues(downloadInfoDict[test::downloadID[i]], i);
+        compareRealAndExpectedValues(downloadInfoDict[test::downloadID[i]], i);
     }
 }
 
-TEST_F(DownloadManagerTest, DeleteDownloadInfo)
+TEST_F(DownloadManagerTest, DeleteDownloadByIndex)
 {
-    openConfigWithThreeElements();
+    openUnfinishedDownloadsFileWithThreeElements();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    auto &downloadInfoDict = downloadManager->getDownloadInfoDict();
+    int deleteIndex = 0;
+    deleteDownloadFromManager(deleteIndex);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
+}
 
-    auto &saveDownloadInfo = downloadInfoDict[test::downloadID.back()];
+TEST_F(DownloadManagerTest, DeleteDownloadByValue)
+{
+    openUnfinishedDownloadsFileWithThreeElements();
 
-    downloadManager->removeDownload(saveDownloadInfo);
+    ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    ASSERT_EQ(downloadManager->getDownloadInfoDict().size(), 2);
+    deleteDownloadFromManager(downloadManager->getDownloadInfoDict()[test::downloadID.back()]);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 }
 
 TEST_F(DownloadManagerTest, AddDownloadInfoToEmptyDownloadsFile)
 {
-    openEmptyConfig();
+    openEmptyUnfinishedDownloadsFile();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    addDownloadToManager(0);
-    ASSERT_EQ(downloadManager->getDownloadInfoList().size(), 1);
+    int addIndex = 0;
+    addDownloadToManager(addIndex);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
+
+    compareRealAndExpectedValues(downloadManager->getDownloadInfoList()[addIndex], addIndex);
 }
 
 TEST_F(DownloadManagerTest, AddDuplicateDownloadInfo)
 {
-    openConfigWithThreeElements();
+    openUnfinishedDownloadsFileWithThreeElements();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
-    auto &downloadInfoDict = downloadManager->getDownloadInfoDict();
-
-    addDownloadToManager(0);
-    ASSERT_EQ(downloadManager->getDownloadInfoList().size(), 3);
+    int addIndex = 0;
+    bool isDuplicate = true;
+    addDownloadToManager(addIndex, true);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 }
 
 TEST_F(DownloadManagerTest, DeleteAddDownloadInfo)
 {
-    openConfigWithThreeElements();
+    openUnfinishedDownloadsFileWithThreeElements();
 
     ASSERT_TRUE(downloadManager->readUnfinishedDownloads());
 
     auto &downloadInfoDict = downloadManager->getDownloadInfoDict();
 
-    auto saveDownloadInfo = new DownloadInfo(*downloadInfoDict[test::downloadID.back()]);
+    auto deleteElement = downloadInfoDict[test::downloadID.back()];
+    deleteDownloadFromManager(downloadManager->getDownloadInfoDict()[test::downloadID.back()]);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 
-    downloadManager->removeDownload(downloadInfoDict[test::downloadID.back()]);
-    ASSERT_EQ(downloadInfoDict.size(), 2);
+    int addIndex = 2;
+    addDownloadToManager(addIndex);
+    ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 
-    addDownloadToManager(2);
-    ASSERT_EQ(downloadManager->getDownloadInfoList().size(), 3);
-
-    for (int i = 0; i < 3; ++i) {
-        compareRealAndEstimateValues(downloadInfoDict[test::downloadID[i]], i);
+    for (int i = 0; i < expectedDownloadCount; ++i) {
+        compareRealAndExpectedValues(downloadInfoDict[test::downloadID[i]], i);
     }
 }

@@ -98,7 +98,7 @@ bool ClientConnectionManager::addConnection(const QString &name,
     return addConnection(connectionInfo);
 }
 
-bool ClientConnectionManager::removeConnection(int activeIndex, int deleteIndex)
+bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
 {
     if (deleteIndex < 0 || deleteIndex >= m_connectionInfoList.size()) {
         qCritical() << "Bad Connection Info removal index!";

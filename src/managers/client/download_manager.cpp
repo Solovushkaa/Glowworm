@@ -126,7 +126,7 @@ bool DownloadManager::addDownload(const QString &downloadID,
     return addDownload(downloadInfo);
 }
 
-bool DownloadManager::removeDownload(int index)
+bool DownloadManager::deleteDownload(int index)
 {
     if (index < 0 || index >= m_downloadInfoList.size()) {
         qCritical() << "Bad DownloadInfo removal index!";
@@ -148,10 +148,10 @@ bool DownloadManager::removeDownload(int index)
     return rewriteConfigFile(m_savePath, m_jsonUnfinishedDownloads);
 }
 
-bool DownloadManager::removeDownload(DownloadInfo *downloadInfo)
+bool DownloadManager::deleteDownload(DownloadInfo *downloadInfo)
 {
     int index = m_downloadInfoList.indexOf(downloadInfo);
-    return removeDownload(index);
+    return deleteDownload(index);
 }
 
 bool DownloadManager::updateDownload(int index, const QString &property, const QVariant &value)

@@ -14,25 +14,35 @@ struct ClientConnectionManagerTest : ::testing::Test
     }
     void TearDown() override { clientConnectionManager.reset(); }
 
-    void openEmptyConfig() { openConfig(); }
-    void openConfigWithOneElement()
+    void openEmptySavedConnectionsFile()
+    {
+        createNewConnectionManager();
+
+        expectedConnectionCount = 0;
+    }
+    void openSavedConnectionsFileWithOneElement()
     {
         configFile.write(test::oneConnectionData.toUtf8());
-        configFile.flush();
-        openConfig();
+
+        createNewConnectionManager();
+
+        expectedConnectionCount = 1;
     }
-    void openConfigWithThreeElements()
+    void openSavedConnectionsFileWithThreeElements()
     {
         configFile.write(test::threeConnectionData.toUtf8());
-        configFile.flush();
-        openConfig();
+
+        createNewConnectionManager();
+
+        expectedConnectionCount = 3;
     }
-    void openConfig()
+    void createNewConnectionManager()
     {
+        configFile.flush();
         clientConnectionManager = std::make_unique<ClientConnectionManager>(configFile.fileName());
     }
 
-    void compareRealAndEstimateValues(ConnectionInfo *connectionInfo, int index)
+    void compareRealAndExpectedValues(ConnectionInfo *connectionInfo, int index)
     {
         EXPECT_EQ(connectionInfo->m_url.host(), test::address[index]);
         EXPECT_EQ(connectionInfo->m_url.port(), test::port[index]);
@@ -44,7 +54,7 @@ struct ClientConnectionManagerTest : ::testing::Test
                   test::connectionState[index]);
     }
 
-    void addConnectionToManager(int index)
+    void addConnectionToManager(int index, bool isDuplicate = false)
     {
         QUrl url;
         url.setHost(test::address[index].toString());
@@ -57,9 +67,18 @@ struct ClientConnectionManagerTest : ::testing::Test
                             test::remoteUserName[index].toString(),
                             QBluetoothAddress(test::bluetoothAddress[index].toString()),
                             QBluetoothUuid(test::bluetoothUUID[index]));
+
+        if (!isDuplicate)
+            ++expectedConnectionCount;
+    }
+    void deleteConnectionFromManager(int activeIndex, int deleteIndex)
+    {
+        clientConnectionManager->deleteConnection(0, deleteIndex);
+
+        --expectedConnectionCount;
     }
 
-    void setTestDataToConnectionInfo(ConnectionInfo *connectionInfo, int index)
+    [[maybe_unused]] void setTestDataToConnectionInfo(ConnectionInfo *connectionInfo, int index)
     {
         connectionInfo->m_name = test::name[index].toString();
         connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(test::transport[index]);
@@ -73,101 +92,106 @@ struct ClientConnectionManagerTest : ::testing::Test
             test::connectionState[index]);
     }
 
+    int getRealConnectionCount() const { return clientConnectionManager->getConnectionCount(); }
+
     std::unique_ptr<ClientConnectionManager> clientConnectionManager;
     QTemporaryFile configFile;
-    const int one = 1;
-    const int two = 2;
-    const int three = 3;
+    int expectedConnectionCount;
 };
 
 TEST_F(ClientConnectionManagerTest, OpenEmptyConnectionsFile)
 {
-    openEmptyConfig();
+    openEmptySavedConnectionsFile();
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 }
 
 TEST_F(ClientConnectionManagerTest, OpenConnectionsFileWithOneElement)
 {
-    openConfigWithOneElement();
+    openSavedConnectionsFileWithOneElement();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), one);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 }
 
 TEST_F(ClientConnectionManagerTest, OpenConnectionsFileWithThreeElements)
 {
-    openConfigWithThreeElements();
+    openSavedConnectionsFileWithThreeElements();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), three);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 }
 
 TEST_F(ClientConnectionManagerTest, ReadConnectionsFileWithThreeElements)
 {
-    openConfigWithThreeElements();
+    openSavedConnectionsFileWithThreeElements();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), three);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 
     auto &connectionInfoDict = clientConnectionManager->getConnectionInfoDict();
-
-    for (int i = 0; i < three; ++i) {
-        compareRealAndEstimateValues(connectionInfoDict[test::name[i]], i);
+    for (int i = 0; i < expectedConnectionCount; ++i) {
+        compareRealAndExpectedValues(connectionInfoDict[test::name[i]], i);
     }
 }
 
-TEST_F(ClientConnectionManagerTest, DeleteConnectionInfo)
+TEST_F(ClientConnectionManagerTest, DeleteConnectionByIndex)
 {
-    openConfigWithThreeElements();
+    openSavedConnectionsFileWithThreeElements();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    clientConnectionManager->removeConnection(0, two);
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), two);
+    int deleteIndex = 2;
+    deleteConnectionFromManager(0, deleteIndex);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 }
 
 TEST_F(ClientConnectionManagerTest, AddConnectionInfoToEmptyConnectionsFile)
 {
-    openEmptyConfig();
+    openEmptySavedConnectionsFile();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    addConnectionToManager(0);
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), one);
+    int addIndex = 0;
+    addConnectionToManager(addIndex);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 
-    compareRealAndEstimateValues(clientConnectionManager->getConnectionInfoList()[0], 0);
+    compareRealAndExpectedValues(clientConnectionManager->getConnectionInfoList()[addIndex],
+                                 addIndex);
 }
 
 TEST_F(ClientConnectionManagerTest, AddDuplicateConnectionInfo)
 {
-    openConfigWithThreeElements();
+    openSavedConnectionsFileWithThreeElements();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
-    addConnectionToManager(0);
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), 3);
+    int addIndex = 0;
+    bool isDuplicate = true;
+    addConnectionToManager(addIndex, isDuplicate);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 }
 
-TEST_F(ClientConnectionManagerTest, DeleteAddDownloadInfo)
+TEST_F(ClientConnectionManagerTest, DeleteAddConenctionInfo)
 {
-    openConfigWithThreeElements();
+    openSavedConnectionsFileWithThreeElements();
 
     ASSERT_TRUE(clientConnectionManager->readSavedConnections());
 
     auto &connectionInfoDict = clientConnectionManager->getConnectionInfoDict();
 
-    int removeIndex = clientConnectionManager->getConnectionInfoList().indexOf(
+    int deleteIndex = clientConnectionManager->getConnectionInfoList().indexOf(
         connectionInfoDict[test::name[0]]);
-    clientConnectionManager->removeConnection(0, removeIndex);
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), 2);
+    deleteConnectionFromManager(0, deleteIndex);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 
-    addConnectionToManager(0);
-    ASSERT_EQ(clientConnectionManager->getConnectionInfoList().size(), 3);
+    int addIndex = 0;
+    addConnectionToManager(addIndex);
+    ASSERT_EQ(getRealConnectionCount(), expectedConnectionCount);
 
-    for (int i = 0; i < three; ++i) {
-        compareRealAndEstimateValues(connectionInfoDict[test::name[i]], i);
+    for (int i = 0; i < expectedConnectionCount; ++i) {
+        compareRealAndExpectedValues(connectionInfoDict[test::name[i]], i);
     }
 }
