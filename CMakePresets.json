@@ -1,0 +1,94 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "multi-config-base",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/cmake/toolchain.cmake",
+      "description": "Multi-Configure build preset"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "multi-config-base",
+      "configuration": "Debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "multi-config-base",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "unit-debug",
+      "configurePreset": "multi-config-base",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "label": "UnitTests"
+        }
+      }
+    },
+    {
+      "name": "functional-debug",
+      "configurePreset": "multi-config-base",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "label": "FunctionalTests"
+        }
+      }
+    },
+    {
+      "name": "unit-release",
+      "configurePreset": "multi-config-base",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "label": "UnitTests"
+        }
+      }
+    },
+    {
+      "name": "functional-release",
+      "configurePreset": "multi-config-base",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "label": "FunctionalTests"
+        }
+      }
+    },
+    {
+      "name": "all-debug",
+      "configurePreset": "multi-config-base",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "all-release",
+      "configurePreset": "multi-config-base",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

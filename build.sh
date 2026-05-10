@@ -1,1 +1,0 @@
-cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -G "Ninja Multi-Config" .

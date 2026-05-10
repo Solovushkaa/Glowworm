@@ -9,7 +9,6 @@
 #include <QAbstractListModel>
 #include <QFile>
 #include <QJsonObject>
-#include <QStandardPaths>
 #include "download_info.hpp"
 // #include <type_traits>
 
@@ -74,10 +73,7 @@ public:
     /**
      * @brief Сonstructor for reading UnfinishedDownload.json file.
      */
-    DownloadManager(
-        const QString &savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                                  + "/AppData/Client/UnfinishedDownloads.json",
-        QObject *parent = nullptr);
+    DownloadManager(const QString &savePath, QObject *parent = nullptr);
 
     /**
      * @brief Read imcomlplit downloads from file.

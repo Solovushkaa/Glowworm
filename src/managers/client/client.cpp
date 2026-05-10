@@ -1,44 +1,55 @@
-#include "client.h"
+#include "client.hpp"
 
-Client::Client(QObject *parent)
-    : QObject{parent}
-    , m_connectionManager()
-    , m_downloadManager()
+Client::Client(const QString &connectionsFilePath, const QString &downloadsFilePath, QObject *parent)
+    : QObject(parent)
+    , m_connectionManager(connectionsFilePath)
+    , m_downloadManager(downloadsFilePath)
 {
-    // connect(&m_timer, &QTimer::timeout, this, &DirectClient::startConnectionVerification);
+    m_clientMessenger = &m_clientHttpMessenger; // Temporarily
+    m_connectionManager.readSavedConnections();
+    signalSlotConnection();
+    // connect(&m_timer, &QTimer::timeout, this, &ClientHttpMessenger::startConnectionVerification);
 }
 
 void Client::changeConnection(int index)
 {
-    m_connectionManager.setActive(index);
+    m_connectionManager.setActiveConnection(index);
 }
 
 void Client::checkConnectionToServer()
 {
-    m_currentClientNetworkProtocol->checkConnectionToServer(m_connectionManager.getActive().m_url);
+    m_clientMessenger->checkConnectionToServer(m_connectionManager.getActiveConnection());
 }
 
-void Client::getDirectoryList(const QString &path, const QString &url, const QString &userID)
+void Client::getDirectoryList()
 {
-    m_currentClientNetworkProtocol->getDirectoryList(path, url, userID);
+    // m_clientMessenger->getDirectoryList(m_connectionManager.getActiveConnection());
 }
 
-void Client::getFile(const QString &path, const QString &savePath, const QString &saveName)
+void Client::signalSlotConnection()
 {
-    m_currentClientNetworkProtocol->getFile(m_currentDirectory,
-                                      m_connectionManager.getActive().m_currentHostName,
-                                      m_downloadManager,
-                                      path,
-                                      savePath,
-                                      saveName);
+    connect(m_clientMessenger,
+            &ClientMessenger::statusCodeChanged,
+            this,
+            &Client::connectionStatusCodeChanged);
 }
 
-void Client::startDownload(const QString &downloadID)
-{
-    m_currentClientNetworkProtocol->startDownload(downloadID);
-}
+// void Client::getFile(const QString &path, const QString &savePath, const QString &saveName)
+// {
+//     m_currentClientNetworkProtocol->getFile(m_currentDirectory,
+//                                       m_connectionManager.getActive().m_currentHostName,
+//                                       m_downloadManager,
+//                                       path,
+//                                       savePath,
+//                                       saveName);
+// }
 
-void Client::stopDownload(const QString &downloadID)
-{
-    m_currentClientNetworkProtocol->stopDownload(downloadID);
-}
+// void Client::startDownload(const QString &downloadID)
+// {
+//     m_currentClientNetworkProtocol->startDownload(downloadID);
+// }
+
+// void Client::stopDownload(const QString &downloadID)
+// {
+//     m_currentClientNetworkProtocol->stopDownload(downloadID);
+// }

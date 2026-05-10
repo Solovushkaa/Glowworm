@@ -77,6 +77,8 @@ bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo
         return false;
     }
 
+    qDebug() << "fileData:";
+    qDebug() << fileData.value(); //////-----------------------
     jsonInfo = parseJsonToObject(fileData.value());
 
     using InfoType = typename Manager::InfoType;

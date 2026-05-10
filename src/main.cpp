@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     // App application;
 
-    // qmlRegisterSingletonInstance("DirectClient", 1, 0, "Client", &core.m_guiHttpClientConnector);
+    // qmlRegisterSingletonInstance("ClientHttpMessenger", 1, 0, "Client", &core.m_guiHttpClientConnector);
 
     // ClientConnectionManager connectionManager(client);
     // qmlRegisterSingletonInstance("ClientConnectionManager",
@@ -41,13 +41,13 @@ int main(int argc, char *argv[])
 
     // QLoggingCategory::setFilterRules("*.debug=false");
 
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreationFailed,
-        &app,
-        []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.loadFromModule("DFSystem", "Main");
+    // QObject::connect(
+    //     &engine,
+    //     &QQmlApplicationEngine::objectCreationFailed,
+    //     &app,
+    //     []() { QCoreApplication::exit(-1); },
+    //     Qt::QueuedConnection);
+    // engine.loadFromModule("Glowworm", "Main");
 
     return app.exec();
 }

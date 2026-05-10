@@ -7,7 +7,6 @@
 
 #include <QAbstractListModel>
 #include <QJsonObject>
-#include <QStandardPaths>
 #include "connection_info.hpp"
 
 /**
@@ -57,10 +56,7 @@ public:
     /**
      * @brief Сonstructor for reading SavedConnections.json file
      */
-    ClientConnectionManager(
-        const QString &savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                                  + "/AppData/Client/SavedConnections.json",
-        QObject *parent = nullptr);
+    ClientConnectionManager(const QString &savePath, QObject *parent = nullptr);
 
     /**
      * @brief Read saved connections from file.
@@ -71,7 +67,7 @@ public:
     /**
      * @brief Set active connection.
      */
-    void setActive(int index);
+    void setActiveConnection(int index);
 
     void setConnectionInfoFromJsonObject(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
     void setJsonObjectFromConnectionInfo(QJsonObject &jsonObject, ConnectionInfo *connectionInfo);
@@ -97,7 +93,7 @@ signals:
     /**
      * @brief A signal indicating a change the active connection.
      */
-    void activeConnectionsChanged();
+    void activeConnectionChanged();
 
     void connectionAdded();
     void connectionRemoved(int index);

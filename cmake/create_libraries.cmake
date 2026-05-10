@@ -1,6 +1,7 @@
 function(create_libraries LIB_TARGETS)
     set(LIB_TARGETS "")
 
+    # Client managers lib
     qt_add_library(ClientManagers STATIC)
     target_sources(ClientManagers PRIVATE
         ${CMAKE_SOURCE_DIR}/src/managers/client/download_info.cpp
@@ -19,16 +20,71 @@ function(create_libraries LIB_TARGETS)
     target_include_directories(ClientManagers
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/client
-            ${CMAKE_SOURCE_DIR}/include/managers
             ${CMAKE_SOURCE_DIR}/include/utils
+            ${CMAKE_SOURCE_DIR}/include
     )
     target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth Qt6::Qml)
     LIST(APPEND LIB_TARGETS ClientManagers)
 
+    # Server lib
+    qt_add_library(Server STATIC)
+    target_sources(Server PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/managers/server/server.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/server/server.hpp
+
+        ${CMAKE_SOURCE_DIR}/include/network/server/server_messenger.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/server/server_http_messenger.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/server/server_http_messenger.hpp
+
+        # ${CMAKE_SOURCE_DIR}/include/network/server/server_transport.hpp
+        # ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_transport.cpp
+        # ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_transport.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
+        ${CMAKE_SOURCE_DIR}/src/utils/server_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/server_utils.hpp
+    )
+    target_include_directories(Server
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/managers/server
+            ${CMAKE_SOURCE_DIR}/include/network/server
+            ${CMAKE_SOURCE_DIR}/include/utils
+            ${CMAKE_SOURCE_DIR}/include
+    )
+    target_link_libraries(Server PUBLIC Qt6::Core Qt6::HttpServer)
+    LIST(APPEND LIB_TARGETS Server)
+
+    # Client lib
+    qt_add_library(Client STATIC)
+    target_sources(Client PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/managers/client/client.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/client.hpp
+
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_messenger.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_http_messenger.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_http_messenger.hpp
+
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_transport.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_tcp_transport.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_tcp_transport.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
+    )
+    target_include_directories(Client
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/managers/client
+            ${CMAKE_SOURCE_DIR}/include/network/client
+            ${CMAKE_SOURCE_DIR}/include/utils
+    )
+    target_link_libraries(Client PUBLIC Qt6::Core Qt6::Network ClientManagers)
+    LIST(APPEND LIB_TARGETS Client)
+
 
     foreach(LIB IN LISTS LIB_TARGETS)
         target_compile_features(${LIB} PUBLIC cxx_std_23)
-        target_compile_definitions(${LIB} PRIVATE QT_NO_DEBUG_OUTPUT)
+        # target_compile_definitions(${LIB} PRIVATE QT_NO_DEBUG_OUTPUT)
 
         set_target_properties(${LIB}
             PROPERTIES

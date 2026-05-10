@@ -188,10 +188,10 @@ void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObje
     m_connectionInfoDict.insert(connectionInfo->m_name, connectionInfo);
 }
 
-void ClientConnectionManager::setActive(int index)
+void ClientConnectionManager::setActiveConnection(int index)
 {
     m_activeConnection = m_connectionInfoList[index];
-    emit activeConnectionsChanged();
+    emit activeConnectionChanged();
 }
 
 void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *connectionInfo,
