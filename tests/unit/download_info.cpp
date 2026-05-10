@@ -34,5 +34,5 @@ TEST(DownloadInfoTest, SignalStateChanging)
 
     downloadInfo.setDownloadState(DownloadInfo::DownloadState::Active);
 
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    ASSERT_EQ(spy.count(), 1);
 }

@@ -62,7 +62,7 @@ ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
     m_remoteUserName = connectionInfo.m_remoteUserName;
     m_bluetoothAddress = connectionInfo.m_bluetoothAddress;
     m_bluetoothUUID = connectionInfo.m_bluetoothUUID;
-    m_connectionState = connectionInfo.m_connectionState.value();
+    m_connectionState = connectionInfo.m_connectionState;
     this->setParent(connectionInfo.parent());
 
     return *this;
@@ -76,7 +76,7 @@ ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
     m_remoteUserName = std::move(connectionInfo.m_remoteUserName);
     m_bluetoothAddress = std::move(connectionInfo.m_bluetoothAddress);
     m_bluetoothUUID = std::move(connectionInfo.m_bluetoothUUID);
-    m_connectionState = connectionInfo.m_connectionState.value();
+    m_connectionState = connectionInfo.m_connectionState;
     this->setParent(connectionInfo.parent());
 
     return *this;

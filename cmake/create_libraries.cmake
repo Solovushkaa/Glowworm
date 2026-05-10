@@ -81,10 +81,23 @@ function(create_libraries LIB_TARGETS)
     target_link_libraries(Client PUBLIC Qt6::Core Qt6::Network ClientManagers)
     LIST(APPEND LIB_TARGETS Client)
 
+    # Logger lib
+    qt_add_library(Logger STATIC)
+    target_sources(Logger PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/application/log.cpp
+        ${CMAKE_SOURCE_DIR}/include/application/log.hpp
+    )
+    target_include_directories(Logger
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/application
+    )
+    target_link_libraries(Logger PUBLIC Qt6::Core)
+    LIST(APPEND LIB_TARGETS Logger)
 
     foreach(LIB IN LISTS LIB_TARGETS)
         target_compile_features(${LIB} PUBLIC cxx_std_23)
-        # target_compile_definitions(${LIB} PRIVATE QT_NO_DEBUG_OUTPUT)
+        target_compile_definitions(${LIB} PUBLIC $<$<CONFIG:Debug>:QT_MESSAGELOGCONTEXT>)
+        target_compile_definitions(${LIB} PUBLIC $<$<CONFIG:Debug>:QT_NO_DEBUG_OUTPUT>)
 
         set_target_properties(${LIB}
             PROPERTIES

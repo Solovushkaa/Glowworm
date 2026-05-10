@@ -50,16 +50,6 @@ class ConnectionInfo : public QObject
     QML_ELEMENT
     QML_UNCREATABLE("Managed from C++")
 
-    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
-    Q_PROPERTY(Transport transport MEMBER m_transport READ transport NOTIFY transportChanged)
-    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName READ remoteUserName NOTIFY
-                   remoteUserNameChanged)
-    Q_PROPERTY(QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress READ bluetoothAddress
-                   NOTIFY bluetoothAddressChanged)
-    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID READ bluetoothUUID NOTIFY
-                   bluetoothUUIDChanged)
-
 public:
     enum class Transport {
         DIRECT,    ///< Direct connection with HTTP protocol
@@ -77,10 +67,17 @@ public:
     Q_ENUM(ConnectionState)
 
 private:
+    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
+    Q_PROPERTY(Transport transport MEMBER m_transport READ transport NOTIFY transportChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
+    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName READ remoteUserName NOTIFY
+                   remoteUserNameChanged)
+    Q_PROPERTY(QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress READ bluetoothAddress
+                   NOTIFY bluetoothAddressChanged)
+    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID READ bluetoothUUID NOTIFY
+                   bluetoothUUIDChanged)
     Q_PROPERTY(ConnectionState connectionState READ connectionState WRITE setConnectionState NOTIFY
-                   connectionStateChanged BINDABLE bindableConnectionState)
-
-    QBindable<ConnectionState> bindableConnectionState() { return &m_connectionState; }
+                   connectionStateChanged)
 
     // --- Constructors ---
 public:
@@ -100,7 +97,7 @@ public:
     ConnectionInfo(ConnectionInfo &&connectionInfo) { *this = std::move(connectionInfo); }
     ConnectionInfo &operator=(ConnectionInfo &&connectionInfo);
 
-    // --- Methods ---
+    // --- Get Methods ---
 public:
     QString name() const { return m_name; }
     Transport transport() const { return m_transport; }
@@ -110,9 +107,13 @@ public:
     QBluetoothUuid bluetoothUUID() const { return m_bluetoothUUID; }
     ConnectionState connectionState() const { return m_connectionState; }
 
-    // --- Slots ---
-public slots:
-    void setConnectionState(ConnectionState state) { m_connectionState = state; }
+    // --- Set Methods ---
+public:
+    void setConnectionState(ConnectionState state)
+    {
+        m_connectionState = state;
+        emit connectionStateChanged();
+    }
 
     // --- Signals ---
 signals:
@@ -137,12 +138,7 @@ public:
     QBluetoothAddress m_bluetoothAddress; ///< Bluetooth address
     QBluetoothUuid m_bluetoothUUID;       ///< Bluetooth UUID
 
-    // QProperty<ConnectionState> m_connectionState; ///< Connection state
-
-    Q_OBJECT_BINDABLE_PROPERTY(ConnectionInfo,
-                               ConnectionInfo::ConnectionState,
-                               m_connectionState,
-                               &ConnectionInfo::connectionStateChanged)
+    ConnectionState m_connectionState; ///< Connection state
 };
 
 #endif // CONNECTIONINFO_HPP

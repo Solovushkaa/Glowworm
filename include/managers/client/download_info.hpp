@@ -61,20 +61,6 @@ class DownloadInfo : public QObject
     QML_ELEMENT
     QML_UNCREATABLE("Managed from C++")
 
-    Q_PROPERTY(QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged)
-    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged)
-    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
-    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged)
-    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged)
-    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged)
-    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged)
-    Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte READ lastReceivedByte NOTIFY
-                   lastReceivedByteChanged)
-    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged)
-    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged)
-    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged)
-
 public:
     /**
      * @enum State
@@ -90,10 +76,21 @@ public:
     Q_ENUM(DownloadState)
 
 private:
+    Q_PROPERTY(QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
+    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged)
+    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged)
+    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged)
+    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged)
+    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged)
+    Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte READ lastReceivedByte NOTIFY
+                   lastReceivedByteChanged)
+    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged)
+    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged)
+    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged)
     Q_PROPERTY(DownloadState downloadState READ downloadState WRITE setDownloadState NOTIFY
-                   downloadStateChanged BINDABLE bindableDownloadState)
-
-    QBindable<DownloadState> bindableDownloadState() { return &m_downloadState; }
+                   downloadStateChanged)
 
     // --- Constructors ---
 public:
@@ -119,7 +116,7 @@ public:
     DownloadInfo(DownloadInfo &&downloadInfo) { *this = std::move(downloadInfo); }
     DownloadInfo &operator=(DownloadInfo &&downloadInfo);
 
-    // --- Methods ---
+    // --- Get Methods ---
 public:
     QString downloadID() const { return m_downloadID; }
     QUrl url() const { return m_url; }
@@ -135,9 +132,13 @@ public:
     QString accessed() const { return m_accessed; }
     DownloadState downloadState() const { return m_downloadState; }
 
-    // --- Slots ---
-public slots:
-    void setDownloadState(DownloadState state) { m_downloadState = state; }
+    // --- Set Methods ---
+public:
+    void setDownloadState(DownloadState state)
+    {
+        m_downloadState = state;
+        emit downloadStateChanged();
+    }
 
     // --- Signals ---
 signals:
@@ -169,12 +170,7 @@ public:
     QString m_created;              ///< File creation time
     QString m_modified;             ///< File last modification time
     QString m_accessed;             ///< File last access time
-    // QProperty<DownloadState> m_downloadState; ///< Download status
-
-    Q_OBJECT_BINDABLE_PROPERTY(DownloadInfo,
-                               DownloadInfo::DownloadState,
-                               m_downloadState,
-                               &DownloadInfo::downloadStateChanged)
+    DownloadState m_downloadState;  ///< Download state
 };
 
 #endif // DOWNLOADINFO_HPP

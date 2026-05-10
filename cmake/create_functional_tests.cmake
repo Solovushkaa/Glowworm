@@ -15,6 +15,7 @@ function(create_functional_tests TEST_FILES)
             GTest::GTest
             Client
             Server
+            Logger
     )
     target_include_directories(FunctionalTests
         PRIVATE

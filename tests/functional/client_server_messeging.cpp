@@ -13,10 +13,14 @@ struct ClientServerMessegingTest : ::testing::Test
         connectionsFile.resize(0);
         connectionsFile.write(test::testClientConnectionsFileData.toUtf8());
         connectionsFile.flush();
+
         downloadsFile.open();
-        qDebug() << connectionsFile.fileName();
+
+        qWarning() << "AAAAAAAAAA" << Qt::flush;
+
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
         server = std::make_unique<Server>();
+
         server->startServer();
     }
 

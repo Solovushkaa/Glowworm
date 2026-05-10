@@ -90,7 +90,7 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
     m_created = downloadInfo.m_created;
     m_modified = downloadInfo.m_modified;
     m_accessed = downloadInfo.m_accessed;
-    m_downloadState = downloadInfo.m_downloadState.value();
+    m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
     return *this;
@@ -110,7 +110,7 @@ DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
     m_created = std::move(downloadInfo.m_created);
     m_modified = std::move(downloadInfo.m_modified);
     m_accessed = std::move(downloadInfo.m_accessed);
-    m_downloadState = downloadInfo.m_downloadState.value();
+    m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
     return *this;

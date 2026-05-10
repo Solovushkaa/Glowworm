@@ -23,12 +23,17 @@
   ],
   "testPresets": [
     {
-      "name": "unit-debug",
+      "name": "test-base",
+      "hidden": true,
       "configurePreset": "multi-config-base",
-      "configuration": "Debug",
-      "output": {
+      "output":{
         "outputOnFailure": true
-      },
+      }
+    },
+    {
+      "name": "unit-debug",
+      "inherits": "test-base",
+      "configuration": "Debug",
       "filter": {
         "include": {
           "label": "UnitTests"
@@ -37,11 +42,8 @@
     },
     {
       "name": "functional-debug",
-      "configurePreset": "multi-config-base",
+      "inherits": "test-base",
       "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true
-      },
       "filter": {
         "include": {
           "label": "FunctionalTests"
@@ -50,11 +52,8 @@
     },
     {
       "name": "unit-release",
-      "configurePreset": "multi-config-base",
+      "inherits": "test-base",
       "configuration": "Release",
-      "output": {
-        "outputOnFailure": true
-      },
       "filter": {
         "include": {
           "label": "UnitTests"
@@ -63,11 +62,8 @@
     },
     {
       "name": "functional-release",
-      "configurePreset": "multi-config-base",
+      "inherits": "test-base",
       "configuration": "Release",
-      "output": {
-        "outputOnFailure": true
-      },
       "filter": {
         "include": {
           "label": "FunctionalTests"
@@ -75,20 +71,14 @@
       }
     },
     {
-      "name": "all-debug",
-      "configurePreset": "multi-config-base",
-      "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true
-      }
+      "name": "all-tests-debug",
+      "inherits": "test-base",
+      "configuration": "Debug"
     },
     {
-      "name": "all-release",
-      "configurePreset": "multi-config-base",
-      "configuration": "Release",
-      "output": {
-        "outputOnFailure": true
-      }
+      "name": "all-tests-release",
+      "inherits": "test-base",
+      "configuration": "Release"
     }
   ]
 }

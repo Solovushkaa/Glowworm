@@ -50,8 +50,7 @@ struct ClientConnectionManagerTest : ::testing::Test
         EXPECT_EQ(connectionInfo->m_remoteUserName, test::remoteUserName[index]);
         EXPECT_EQ(connectionInfo->m_bluetoothAddress.toString(), test::bluetoothAddress[index]);
         EXPECT_EQ(connectionInfo->m_bluetoothUUID.toString(), test::bluetoothUUID[index]);
-        EXPECT_EQ(static_cast<int>(connectionInfo->m_connectionState.value()),
-                  test::connectionState[index]);
+        EXPECT_EQ(static_cast<int>(connectionInfo->m_connectionState), test::connectionState[index]);
     }
 
     void addConnectionToManager(int index, bool isDuplicate = false)

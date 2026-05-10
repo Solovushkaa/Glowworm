@@ -20,11 +20,12 @@ TEST(ConnectionInfoTest, ClassVariableType)
 TEST(ConnectionInfoTest, SignalStateChanging)
 {
     ConnectionInfo connectionInfo;
+    connectionInfo.setConnectionState(ConnectionInfo::ConnectionState::Connected);
 
     QSignalSpy spy(&connectionInfo, &ConnectionInfo::connectionStateChanged);
     ASSERT_TRUE(spy.isValid());
 
     connectionInfo.setConnectionState(ConnectionInfo::ConnectionState::Error);
 
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    ASSERT_EQ(spy.count(), 1);
 }

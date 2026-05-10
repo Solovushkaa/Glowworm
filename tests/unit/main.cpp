@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include "log.hpp"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -20,7 +21,9 @@ private:
 
 int main(int argc, char *argv[])
 {
+    setCustomMessageHandler();
     testing::InitGoogleTest(&argc, argv);
+    ::testing::GTEST_FLAG(color) = "yes";
     AddGlobalTestEnvironment(new QtEnvironment());
     return RUN_ALL_TESTS();
 }

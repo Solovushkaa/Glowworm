@@ -14,6 +14,7 @@ function(create_unit_tests TEST_FILES)
             Qt6::Test
             GTest::GTest
             ClientManagers
+            Logger
     )
     target_include_directories(UnitTests
         PRIVATE
