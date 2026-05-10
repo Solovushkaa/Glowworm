@@ -2,5 +2,5 @@ build/
 docs/
 info.txt
 CMakeLists.txt.user
-Doxygen
 CMakeUserPresets.json
+Doxygen
