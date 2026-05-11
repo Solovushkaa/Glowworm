@@ -8,11 +8,14 @@
 
 #include <QBluetoothAddress>
 #include <QBluetoothUuid>
+#include <QLoggingCategory>
 #include <QObject>
 #include <QProperty>
 #include <QStringView>
 #include <QUrl>
 #include <QtQmlIntegration/qqmlintegration.h>
+
+Q_DECLARE_LOGGING_CATEGORY(connection_info)
 
 namespace connections {
 
@@ -67,17 +70,14 @@ public:
     Q_ENUM(ConnectionState)
 
 private:
-    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
-    Q_PROPERTY(Transport transport MEMBER m_transport READ transport NOTIFY transportChanged)
-    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName READ remoteUserName NOTIFY
-                   remoteUserNameChanged)
-    Q_PROPERTY(QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress READ bluetoothAddress
-                   NOTIFY bluetoothAddressChanged)
-    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID READ bluetoothUUID NOTIFY
-                   bluetoothUUIDChanged)
-    Q_PROPERTY(ConnectionState connectionState READ connectionState WRITE setConnectionState NOTIFY
-                   connectionStateChanged)
+    Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
+    Q_PROPERTY(Transport transport MEMBER m_transport NOTIFY transportChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url NOTIFY urlChanged)
+    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName NOTIFY remoteUserNameChanged)
+    Q_PROPERTY(
+        QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress NOTIFY bluetoothAddressChanged)
+    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID NOTIFY bluetoothUUIDChanged)
+    Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
 
     // --- Constructors ---
 public:
@@ -91,21 +91,13 @@ public:
                    ConnectionState connectionState,
                    QObject *parent = nullptr);
 
-    ConnectionInfo(const ConnectionInfo &connectionInfo) { *this = connectionInfo; }
+    ConnectionInfo(const ConnectionInfo &connectionInfo);
     ConnectionInfo &operator=(const ConnectionInfo &connectionInfo);
 
-    ConnectionInfo(ConnectionInfo &&connectionInfo) { *this = std::move(connectionInfo); }
+    ConnectionInfo(ConnectionInfo &&connectionInfo);
     ConnectionInfo &operator=(ConnectionInfo &&connectionInfo);
 
-    // --- Get Methods ---
-public:
-    QString name() const { return m_name; }
-    Transport transport() const { return m_transport; }
-    QUrl url() const { return m_url; }
-    QString remoteUserName() const { return m_remoteUserName; }
-    QBluetoothAddress bluetoothAddress() const { return m_bluetoothAddress; }
-    QBluetoothUuid bluetoothUUID() const { return m_bluetoothUUID; }
-    ConnectionState connectionState() const { return m_connectionState; }
+    ~ConnectionInfo();
 
     // --- Set Methods ---
 public:

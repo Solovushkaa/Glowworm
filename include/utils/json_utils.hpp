@@ -8,7 +8,10 @@
 #define JSONUTILS_HPP
 
 #include <QJsonObject>
+#include <QLoggingCategory>
 #include <QVariantHash>
+
+Q_DECLARE_LOGGING_CATEGORY(json_utils)
 
 /**
  * @brief createJsonFromDirectory

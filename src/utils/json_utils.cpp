@@ -6,12 +6,12 @@
 #include <QJsonObject>
 #include "constants.hpp"
 
+Q_LOGGING_CATEGORY(json_utils, "utils.json")
+
 QByteArray createJsonFromDirectory(const QString &filePath)
 {
-    /* 
-     * All elements from the directory are selected 
-     * except the pointer to the current directory. 
-     */
+    // All elements from the directory are selected
+    // except the pointer to the current directory.
     QDir dir(filePath);
     QFileInfoList dirList = dir.entryInfoList(QDir::AllEntries | QDir::NoDot);
 
@@ -47,7 +47,7 @@ QList<QVariantHash> fromJsonToHash(QByteArray &data)
     auto jsonDoc = QJsonDocument::fromJson(data);
 
     if(!jsonDoc.isArray()){
-        qWarning() << "JSON Document isn't JSON Array";
+        qCWarning(json_utils) << "JSON Document isn't JSON Array";
     }
 
     QJsonArray jsonArray = jsonDoc.array();
@@ -83,12 +83,12 @@ QJsonObject parseJsonToObject(const QByteArray &jsonFileData)
     appDataJsonDoc = QJsonDocument::fromJson(jsonFileData, &parseError);
 
     if (parseError.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parsing error:\n" << parseError.errorString();
-        qWarning() << "Error position:" << parseError.offset;
+        qCWarning(json_utils) << "JSON parsing error:\n" << parseError.errorString();
+        qCWarning(json_utils) << "Error position:" << parseError.offset;
 
         appDataJsonDoc = QJsonDocument(QJsonObject());
     } else if (!appDataJsonDoc.isObject()) {
-        qWarning() << "JSON is not an object";
+        qCWarning(json_utils) << "JSON is not an object";
         appDataJsonDoc = QJsonDocument(QJsonObject());
     }
 

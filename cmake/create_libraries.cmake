@@ -96,8 +96,11 @@ function(create_libraries LIB_TARGETS)
 
     foreach(LIB IN LISTS LIB_TARGETS)
         target_compile_features(${LIB} PUBLIC cxx_std_23)
+
+        target_compile_options(${LIB} PUBLIC -Wall -Wextra -Wpedantic -Werror)
+
         target_compile_definitions(${LIB} PUBLIC $<$<CONFIG:Debug>:QT_MESSAGELOGCONTEXT>)
-        target_compile_definitions(${LIB} PUBLIC $<$<CONFIG:Debug>:QT_NO_DEBUG_OUTPUT>)
+        target_compile_definitions(${LIB} PUBLIC $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
 
         set_target_properties(${LIB}
             PROPERTIES

@@ -19,6 +19,7 @@ ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey,
     , m_tcpServer(std::make_unique<QTcpServer>())
     , m_sslServer(std::make_unique<QSslServer>())
 {
+    qDebug() << "Create Server HTTP Messenger";
     m_httpServer.router()->addConverter<RestPath>(u".+");
 
     routeConnection();

@@ -2,17 +2,20 @@
 #define MANAGERUTILS_HPP
 
 #include <QJsonObject>
+#include <QLoggingCategory>
 #include <optional>
 
-std::optional<QByteArray> readConfigFile(const QString &filePath);
+Q_DECLARE_LOGGING_CATEGORY(manager_utils)
 
-bool rewriteConfigFile(const QString &filePath, const QJsonObject &jsonDownloadInfo);
+std::optional<QByteArray> readAppDataFile(const QString &filePath);
+
+bool rewriteAppDataFile(const QString &filePath, const QJsonObject &jsonDownloadInfo);
 
 template<typename InfoType>
 bool isCorrectAppDataKey(const QJsonObject &jsonObject);
 
 template<typename Manager>
     requires std::is_class_v<Manager>
-bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo);
+bool readAppData(Manager &manager, const QString &filePath, QJsonObject &jsonInfo);
 
 #endif // MANAGERUTILS_HPP

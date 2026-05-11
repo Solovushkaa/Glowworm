@@ -9,11 +9,14 @@
 #ifndef DOWNLOADINFO_HPP
 #define DOWNLOADINFO_HPP
 
+#include <QLoggingCategory>
 #include <QObject>
 #include <QProperty>
 #include <QString>
 #include <QUrl>
 #include <QtQmlIntegration/qqmlintegration.h>
+
+Q_DECLARE_LOGGING_CATEGORY(download_info)
 
 namespace downloads {
 
@@ -76,21 +79,19 @@ public:
     Q_ENUM(DownloadState)
 
 private:
-    Q_PROPERTY(QString downloadID MEMBER m_downloadID READ downloadID NOTIFY downloadIDChanged)
-    Q_PROPERTY(QUrl url MEMBER m_url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString hostKey MEMBER m_hostKey READ hostKey NOTIFY hostKeyChanged)
-    Q_PROPERTY(QString name MEMBER m_name READ name NOTIFY nameChanged)
-    Q_PROPERTY(QString path MEMBER m_path READ path NOTIFY pathChanged)
-    Q_PROPERTY(QString saveName MEMBER m_saveName READ saveName NOTIFY saveNameChanged)
-    Q_PROPERTY(QString savePath MEMBER m_savePath READ savePath NOTIFY savePathChanged)
-    Q_PROPERTY(qint64 size MEMBER m_size READ size NOTIFY sizeChanged)
-    Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte READ lastReceivedByte NOTIFY
-                   lastReceivedByteChanged)
-    Q_PROPERTY(QString created MEMBER m_created READ created NOTIFY createdChanged)
-    Q_PROPERTY(QString modified MEMBER m_modified READ modified NOTIFY modifiedChanged)
-    Q_PROPERTY(QString accessed MEMBER m_accessed READ accessed NOTIFY accessedChanged)
-    Q_PROPERTY(DownloadState downloadState READ downloadState WRITE setDownloadState NOTIFY
-                   downloadStateChanged)
+    Q_PROPERTY(QString downloadID MEMBER m_downloadID NOTIFY downloadIDChanged)
+    Q_PROPERTY(QUrl url MEMBER m_url NOTIFY urlChanged)
+    Q_PROPERTY(QString hostKey MEMBER m_hostKey NOTIFY hostKeyChanged)
+    Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
+    Q_PROPERTY(QString path MEMBER m_path NOTIFY pathChanged)
+    Q_PROPERTY(QString saveName MEMBER m_saveName NOTIFY saveNameChanged)
+    Q_PROPERTY(QString savePath MEMBER m_savePath NOTIFY savePathChanged)
+    Q_PROPERTY(qint64 size MEMBER m_size NOTIFY sizeChanged)
+    Q_PROPERTY(qint64 lastReceivedByte MEMBER m_lastReceivedByte NOTIFY lastReceivedByteChanged)
+    Q_PROPERTY(QString created MEMBER m_created NOTIFY createdChanged)
+    Q_PROPERTY(QString modified MEMBER m_modified NOTIFY modifiedChanged)
+    Q_PROPERTY(QString accessed MEMBER m_accessed NOTIFY accessedChanged)
+    Q_PROPERTY(DownloadState downloadState MEMBER m_downloadState NOTIFY downloadStateChanged)
 
     // --- Constructors ---
 public:
@@ -110,27 +111,13 @@ public:
                  DownloadState downloadState,
                  QObject *parent = nullptr);
 
-    DownloadInfo(const DownloadInfo &downloadInfo) { *this = downloadInfo; }
+    DownloadInfo(const DownloadInfo &downloadInfo);
     DownloadInfo &operator=(const DownloadInfo &downloadInfo);
 
-    DownloadInfo(DownloadInfo &&downloadInfo) { *this = std::move(downloadInfo); }
+    DownloadInfo(DownloadInfo &&downloadInfo);
     DownloadInfo &operator=(DownloadInfo &&downloadInfo);
 
-    // --- Get Methods ---
-public:
-    QString downloadID() const { return m_downloadID; }
-    QUrl url() const { return m_url; }
-    QString hostKey() const { return m_hostKey; }
-    QString name() const { return m_name; }
-    QString path() const { return m_path; }
-    QString saveName() const { return m_saveName; }
-    QString savePath() const { return m_savePath; }
-    qint64 size() const { return m_size; }
-    qint64 lastReceivedByte() const { return m_lastReceivedByte; }
-    QString created() const { return m_created; }
-    QString modified() const { return m_modified; }
-    QString accessed() const { return m_accessed; }
-    DownloadState downloadState() const { return m_downloadState; }
+    ~DownloadInfo();
 
     // --- Set Methods ---
 public:

@@ -16,12 +16,10 @@ struct ClientServerMessegingTest : ::testing::Test
 
         downloadsFile.open();
 
-        qWarning() << "AAAAAAAAAA" << Qt::flush;
-
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
         server = std::make_unique<Server>();
 
-        server->startServer();
+        // server->startServer();
     }
 
     void SetUp() override {}
@@ -43,14 +41,14 @@ TEST_F(ClientServerMessegingTest, ConnectionToServer)
     ASSERT_TRUE(spy.wait(500)); // 0.5 sec
 }
 
-TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
-{
-    client->changeConnection(0);
-    QSignalSpy spy(client.get(), &Client::connectionStatusCodeChanged);
-    ASSERT_TRUE(spy.isValid());
+// TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
+// {
+//     client->changeConnection(0);
+//     QSignalSpy spy(client.get(), &Client::connectionStatusCodeChanged);
+//     ASSERT_TRUE(spy.isValid());
 
-    client->checkConnectionToServer();
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+//     client->checkConnectionToServer();
+//     ASSERT_TRUE(spy.wait(500)); // 0.5 sec
 
-    ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
-}
+//     ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
+// }

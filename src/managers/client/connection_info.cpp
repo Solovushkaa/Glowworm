@@ -1,6 +1,7 @@
 #include "connection_info.hpp"
 #include "constants.hpp"
 #include <stdexcept>
+Q_LOGGING_CATEGORY(connection_info, "connection.info")
 
 namespace connections {
 
@@ -34,7 +35,9 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
 
 ConnectionInfo::ConnectionInfo(QObject *parent)
     : QObject(parent)
-{}
+{
+    qCDebug(connection_info) << "ConnectionInfo empty object successfully created";
+}
 
 ConnectionInfo::ConnectionInfo(const QString &name,
                                Transport transport,
@@ -52,7 +55,14 @@ ConnectionInfo::ConnectionInfo(const QString &name,
     , m_bluetoothUUID(bluetoothUUID)
     , m_connectionState(connectionState)
     , QObject(parent)
-{}
+{
+    qCDebug(connection_info) << "ConnectionInfo" << m_name << "object successfully created";
+}
+
+ConnectionInfo::ConnectionInfo(const ConnectionInfo &connectionInfo)
+{
+    *this = connectionInfo;
+}
 
 ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
 {
@@ -65,7 +75,14 @@ ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
     m_connectionState = connectionInfo.m_connectionState;
     this->setParent(connectionInfo.parent());
 
+    qCDebug(connection_info) << "ConnectionInfo" << m_name << "object successfully copyed";
+
     return *this;
+}
+
+ConnectionInfo::ConnectionInfo(ConnectionInfo &&connectionInfo)
+{
+    *this = std::move(connectionInfo);
 }
 
 ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
@@ -79,5 +96,12 @@ ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
     m_connectionState = connectionInfo.m_connectionState;
     this->setParent(connectionInfo.parent());
 
+    qCDebug(connection_info) << "ConnectionInfo" << m_name << "object successfully moved";
+
     return *this;
+}
+
+ConnectionInfo::~ConnectionInfo()
+{
+    qCDebug(connection_info) << "ConnectionInfo" << m_name << "object successfully destroyed";
 }

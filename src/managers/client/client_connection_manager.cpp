@@ -1,38 +1,52 @@
 #include "client_connection_manager.hpp"
-#include <QFile>
-#include <QJsonDocument>
-#include <QStandardPaths>
 #include "constants.hpp"
 #include "manager_utils.hpp"
+
+Q_LOGGING_CATEGORY(connection_manager, "connection.manager")
+
+ClientConnectionManager::ClientConnectionManager(const QString &savePath, QObject *parent)
+    : m_savePath(savePath)
+    , QAbstractListModel(parent)
+{
+    qCDebug(connection_manager) << "ClientConnectionManager successfully created";
+}
+
+ClientConnectionManager::~ClientConnectionManager()
+{
+    qCDebug(connection_manager) << "ClientConnectionManager successfully destroyed";
+}
 
 int ClientConnectionManager::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
+        qCDebug(connection_manager) << "QModelIndex parent is not valid";
         return 0;
     return m_connectionInfoList.size();
 }
 
 QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
 {
+    qCDebug(connection_manager) << "Getting ClientConnectionManager data for the QML List Model";
+
     if (!index.isValid() || index.row() >= m_connectionInfoList.size())
         return QVariant();
 
     ConnectionInfo *info = m_connectionInfoList.at(index.row());
     switch (role) {
     case NameRole:
-        return info->name();
+        return info->m_name;
     case TransportRole:
-        return static_cast<int>(info->transport());
+        return static_cast<int>(info->m_transport);
     case URLRole:
-        return info->url();
+        return info->m_url;
     case RemoteUserRole:
-        return info->remoteUserName();
+        return info->m_remoteUserName;
     case BluetoothAddressRole:
-        return info->bluetoothAddress().toString();
+        return info->m_bluetoothAddress.toString();
     case BluetoothUUIDRole:
-        return info->bluetoothUUID().toString();
+        return info->m_bluetoothUUID.toString();
     case StateRole:
-        return static_cast<int>(info->connectionState());
+        return static_cast<int>(info->m_connectionState);
     default:
         return QVariant();
     }
@@ -53,11 +67,6 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
 
 bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
 {
-    if (connectionInfo == nullptr) {
-        qCritical() << "ConnectionInfo* cannot be nullptr";
-        return false;
-    }
-
     const int row = m_connectionInfoList.size();
     beginInsertRows(QModelIndex(), row, row);
     m_connectionInfoList.append(connectionInfo);
@@ -71,7 +80,7 @@ bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
 
     emit connectionAdded();
 
-    return rewriteConfigFile(m_savePath, m_jsonSavedConnections);
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
 }
 
 bool ClientConnectionManager::addConnection(const QString &name,
@@ -81,8 +90,10 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                             const QBluetoothAddress &bluetoothAddress,
                                             const QBluetoothUuid &bluetoothUUID)
 {
+    qCDebug(connection_manager) << "Adding a new connection";
+
     if (m_connectionInfoDict.contains(name)) {
-        qInfo() << "A connection with the name" << name << "already exists";
+        qCInfo(connection_manager) << "A connection with the name" << name << "already exists";
         return false;
     }
 
@@ -100,8 +111,10 @@ bool ClientConnectionManager::addConnection(const QString &name,
 
 bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
 {
+    qCDebug(connection_manager) << "Deleting a connection";
+
     if (deleteIndex < 0 || deleteIndex >= m_connectionInfoList.size()) {
-        qCritical() << "Bad Connection Info removal index!";
+        qCCritical(connection_manager) << "Bad ConnectionInfo delete index!";
         return false;
     }
 
@@ -121,15 +134,17 @@ bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
 
     emit connectionRemoved(deleteIndex);
 
-    return rewriteConfigFile(m_savePath, m_jsonSavedConnections);
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
 }
 
 bool ClientConnectionManager::updateConnection(int index,
                                                const QString &property,
                                                const QVariant &value)
 {
+    qCDebug(connection_manager) << "Updating ClientConnectioManager data for the QML List Model";
+
     if (index < 0 || index >= m_connectionInfoList.size()) {
-        qCritical() << "Bad DownloadInfo update index!";
+        qCCritical(connection_manager) << "Bad ConnectionInfo update index!";
         return false;
     }
 
@@ -168,18 +183,15 @@ bool ClientConnectionManager::updateConnection(int index,
     return true;
 }
 
-ClientConnectionManager::ClientConnectionManager(const QString &savePath, QObject *parent)
-    : m_savePath(savePath)
-    , QAbstractListModel(parent)
-{}
-
 bool ClientConnectionManager::readSavedConnections()
 {
-    return readPreset(*this, m_savePath, m_jsonSavedConnections);
+    return readAppData(*this, m_savePath, m_jsonSavedConnections);
 }
 
 void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject)
 {
+    qCDebug(connection_manager) << "Filling in connection information from JSON";
+
     connectionInfo->setParent(this);
 
     setConnectionInfoFromJsonObject(connectionInfo, jsonObject);
@@ -190,8 +202,12 @@ void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObje
 
 void ClientConnectionManager::setActiveConnection(int index)
 {
+    qCDebug(connection_manager) << "Changing the active connection";
+
     m_activeConnection = m_connectionInfoList[index];
     emit activeConnectionChanged();
+
+    qCInfo(connection_manager) << "Active connection changed to" << index;
 }
 
 void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *connectionInfo,

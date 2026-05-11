@@ -7,10 +7,10 @@
 #define DOWNLOADMANAGER_HPP
 
 #include <QAbstractListModel>
-#include <QFile>
 #include <QJsonObject>
 #include "download_info.hpp"
-// #include <type_traits>
+
+Q_DECLARE_LOGGING_CATEGORY(download_manager)
 
 /**
  * @brief -
@@ -65,7 +65,7 @@ public:
     /**
      * @brief Removing download
      */
-    Q_INVOKABLE bool deleteDownload(int index);
+    Q_INVOKABLE bool deleteDownload(int deleteIndex);
     bool deleteDownload(DownloadInfo *downloadInfo);
     Q_INVOKABLE bool updateDownload(int index, const QString &property, const QVariant &value);
 
@@ -74,6 +74,7 @@ public:
      * @brief Сonstructor for reading UnfinishedDownload.json file.
      */
     DownloadManager(const QString &savePath, QObject *parent = nullptr);
+    ~DownloadManager();
 
     /**
      * @brief Read imcomlplit downloads from file.

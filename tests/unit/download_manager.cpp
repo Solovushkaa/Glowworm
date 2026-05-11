@@ -46,7 +46,7 @@ struct DownloadManagerTest : ::testing::Test
     {
         EXPECT_EQ(downloadInfo->m_downloadID, test::downloadID[index]);
         EXPECT_EQ(downloadInfo->m_url, test::url[index].toString());
-        EXPECT_EQ(static_cast<int>(downloadInfo->downloadState()), test::downloadState[index]);
+        EXPECT_EQ(static_cast<int>(downloadInfo->m_downloadState), test::downloadState[index]);
         EXPECT_EQ(downloadInfo->m_hostKey, test::hostKey[index]);
         EXPECT_EQ(downloadInfo->m_created, test::created[index]);
         EXPECT_EQ(downloadInfo->m_accessed, test::accessed[index]);

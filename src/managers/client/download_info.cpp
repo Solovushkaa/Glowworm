@@ -2,6 +2,8 @@
 #include "constants.hpp"
 #include <stdexcept>
 
+Q_LOGGING_CATEGORY(download_info, "download.info")
+
 namespace downloads {
 
 QStringView getDownloadInfoMemberName(DownloadInfoMember member)
@@ -44,7 +46,9 @@ QStringView getDownloadInfoMemberName(DownloadInfoMember member)
 
 DownloadInfo::DownloadInfo(QObject *parent)
     : QObject(parent)
-{}
+{
+    qCDebug(download_info) << "DownloadInfo empty object successfully created";
+}
 
 DownloadInfo::DownloadInfo(const QString &downloadID,
                            const QUrl &url,
@@ -74,7 +78,14 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
     , m_accessed(accessed)
     , m_downloadState(downloadState)
     , QObject(parent)
-{}
+{
+    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully created";
+}
+
+DownloadInfo::DownloadInfo(const DownloadInfo &downloadInfo)
+{
+    *this = downloadInfo;
+}
 
 DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
 {
@@ -93,7 +104,14 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
     m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
+    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully copyed";
+
     return *this;
+}
+
+DownloadInfo::DownloadInfo(DownloadInfo &&downloadInfo)
+{
+    *this = std::move(downloadInfo);
 }
 
 DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
@@ -113,5 +131,12 @@ DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
     m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
+    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully moved";
+
     return *this;
+}
+
+DownloadInfo::~DownloadInfo()
+{
+    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully destroyed";
 }

@@ -4,41 +4,51 @@
 #include "download_manager.hpp"
 #include "json_utils.hpp"
 
-std::optional<QByteArray> readConfigFile(const QString &filePath)
+Q_LOGGING_CATEGORY(manager_utils, "utils.managers")
+
+std::optional<QByteArray> readAppDataFile(const QString &filePath)
 {
+    qCDebug(manager_utils) << "Reading application data from:" << filePath;
+
     QFile appDataFile(filePath);
 
     if (!appDataFile.open(QIODevice::ReadWrite)) {
-        qCritical() << "Error opening the" << appDataFile.fileName()
-                    << "file:" << appDataFile.errorString();
+        qCCritical(manager_utils) << "Error opening the" << appDataFile.fileName()
+                                  << "file:" << appDataFile.errorString();
         return std::nullopt;
     }
     if (appDataFile.size() > 1073741824LL) {
-        qCritical() << "The" << appDataFile.fileName() << "file is too large. Clean it up";
+        qCCritical(manager_utils) << "The" << appDataFile.fileName()
+                                  << "file is too large. Clean it up";
         return std::nullopt;
     }
 
     return appDataFile.readAll();
 }
 
-bool rewriteConfigFile(const QString &filePath, const QJsonObject &jsonDownloadInfo)
+bool rewriteAppDataFile(const QString &filePath, const QJsonObject &jsonDownloadInfo)
 {
+    qCDebug(manager_utils) << "Overwriting application data in:" << filePath;
+
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
-        qCritical().nospace() << "Error opening " << filePath << ": " << file.errorString();
+        qCCritical(manager_utils).nospace()
+            << "Error opening " << filePath << ": " << file.errorString();
         return false;
     }
 
     file.resize(0);
     file.write(QJsonDocument(jsonDownloadInfo).toJson());
 
-    qInfo().nospace() << "Successful rewriting " << filePath;
+    qCInfo(manager_utils) << "Successful rewriting:" << filePath;
     return true;
 }
 
 template<typename InfoType>
 bool isCorrectAppDataKey(const QJsonObject &jsonObject)
 {
+    qCDebug(manager_utils) << "Validating a JSON object";
+
     constexpr bool is_downloadInfo = std::is_same_v<InfoType, DownloadInfo>;
 
     auto enumMemberToString = [is_downloadInfo](const auto &info) -> QStringView {
@@ -58,7 +68,7 @@ bool isCorrectAppDataKey(const QJsonObject &jsonObject)
     for (int memberNum = 0; memberNum < size; ++memberNum) {
         memberName = enumMemberToString(static_cast<MemberClass>(memberNum));
         if (!jsonObject.contains(memberName)) {
-            qWarning() << "The" << memberName << "key has an incorrect name";
+            qCWarning(manager_utils) << "The" << memberName << "key has an incorrect name";
             return false;
         }
     }
@@ -70,31 +80,35 @@ template bool isCorrectAppDataKey<ConnectionInfo>(const QJsonObject &jsonObject)
 
 template<typename Manager>
     requires std::is_class_v<Manager>
-bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo)
+bool readAppData(Manager &manager, const QString &filePath, QJsonObject &jsonInfo)
 {
-    auto fileData = readConfigFile(filePath);
+    using InfoType = typename Manager::InfoType;
+    if constexpr (std::is_same_v<InfoType, DownloadManager::InfoType>) {
+        qCDebug(manager_utils) << "Reading application data for DownloadManager";
+    } else {
+        qCDebug(manager_utils) << "Reading application data for ClientConnectionManager";
+    }
+
+    auto fileData = readAppDataFile(filePath);
     if (!fileData.has_value()) {
         return false;
     }
 
-    qDebug() << "fileData:";
-    qDebug() << fileData.value(); //////-----------------------
     jsonInfo = parseJsonToObject(fileData.value());
 
-    using InfoType = typename Manager::InfoType;
     InfoType *info;
 
     QJsonObject jsonObject;
     for (auto &dictKey : jsonInfo.keys()) {
         if (!jsonInfo[dictKey].isObject()) {
-            qWarning() << "An" << dictKey << "in json is not an JSON Object";
+            qCWarning(manager_utils) << "An" << dictKey << "in json is not an JSON Object";
             return false;
         }
 
         // Validation
         jsonObject = jsonInfo[dictKey].toObject();
         if (!isCorrectAppDataKey<InfoType>(jsonObject)) {
-            qWarning() << "Skip the JSON Object:" << dictKey;
+            qCWarning(manager_utils) << "Skip the JSON Object:" << dictKey;
             break;
         }
 
@@ -104,11 +118,11 @@ bool readPreset(Manager &manager, const QString &filePath, QJsonObject &jsonInfo
         //-------------------
     }
 
-    qInfo() << "The file" << filePath << "has been read";
+    qCInfo(manager_utils) << "The file" << filePath << "has been read";
 
-    return rewriteConfigFile(filePath, jsonInfo);
+    return rewriteAppDataFile(filePath, jsonInfo);
 }
-template bool readPreset<DownloadManager>(DownloadManager &, const QString &, QJsonObject &);
-template bool readPreset<ClientConnectionManager>(ClientConnectionManager &,
-                                                  const QString &,
-                                                  QJsonObject &);
+template bool readAppData<DownloadManager>(DownloadManager &, const QString &, QJsonObject &);
+template bool readAppData<ClientConnectionManager>(ClientConnectionManager &,
+                                                   const QString &,
+                                                   QJsonObject &);

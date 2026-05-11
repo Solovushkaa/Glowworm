@@ -9,6 +9,8 @@
 #include <QJsonObject>
 #include "connection_info.hpp"
 
+Q_DECLARE_LOGGING_CATEGORY(connection_manager)
+
 /**
  * @brief The client connection manager class.
  */
@@ -57,6 +59,7 @@ public:
      * @brief Сonstructor for reading SavedConnections.json file
      */
     ClientConnectionManager(const QString &savePath, QObject *parent = nullptr);
+    ~ClientConnectionManager();
 
     /**
      * @brief Read saved connections from file.

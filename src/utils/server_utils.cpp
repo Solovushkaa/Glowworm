@@ -5,6 +5,8 @@
 
 QString createHostKey()
 {
+    qDebug() << "Generating host key";
+
     QString hostKey;
     hostKey.reserve(256);
 

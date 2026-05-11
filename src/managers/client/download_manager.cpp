@@ -2,46 +2,63 @@
 #include "constants.hpp"
 #include "manager_utils.hpp"
 
+Q_LOGGING_CATEGORY(download_manager, "download.manager")
+
+DownloadManager::DownloadManager(const QString &savePath, QObject *parent)
+    : m_savePath(savePath)
+    , QAbstractListModel(parent)
+{
+    qCDebug(download_manager) << "DownloadManager successfully created";
+}
+
+DownloadManager::~DownloadManager()
+{
+    qCDebug(download_manager) << "DownloadManager successfully destroyed";
+}
+
 int DownloadManager::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
+        qCDebug(download_manager) << "QModelIndex parent is not valid";
         return 0;
     return m_downloadInfoList.size();
 }
 
 QVariant DownloadManager::data(const QModelIndex &index, int role) const
 {
+    qCDebug(download_manager) << "Getting DownloadManager data for the QML List Model";
+
     if (!index.isValid() || index.row() >= m_downloadInfoList.size())
         return QVariant();
 
     DownloadInfo *info = m_downloadInfoList.at(index.row());
     switch (role) {
     case DownloadIDRole:
-        return info->downloadID();
+        return info->m_downloadID;
     case UrlRole:
-        return info->url();
+        return info->m_url;
     case HostKeyRole:
-        return info->hostKey();
+        return info->m_hostKey;
     case NameRole:
-        return info->name();
+        return info->m_name;
     case PathRole:
-        return info->path();
+        return info->m_path;
     case SaveNameRole:
-        return info->saveName();
+        return info->m_saveName;
     case SavePathRole:
-        return info->savePath();
+        return info->m_savePath;
     case SizeRole:
-        return info->size();
+        return info->m_size;
     case LastReceivedByteRole:
-        return info->lastReceivedByte();
+        return info->m_lastReceivedByte;
     case CreatedRole:
-        return info->created();
+        return info->m_created;
     case ModifiedRole:
-        return info->modified();
+        return info->m_modified;
     case AccessedRole:
-        return info->accessed();
+        return info->m_accessed;
     case StateRole:
-        return static_cast<int>(info->downloadState());
+        return static_cast<int>(info->m_downloadState);
     default:
         return QVariant();
     }
@@ -68,11 +85,6 @@ QHash<int, QByteArray> DownloadManager::roleNames() const
 
 bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
 {
-    if (downloadInfo == nullptr) {
-        qCritical() << "DownloadInfo* cannot be nullptr";
-        return false;
-    }
-
     const int row = m_downloadInfoList.size();
     beginInsertRows(QModelIndex(), row, row);
     m_downloadInfoList.append(downloadInfo);
@@ -86,7 +98,7 @@ bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
 
     emit downloadAdded();
 
-    return rewriteConfigFile(m_savePath, m_jsonUnfinishedDownloads);
+    return rewriteAppDataFile(m_savePath, m_jsonUnfinishedDownloads);
 }
 
 bool DownloadManager::addDownload(const QString &downloadID,
@@ -103,8 +115,11 @@ bool DownloadManager::addDownload(const QString &downloadID,
                                   const QString &accessed,
                                   DownloadInfo::DownloadState downloadState)
 {
+    qCDebug(download_manager) << "Adding a new download";
+
     if (m_downloadInfoDict.contains(downloadID)) {
-        qInfo() << "A connection with the downloadID" << downloadID << "already exists";
+        qCInfo(download_manager) << "A download with the downloadID" << downloadID
+                                 << "already exists";
         return false;
     }
 
@@ -126,38 +141,44 @@ bool DownloadManager::addDownload(const QString &downloadID,
     return addDownload(downloadInfo);
 }
 
-bool DownloadManager::deleteDownload(int index)
+bool DownloadManager::deleteDownload(int deleteIndex)
 {
-    if (index < 0 || index >= m_downloadInfoList.size()) {
-        qCritical() << "Bad DownloadInfo removal index!";
+    qCDebug(download_manager) << "Deleting a download with an index";
+
+    if (deleteIndex < 0 || deleteIndex >= m_downloadInfoList.size()) {
+        qCCritical(download_manager) << "Bad DownloadInfo removal deleteIndex!";
         return false;
     }
 
-    QString deleteID = std::move(m_downloadInfoList[index]->m_downloadID);
+    QString deleteID = std::move(m_downloadInfoList[deleteIndex]->m_downloadID);
 
-    beginRemoveRows(QModelIndex(), index, index);
-    DownloadInfo *info = m_downloadInfoList.takeAt(index);
+    beginRemoveRows(QModelIndex(), deleteIndex, deleteIndex);
+    DownloadInfo *info = m_downloadInfoList.takeAt(deleteIndex);
     info->deleteLater();
     endRemoveRows();
 
     m_downloadInfoDict.remove(deleteID);
     m_jsonUnfinishedDownloads.remove(deleteID);
 
-    emit downloadRemoved(index);
+    emit downloadRemoved(deleteIndex);
 
-    return rewriteConfigFile(m_savePath, m_jsonUnfinishedDownloads);
+    return rewriteAppDataFile(m_savePath, m_jsonUnfinishedDownloads);
 }
 
 bool DownloadManager::deleteDownload(DownloadInfo *downloadInfo)
 {
-    int index = m_downloadInfoList.indexOf(downloadInfo);
-    return deleteDownload(index);
+    qCDebug(download_manager) << "Deleting a download with an object";
+
+    int deleteIndex = m_downloadInfoList.indexOf(downloadInfo);
+    return deleteDownload(deleteIndex);
 }
 
 bool DownloadManager::updateDownload(int index, const QString &property, const QVariant &value)
 {
+    qCDebug(download_manager) << "Updating DownloadManager data for the QML List Model";
+
     if (index < 0 || index >= m_downloadInfoList.size()) {
-        qCritical() << "Bad DownloadInfo update index!";
+        qCCritical(download_manager) << "Bad DownloadInfo update index!";
         return false;
     }
 
@@ -214,18 +235,15 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
     return true;
 }
 
-DownloadManager::DownloadManager(const QString &savePath, QObject *parent)
-    : m_savePath(savePath)
-    , QAbstractListModel(parent)
-{}
-
 bool DownloadManager::readUnfinishedDownloads()
 {
-    return readPreset(*this, m_savePath, m_jsonUnfinishedDownloads);
+    return readAppData(*this, m_savePath, m_jsonUnfinishedDownloads);
 }
 
 void DownloadManager::initInfo(DownloadInfo *downloadInfo, QJsonObject &jsonObject)
 {
+    qCDebug(download_manager) << "Filling in download information from JSON";
+
     downloadInfo->setParent(this);
 
     setDownloadInfoFromJsonObject(downloadInfo, jsonObject);
@@ -271,5 +289,5 @@ void DownloadManager::setJsonObjectFromDownloadInfo(QJsonObject &jsonObject,
     jsonObject[constants::kCreated] = downloadInfo->m_created;
     jsonObject[constants::kModified] = downloadInfo->m_modified;
     jsonObject[constants::kAccessed] = downloadInfo->m_accessed;
-    jsonObject[constants::kDownloadState] = static_cast<int>(downloadInfo->downloadState());
+    jsonObject[constants::kDownloadState] = static_cast<int>(downloadInfo->m_downloadState);
 }

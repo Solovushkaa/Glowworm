@@ -18,14 +18,13 @@ public:
 private:
     ServerMessenger *m_serverMessenger;        ///< Base server messenger class
     ServerHttpMessenger m_serverHttpMessenger; ///< Http messenger
+    QString m_hostKey;
     // // ServerBluetoothMessenger *m_serverBluetoothMessenger;
 
     // ServerTransport *m_serverTransport;
     // ServerTcpTransport m_serverTcpTransport;
     // ServerUdpTransport *m_serverUdpTransport;
     // ServerBluetoothTransport *m_serverBluetoothTransport;
-
-    QString m_hostKey;
 };
 
 #endif // SERVER_HPP
