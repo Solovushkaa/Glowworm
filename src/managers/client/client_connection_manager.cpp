@@ -5,8 +5,8 @@
 Q_LOGGING_CATEGORY(connection_manager, "connection.manager")
 
 ClientConnectionManager::ClientConnectionManager(const QString &savePath, QObject *parent)
-    : m_savePath(savePath)
-    , QAbstractListModel(parent)
+    : QAbstractListModel(parent)
+    , m_savePath(savePath)
 {
     qCDebug(connection_manager) << "ClientConnectionManager successfully created";
 }
@@ -18,9 +18,10 @@ ClientConnectionManager::~ClientConnectionManager()
 
 int ClientConnectionManager::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
+    if (parent.isValid()) {
         qCDebug(connection_manager) << "QModelIndex parent is not valid";
         return 0;
+    }
     return m_connectionInfoList.size();
 }
 
@@ -31,7 +32,7 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= m_connectionInfoList.size())
         return QVariant();
 
-    ConnectionInfo *info = m_connectionInfoList.at(index.row());
+    ConnectionInfo *info = m_connectionInfoList[index.row()];
     switch (role) {
     case NameRole:
         return info->m_name;
@@ -217,8 +218,7 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(
         jsonObject[constants::kTransport].toInt());
 
-    connectionInfo->m_url.setHost(jsonObject[constants::kAddress].toString());
-    connectionInfo->m_url.setPort(jsonObject[constants::kPort].toInt());
+    connectionInfo->m_url = jsonObject[constants::kURL].toString();
 
     if (!jsonObject[constants::kRemoteUserName].isNull()) {
         connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();

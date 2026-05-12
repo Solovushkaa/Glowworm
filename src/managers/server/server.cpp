@@ -2,9 +2,9 @@
 #include "server_utils.hpp"
 
 Server::Server(QObject *parent)
-    : m_hostKey(createHostKey())
+    : QObject(parent)
+    , m_hostKey(createHostKey())
     , m_serverHttpMessenger(m_hostKey)
-    , QObject(parent)
 {
     qDebug() << "Creating Server";
     m_serverMessenger = &m_serverHttpMessenger; // Temporarily

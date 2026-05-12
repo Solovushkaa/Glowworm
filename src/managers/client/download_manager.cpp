@@ -5,8 +5,8 @@
 Q_LOGGING_CATEGORY(download_manager, "download.manager")
 
 DownloadManager::DownloadManager(const QString &savePath, QObject *parent)
-    : m_savePath(savePath)
-    , QAbstractListModel(parent)
+    : QAbstractListModel(parent)
+    , m_savePath(savePath)
 {
     qCDebug(download_manager) << "DownloadManager successfully created";
 }
@@ -18,9 +18,10 @@ DownloadManager::~DownloadManager()
 
 int DownloadManager::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
+    if (parent.isValid()) {
         qCDebug(download_manager) << "QModelIndex parent is not valid";
         return 0;
+    }
     return m_downloadInfoList.size();
 }
 
@@ -31,7 +32,7 @@ QVariant DownloadManager::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= m_downloadInfoList.size())
         return QVariant();
 
-    DownloadInfo *info = m_downloadInfoList.at(index.row());
+    DownloadInfo *info = m_downloadInfoList[index.row()];
     switch (role) {
     case DownloadIDRole:
         return info->m_downloadID;

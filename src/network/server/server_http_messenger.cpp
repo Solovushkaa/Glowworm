@@ -8,14 +8,10 @@ struct RestPath {
     RestPath(const QString &x) : s(x) {}
 };
 
-ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey,
-                                         quint16 tcpPort,
-                                         quint16 sslPort,
-                                         QObject *parent)
+ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey, quint16 tcpPort, quint16 sslPort)
     : m_hostKey(hostKey)
     , m_tcpPort(tcpPort)
     , m_sslPort(sslPort)
-    // , ServerMessenger(parent)
     , m_tcpServer(std::make_unique<QTcpServer>())
     , m_sslServer(std::make_unique<QSslServer>())
 {
@@ -78,7 +74,7 @@ void ServerHttpMessenger::stop(std::unique_ptr<Server> &server, quint16 port)
     qInfo() << protocolName << "message server was stopped on port:" << port;
 }
 
-void ServerHttpMessenger::stop(bool stopDefaultConfig, bool stopSecureConfig)
+void ServerHttpMessenger::stop(bool stopDefaultConfig, [[maybe_unused]] bool stopSecureConfig)
 {
     bool isSecureConfig;
     for (auto serverList = m_httpServer.servers(); auto &server : serverList) {
@@ -122,7 +118,7 @@ void ServerHttpMessenger::routeFileSystem()
 {
     m_httpServer.route("/?<arg>",
                        QHttpServerRequest::Method::Get,
-                       [this](const RestPath &path, const QHttpServerRequest &request) {
+                       [](const RestPath &path, const QHttpServerRequest &request) {
                            qInfo() << "HEAD request received";
                            qInfo() << request.query().toString();
 
@@ -144,7 +140,7 @@ void ServerHttpMessenger::routeFileSystem()
 
 void ServerHttpMessenger::routeMissingHandler()
 {
-    m_httpServer.setMissingHandler(this, [this](const QHttpServerRequest &request) {
+    m_httpServer.setMissingHandler(this, [](const QHttpServerRequest &request) {
         qWarning() << "Unknown request:";
         qWarning() << request.query().toString();
 

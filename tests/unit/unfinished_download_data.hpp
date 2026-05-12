@@ -12,7 +12,7 @@ inline constexpr QStringView oneDownloadData = uR"json(
     "downloadID": "jjk12jjk",
     "downloadState": 2,
     "hostKey": "ge07f36174",
-    "url": "192.168.0.4",
+    "url": "http://192.168.0.4:6115",
     "created": "Fri Mar 28 11:44:50 2026",
     "accessed": "Thu Sep 11 12:46:58 2026",
     "modified": "Fri Mar 28 13:47:50 2026",
@@ -32,7 +32,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
     "downloadID": "8xask982",
     "downloadState": 0,
     "hostKey": "6e57f36174",
-    "url": "192.168.0.1",
+    "url": "http://192.168.0.4:6115",
     "created": "Fri Mar 28 20:47:50 2025",
     "accessed": "Thu Sep 11 21:46:58 2025",
     "modified": "Fri Mar 28 20:47:50 2025",
@@ -47,7 +47,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
     "downloadID": "57f3617f",
     "downloadState": 2,
     "hostKey": "6e57f3hh74",
-    "url": "192.168.0.4",
+    "url": "http://192.168.0.4:6115",
     "created": "Fri Mar 28 11:44:50 2026",
     "accessed": "Thu Sep 11 12:46:58 2026",
     "modified": "Fri Mar 28 13:47:50 2026",
@@ -62,7 +62,7 @@ inline constexpr QStringView threeDownloadData = uR"json(
     "downloadID": "jjk12jjk",
     "downloadState": 2,
     "hostKey": "ge07f36174",
-    "url": "192.168.0.4",
+    "url": "http://192.168.0.4:6115",
     "created": "Fri Mar 28 11:44:50 2026",
     "accessed": "Thu Sep 11 12:46:58 2026",
     "modified": "Fri Mar 28 13:47:50 2026",
@@ -79,7 +79,9 @@ inline constexpr QStringView threeDownloadData = uR"json(
 inline constexpr std::array<QStringView, 3> downloadID = {u"8xask982", u"57f3617f", u"jjk12jjk"};
 inline constexpr std::array<int, 3> downloadState = {0, 0, 0};
 inline constexpr std::array<QStringView, 3> hostKey = {u"6e57f36174", u"6e57f3hh74", u"ge07f36174"};
-inline constexpr std::array<QStringView, 3> url = {u"192.168.0.1", u"192.168.0.4", u"192.168.0.4"};
+inline constexpr std::array<QStringView, 3> unfinishedDownloadsUrl = {u"http://192.168.0.4:6115",
+                                                                      u"http://192.168.0.4:6115",
+                                                                      u"http://192.168.0.4:6115"};
 inline constexpr std::array<QStringView, 3> created = {u"Fri Mar 28 20:47:50 2025",
                                                        u"Fri Mar 28 11:44:50 2026",
                                                        u"Fri Mar 28 11:44:50 2026"};

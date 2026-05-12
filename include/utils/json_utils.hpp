@@ -9,7 +9,6 @@
 
 #include <QJsonObject>
 #include <QLoggingCategory>
-#include <QVariantHash>
 
 Q_DECLARE_LOGGING_CATEGORY(json_utils)
 
@@ -21,17 +20,7 @@ Q_DECLARE_LOGGING_CATEGORY(json_utils)
  * @param path Path to the directory
  * @return JSON object converted to a ByteArray
  */
-QByteArray createJsonFromDirectory(const QString &path);
-
-/**
- * @brief fromJsonToHash
- * 
- * Creates an array of directory files.
- * 
- * @param data JSON object converted to a ByteArray
- * @return Array of directory files
- */
-QList<QVariantHash> fromJsonToHash(QByteArray &data);
+QByteArray createJsonFromDirectory(const QString &dirPath);
 
 QJsonObject parseJsonToObject(const QByteArray &data);
 

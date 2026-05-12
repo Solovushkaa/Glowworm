@@ -3,28 +3,29 @@
 
 #include <QNetworkAccessManager>
 #include "client_messenger.hpp"
+#include "directory_manager.hpp"
 
 class ClientHttpMessenger : public ClientMessenger
 {
     Q_OBJECT
 
 public:
-    ClientHttpMessenger();
+    explicit ClientHttpMessenger(DirectoryManager &directoryManager);
 
     void checkConnectionToServer(ConnectionInfo *connectionInfo) override;
-    // void getDirectoryList(ConnectionInfo *connectionInfo) override;
+    void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath) override;
 
 private slots:
-    void onConnectionStatusReceived() override;
-    // void onDirectoryReceived() override;
+    void onConnectionStatusCodeReceived() override;
+    void onDirectoryReceived() override;
 
     // signals:
     //     void statusCodeChanged(int statusCode);
 
     /* Members */
 private:
-    QNetworkAccessManager *m_networkManager;
-    QTcpSocket tcpSocket;
+    QNetworkAccessManager m_networkManager;
+    DirectoryManager &r_directoryManager;
 };
 
 #endif // CLIENTHTTPMESSENGER_HPP

@@ -8,11 +8,8 @@ class ClientMessenger : public QObject
     Q_OBJECT
 
 public:
-    // ClientMessenger() = default;
-    virtual ~ClientMessenger() = default;
-
-    virtual void checkConnectionToServer(ConnectionInfo *) = 0;
-    // virtual void getDirectoryList(ConnectionInfo *) = 0;
+    virtual void checkConnectionToServer(ConnectionInfo *connectionInfo) = 0;
+    virtual void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath) = 0;
 
 signals:
     void requestFinished();
@@ -20,11 +17,11 @@ signals:
 
     void statusCodeChanged(int statusCode);
     // void currentHostChanged(QString &&hostKey);
-    // void currentDirectoryChanged(QList<QVariantHash> &&currentDirectory);
+    void currentDirectoryChanged();
 
 protected slots:
-    virtual void onConnectionStatusReceived() = 0;
-    // virtual void onDirectoryReceived() = 0;
+    virtual void onConnectionStatusCodeReceived() = 0;
+    virtual void onDirectoryReceived() = 0;
 };
 
 #endif // CLIENTMESSENGER_HPP

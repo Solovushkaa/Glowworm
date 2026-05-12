@@ -8,10 +8,6 @@ class ServerMessenger : public QObject
     Q_OBJECT
 
 public:
-    // explicit ServerMessenger(QObject *parent = nullptr)
-    //     : QObject(parent)
-    // {}
-
     virtual bool start(bool useDefaultConfig, bool useSecureConfig) = 0;
     virtual void stop(bool stopDefaultConfig, bool stopSecureConfig) = 0;
 

@@ -64,7 +64,8 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
                            const QString &accessed,
                            DownloadInfo::DownloadState downloadState,
                            QObject *parent)
-    : m_downloadID(downloadID)
+    : QObject(parent)
+    , m_downloadID(downloadID)
     , m_url(url)
     , m_hostKey(hostKey)
     , m_name(name)
@@ -77,7 +78,6 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
     , m_modified(modified)
     , m_accessed(accessed)
     , m_downloadState(downloadState)
-    , QObject(parent)
 {
     qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully created";
 }

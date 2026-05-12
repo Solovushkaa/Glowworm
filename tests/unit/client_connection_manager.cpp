@@ -44,8 +44,7 @@ struct ClientConnectionManagerTest : ::testing::Test
 
     void compareRealAndExpectedValues(ConnectionInfo *connectionInfo, int index)
     {
-        EXPECT_EQ(connectionInfo->m_url.host(), test::address[index]);
-        EXPECT_EQ(connectionInfo->m_url.port(), test::port[index]);
+        EXPECT_EQ(connectionInfo->m_url.toString(), test::savedConnectionsUrl[index]);
         EXPECT_EQ(static_cast<int>(connectionInfo->m_transport), test::transport[index]);
         EXPECT_EQ(connectionInfo->m_remoteUserName, test::remoteUserName[index]);
         EXPECT_EQ(connectionInfo->m_bluetoothAddress.toString(), test::bluetoothAddress[index]);
@@ -55,14 +54,10 @@ struct ClientConnectionManagerTest : ::testing::Test
 
     void addConnectionToManager(int index, bool isDuplicate = false)
     {
-        QUrl url;
-        url.setHost(test::address[index].toString());
-        url.setPort(test::port[index]);
-
         clientConnectionManager
             ->addConnection(test::name[index].toString(),
                             static_cast<ConnectionInfo::Transport>(test::transport[index]),
-                            url,
+                            test::savedConnectionsUrl[index].toString(),
                             test::remoteUserName[index].toString(),
                             QBluetoothAddress(test::bluetoothAddress[index].toString()),
                             QBluetoothUuid(test::bluetoothUUID[index]));
@@ -72,7 +67,7 @@ struct ClientConnectionManagerTest : ::testing::Test
     }
     void deleteConnectionFromManager(int activeIndex, int deleteIndex)
     {
-        clientConnectionManager->deleteConnection(0, deleteIndex);
+        clientConnectionManager->deleteConnection(activeIndex, deleteIndex);
 
         --expectedConnectionCount;
     }
@@ -81,8 +76,7 @@ struct ClientConnectionManagerTest : ::testing::Test
     {
         connectionInfo->m_name = test::name[index].toString();
         connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(test::transport[index]);
-        connectionInfo->m_url.setHost(test::address[index].toString());
-        connectionInfo->m_url.setPort(test::port[index]);
+        connectionInfo->m_url = test::savedConnectionsUrl[index].toString();
         connectionInfo->m_remoteUserName = test::remoteUserName[index].toString();
         connectionInfo->m_bluetoothAddress = QBluetoothAddress(
             test::bluetoothAddress[index].toString());

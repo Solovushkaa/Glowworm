@@ -1,6 +1,9 @@
 #include "manager_utils.hpp"
 #include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include "client_connection_manager.hpp"
+#include "constants.hpp"
 #include "download_manager.hpp"
 #include "json_utils.hpp"
 
@@ -51,7 +54,7 @@ bool isCorrectAppDataKey(const QJsonObject &jsonObject)
 
     constexpr bool is_downloadInfo = std::is_same_v<InfoType, DownloadInfo>;
 
-    auto enumMemberToString = [is_downloadInfo](const auto &info) -> QStringView {
+    auto enumMemberToString = [](const auto &info) -> QStringView {
         if constexpr (is_downloadInfo) {
             return getDownloadInfoMemberName(info);
         } else {
@@ -126,3 +129,36 @@ template bool readAppData<DownloadManager>(DownloadManager &, const QString &, Q
 template bool readAppData<ClientConnectionManager>(ClientConnectionManager &,
                                                    const QString &,
                                                    QJsonObject &);
+
+std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(QByteArray &data)
+{
+    qCDebug(manager_utils) << "Generating FileInfo from the JSON";
+
+    std::vector<std::unique_ptr<FileInfo>> filesInfo;
+
+    auto jsonDoc = QJsonDocument::fromJson(data);
+
+    if (!jsonDoc.isArray()) {
+        qCWarning(manager_utils) << "JSON Document isn't JSON Array";
+    }
+
+    const QJsonArray &jsonArray = jsonDoc.array();
+
+    QJsonObject jsonObject;
+    for (auto jsonValue : jsonArray) {
+        if (jsonValue.isObject()) {
+            jsonObject = jsonValue.toObject();
+
+            filesInfo.push_back(
+                std::make_unique<FileInfo>(jsonObject[constants::kName].toString(),
+                                           jsonObject[constants::kPath].toString(),
+                                           jsonObject[constants::kCreated].toString(),
+                                           jsonObject[constants::kModified].toString(),
+                                           jsonObject[constants::kAccessed].toString(),
+                                           jsonObject[constants::kSize].toInteger(),
+                                           jsonObject[constants::kIsDir].toBool(),
+                                           jsonObject[constants::kIsReadable].toBool()));
+        }
+    }
+    return filesInfo;
+}

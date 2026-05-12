@@ -2,8 +2,10 @@
 
 Client::Client(const QString &connectionsFilePath, const QString &downloadsFilePath, QObject *parent)
     : QObject(parent)
+    , m_clientHttpMessenger(m_directoryManager)
     , m_connectionManager(connectionsFilePath)
     , m_downloadManager(downloadsFilePath)
+
 {
     m_clientMessenger = &m_clientHttpMessenger; // Temporarily
     m_connectionManager.readSavedConnections();
@@ -21,9 +23,9 @@ void Client::checkConnectionToServer()
     m_clientMessenger->checkConnectionToServer(m_connectionManager.getActiveConnection());
 }
 
-void Client::getDirectoryList()
+void Client::getDirectory(const QString &dirPath)
 {
-    // m_clientMessenger->getDirectoryList(m_connectionManager.getActiveConnection());
+    m_clientMessenger->getDirectory(m_connectionManager.getActiveConnection(), dirPath);
 }
 
 void Client::signalSlotConnection()
@@ -32,6 +34,16 @@ void Client::signalSlotConnection()
             &ClientMessenger::statusCodeChanged,
             this,
             &Client::connectionStatusCodeChanged);
+
+    connect(m_clientMessenger,
+            &ClientMessenger::currentDirectoryChanged,
+            this,
+            &Client::onCurrentDirectoryChanged);
+}
+
+void Client::onCurrentDirectoryChanged()
+{
+    emit currentDirectoryChanged(m_directoryManager.getActiveDirectory());
 }
 
 // void Client::getFile(const QString &path, const QString &savePath, const QString &saveName)

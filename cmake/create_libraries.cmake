@@ -8,10 +8,17 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/include/managers/client/download_info.hpp
         ${CMAKE_SOURCE_DIR}/src/managers/client/download_manager.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/download_manager.hpp
+
         ${CMAKE_SOURCE_DIR}/src/managers/client/connection_info.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/connection_info.hpp
         ${CMAKE_SOURCE_DIR}/src/managers/client/client_connection_manager.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/client_connection_manager.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/managers/client/file_info.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/file_info.hpp
+        ${CMAKE_SOURCE_DIR}/src/managers/client/directory_manager.cpp
+        ${CMAKE_SOURCE_DIR}/include/managers/client/directory_manager.hpp
+
         ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
         ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
         ${CMAKE_SOURCE_DIR}/src/utils/manager_utils.cpp

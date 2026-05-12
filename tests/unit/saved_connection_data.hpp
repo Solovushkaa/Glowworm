@@ -10,8 +10,7 @@ inline constexpr QStringView oneConnectionData = uR"json(
 {
     "Connection": {
         "name": "Connection",
-        "address": "98.222.12.12",
-        "port": 1234,
+        "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
@@ -26,8 +25,7 @@ inline constexpr QStringView threeConnectionData = uR"json(
 {
     "Test Local Connection": {
         "name": "Test Local Connection",
-        "address": "98.222.12.12",
-        "port": 1234,
+        "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
@@ -36,8 +34,7 @@ inline constexpr QStringView threeConnectionData = uR"json(
     },
     "Second Test Local Connection": {
         "name": "Second Test Local Connection",
-        "address": "98.222.12.12",
-        "port": 1234,
+        "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
@@ -46,8 +43,7 @@ inline constexpr QStringView threeConnectionData = uR"json(
     },
     "Connection": {
         "name": "Connection",
-        "address": "98.222.12.12",
-        "port": 1234,
+        "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",
@@ -60,10 +56,9 @@ inline constexpr QStringView threeConnectionData = uR"json(
 inline constexpr std::array<QStringView, 3> name = {u"Test Local Connection",
                                                     u"Second Test Local Connection",
                                                     u"Connection"};
-inline constexpr std::array<QStringView, 3> address = {u"98.222.12.12",
-                                                       u"98.222.12.12",
-                                                       u"98.222.12.12"};
-inline constexpr std::array<int, 3> port = {1234, 1234, 1234};
+inline constexpr std::array<QStringView, 3> savedConnectionsUrl = {u"http://98.222.12.12:6115",
+                                                                   u"http://98.222.12.12:6115",
+                                                                   u"http://98.222.12.12:6115"};
 inline constexpr std::array<int, 3> transport = {1, 1, 1};
 inline constexpr std::array<QStringView, 3> remoteUserName = {u"", u"", u""};
 inline constexpr std::array<QStringView, 3> bluetoothAddress = {u"00:00:00:00:00:00",

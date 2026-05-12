@@ -24,9 +24,8 @@ namespace connections {
  */
 enum class ConnectionInfoMember {
     Name,
-    Address,
-    Port,
     Transport,
+    Url,
     RemoteUserName,
     BluetoothAddress,
     BluetoothUUID,
@@ -55,10 +54,10 @@ class ConnectionInfo : public QObject
 
 public:
     enum class Transport {
-        DIRECT,    ///< Direct connection with HTTP protocol
-        NATTRAV,   ///<
-        BLUETOOTH, ///< BlueTooth protocol
-        TURN       ///< Indirect connection with HTTP protocol
+        DIRECT,   ///< Direct connection with HTTP protocol
+        NATTRAV,  ///<
+        TURN,     ///< Indirect connection with HTTP protocol
+        BLUETOOTH ///< BlueTooth protocol
     };
     Q_ENUM(Transport)
 

@@ -14,10 +14,8 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
         return constants::kName;
     case Transport:
         return constants::kTransport;
-    case Address:
-        return constants::kAddress;
-    case Port:
-        return constants::kPort;
+    case Url:
+        return constants::kURL;
     case RemoteUserName:
         return constants::kRemoteUserName;
     case BluetoothAddress:
@@ -47,14 +45,14 @@ ConnectionInfo::ConnectionInfo(const QString &name,
                                const QBluetoothUuid &bluetoothUUID,
                                ConnectionState connectionState,
                                QObject *parent)
-    : m_name(name)
+    : QObject(parent)
+    , m_name(name)
     , m_transport(transport)
     , m_url(url)
     , m_remoteUserName(remoteUserName)
     , m_bluetoothAddress(bluetoothAddress)
     , m_bluetoothUUID(bluetoothUUID)
     , m_connectionState(connectionState)
-    , QObject(parent)
 {
     qCDebug(connection_info) << "ConnectionInfo" << m_name << "object successfully created";
 }

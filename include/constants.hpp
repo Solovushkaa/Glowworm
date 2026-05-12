@@ -21,7 +21,7 @@ inline constexpr QStringView kDownloadState = u"downloadState";
 inline constexpr QStringView kIsDir = u"isDir";
 inline constexpr QStringView kIsReadable = u"isReadable";
 
-// --- Tranport Constants ---
+// --- Transport Constants ---
 inline constexpr QStringView kProtocol = u"protocol";
 inline constexpr QStringView kTransport = u"transport";
 inline constexpr QStringView kAddress = u"address";
@@ -40,6 +40,7 @@ inline constexpr QStringView TURN = u"TURN";           ///< Indirect connection 
 inline constexpr QStringView kName = u"name";
 inline constexpr QStringView kSize = u"size";
 inline constexpr QStringView kPath = u"path";
+inline constexpr QStringView kFakePath = u"fakePath";
 inline constexpr QStringView kCreated = u"created";
 inline constexpr QStringView kModified = u"modified";
 inline constexpr QStringView kAccessed = u"accessed";

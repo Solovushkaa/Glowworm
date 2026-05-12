@@ -9,8 +9,7 @@ inline constexpr QStringView testClientConnectionsFileData = uR"json(
 {
     "Connection": {
         "name": "Connection",
-        "address": "127.0.0.1",
-        "port": 6115,
+        "url": "http://127.0.0.1:6115",
         "transport": 1,
         "remoteUserName": "",
         "bluetoothAddress": "00:00:00:00:00:00",

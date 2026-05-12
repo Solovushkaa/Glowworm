@@ -45,7 +45,7 @@ struct DownloadManagerTest : ::testing::Test
     void compareRealAndExpectedValues(DownloadInfo *downloadInfo, int index)
     {
         EXPECT_EQ(downloadInfo->m_downloadID, test::downloadID[index]);
-        EXPECT_EQ(downloadInfo->m_url, test::url[index].toString());
+        EXPECT_EQ(downloadInfo->m_url, test::unfinishedDownloadsUrl[index].toString());
         EXPECT_EQ(static_cast<int>(downloadInfo->m_downloadState), test::downloadState[index]);
         EXPECT_EQ(downloadInfo->m_hostKey, test::hostKey[index]);
         EXPECT_EQ(downloadInfo->m_created, test::created[index]);
@@ -62,7 +62,7 @@ struct DownloadManagerTest : ::testing::Test
     void addDownloadToManager(int index, bool isDuplicate = false)
     {
         downloadManager->addDownload(test::downloadID[index].toString(),
-                                     test::url[index].toString(),
+                                     test::unfinishedDownloadsUrl[index].toString(),
                                      test::hostKey[index].toString(),
                                      test::fileName[index].toString(),
                                      test::path[index].toString(),
@@ -180,7 +180,7 @@ TEST_F(DownloadManagerTest, AddDuplicateDownloadInfo)
 
     int addIndex = 0;
     bool isDuplicate = true;
-    addDownloadToManager(addIndex, true);
+    addDownloadToManager(addIndex, isDuplicate);
     ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 }
 
@@ -193,7 +193,7 @@ TEST_F(DownloadManagerTest, DeleteAddDownloadInfo)
     auto &downloadInfoDict = downloadManager->getDownloadInfoDict();
 
     auto deleteElement = downloadInfoDict[test::downloadID.back()];
-    deleteDownloadFromManager(downloadManager->getDownloadInfoDict()[test::downloadID.back()]);
+    deleteDownloadFromManager(deleteElement);
     ASSERT_EQ(getRealDownloadCount(), expectedDownloadCount);
 
     int addIndex = 2;

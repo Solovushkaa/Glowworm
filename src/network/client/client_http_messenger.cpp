@@ -3,50 +3,40 @@
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include "json_utils.hpp"
+#include "manager_utils.hpp"
 
-ClientHttpMessenger::ClientHttpMessenger()
-    : m_networkManager(new QNetworkAccessManager(this))
-{
-}
+ClientHttpMessenger::ClientHttpMessenger(DirectoryManager &directoryManager)
+    : r_directoryManager(directoryManager)
+{}
 
 void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo)
 {
-    qInfo() << "Check connection to server:";
-    connectionInfo->m_url.setUrl("http://127.0.0.1:6115");
-    qInfo() << connectionInfo->m_url.url();
-    QNetworkRequest request(connectionInfo->m_url.url());
-    QNetworkReply *reply = m_networkManager->head(request);
+    qInfo() << "Check connection to server:" << connectionInfo->m_url;
+    QNetworkRequest request(connectionInfo->m_url);
+    QNetworkReply *reply = m_networkManager.head(request);
 
-    connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onConnectionStatusReceived);
+    connect(reply,
+            &QNetworkReply::finished,
+            this,
+            &ClientHttpMessenger::onConnectionStatusCodeReceived);
 }
 
-// void ClientHttpMessenger::getDirectoryList(ConnectionInfo *connectionInfo)
-// {
-//     /*
-//      Загрузка старого окна, а после отсылка нового реквеста
-//      и уже потом получение и назначение нового списка. В таком
-//      случае при изменении будет заметно обновление, а при его
-//      отсутствии не будет никакого перехода
+void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
+{
+    qCritical() << "Full path:" << connectionInfo->m_url.toString() + dirPath;
+    QNetworkRequest request(connectionInfo->m_url.toString() + dirPath);
+    request.setRawHeader("Accept", "application/json");
 
-//      if(fileGraph.find(path) != fileGraph.end()){
-//         send fileGraph[path] to FrontEnd
-//      }
-//     */
-//     QString absURL = url + path + "?user_id=" + userID;
+    QNetworkReply *reply = m_networkManager.get(request);
+    reply->setProperty("dirPath", dirPath);
 
-//     QNetworkRequest request(absURL);
-//     request.setRawHeader("Accept", "application/json");
+    qDebug() << "A new request for the directory has been generated!";
+    qDebug() << "URL:" << connectionInfo->m_url;
 
-//     QNetworkReply *reply = m_networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onDirectoryReceived);
+}
 
-//     qDebug() << "A new request for the directory has been generated!";
-//     qDebug() << "URL:" << absURL;
-
-//     connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onDirectoryReceived);
-// }
-
-void ClientHttpMessenger::onConnectionStatusReceived()
+void ClientHttpMessenger::onConnectionStatusCodeReceived()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
@@ -75,33 +65,32 @@ void ClientHttpMessenger::onConnectionStatusReceived()
         }
     }
 
-    // reply->close(); // Есть непроверенная проблема с закрытием ответа
     reply->deleteLater();
 }
 
-// void ClientHttpMessenger::onDirectoryReceived()
-// {
-//     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+void ClientHttpMessenger::onDirectoryReceived()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
-//     if(!reply){
-//         qDebug() << "Empty pointer to reply";
-//         return;
-//     }
+    if (!reply) {
+        qDebug() << "Empty pointer to reply";
+        return;
+    }
 
-//     if(reply->error() == QNetworkReply::NoError){
-//         qDebug() << "Directory received!";
+    if (reply->error() == QNetworkReply::NoError) {
+        qDebug() << "Directory received!";
 
-//         QByteArray data = reply->readAll();
+        QByteArray data = reply->readAll();
 
-//         QList<QVariantHash> m_currentDirectory = fromJsonToHash(data);
+        QString dirPath = reply->property("dirPath").toString();
+        auto newActiveDirectory = fromJsonToFileInfo(data);
+        r_directoryManager.updateDirectory(std::move(newActiveDirectory), dirPath);
 
-//         emit currentDirectoryChanged(std::move(
-//             m_currentDirectory)); // Связывается со слотом в Client, который передаёт currentDirectory в сам класс
+        emit currentDirectoryChanged();
+        emit requestFinished();
+    } else {
+        emit requestError("Some error");
+    }
 
-//         emit requestFinished();
-//     } else {
-//         emit requestError("Request Error...");
-//     }
-
-//     reply->deleteLater();
-// }
+    reply->deleteLater();
+}

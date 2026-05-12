@@ -6,6 +6,7 @@
 #include <QTimer>
 #include "client_connection_manager.hpp"
 #include "client_http_messenger.hpp"
+#include "directory_manager.hpp"
 #include "download_manager.hpp"
 // #include "client_tcp_transport.hpp"
 
@@ -26,8 +27,6 @@ class Client : public QObject
 public:
     /**
      * @brief Basic constructor.
-     * 
-     * @param parent QObject parent
      */
     explicit Client(const QString &connectionsFilePath = QStandardPaths::writableLocation(
                                                              QStandardPaths::AppDataLocation)
@@ -44,24 +43,14 @@ public:
     /**
      * @brief Checking the connection to the server.
      */
-    void checkConnectionToServer();
+    Q_INVOKABLE void checkConnectionToServer();
 
     /**
      * @brief Getting a list of directories.
-     * 
-     * @param path Path to the requested directory
-     * @param url URL to server
-     * @param userID User ID
      */
-    void getDirectoryList();
+    Q_INVOKABLE void getDirectory(const QString &dirPath);
     /**
      * @brief Getting a file from the server.
-     * 
-     * @param currentDirectory 
-     * @param downloadInfoDict
-     * @param path
-     * @param savePath
-     * @param saveName
      */
     // void getFile(const QString &path, const QString &savePath, const QString &saveName);
 
@@ -76,20 +65,16 @@ public:
      */
     // void stopDownload(const QString &downloadID);
 
-    // QList<QVariantHash> getCurrentDirectory() { return m_currentDirectory; }
-
     // --- Signal Slot Connection ---
 private:
     void signalSlotConnection();
 
-    // public slots:
-    //     void onConnectionStatusCodeReceived(int statusCode)
-    //     {
-    //         emit connectionStatusCodeChanged(statusCode);
-    //     }
-
 signals:
     void connectionStatusCodeChanged(int statusCode);
+    void currentDirectoryChanged(QList<FileInfo *> directoryList);
+
+public slots:
+    void onCurrentDirectoryChanged();
 
     // --- Members ---
 private:
@@ -99,10 +84,10 @@ private:
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager
 
-    QList<QVariantHash> m_currentDirectory; ///< Current selected directory
+    DirectoryManager m_directoryManager;
 
-    // BluetoothConnector m_blueToothConnector; ///< !Connector! Подключения близких устройств через BlueTooth
-    // WiFiDirectConnector m_wifiDirectConnector; ///< !Connector! Подключения близких устройств через Wifi Direct
+    // BluetoothConnector m_bluetoothConnector; ///< !Connector! Подключения близких устройств через BlueTooth
+    // WiFiDirectConnector m_wiFiDirectConnector; ///< !Connector! Подключения близких устройств через Wifi Direct
 
     // --- Verifications ---
 private:

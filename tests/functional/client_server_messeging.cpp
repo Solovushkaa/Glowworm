@@ -17,9 +17,11 @@ struct ClientServerMessegingTest : ::testing::Test
         downloadsFile.open();
 
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
+        int connectionIndex = 0;
+        client->changeConnection(connectionIndex);
         server = std::make_unique<Server>();
 
-        // server->startServer();
+        server->startServer();
     }
 
     void SetUp() override {}
@@ -33,7 +35,6 @@ struct ClientServerMessegingTest : ::testing::Test
 
 TEST_F(ClientServerMessegingTest, ConnectionToServer)
 {
-    client->changeConnection(0);
     QSignalSpy spy(client.get(), &Client::connectionStatusCodeChanged);
     ASSERT_TRUE(spy.isValid());
 
@@ -41,14 +42,26 @@ TEST_F(ClientServerMessegingTest, ConnectionToServer)
     ASSERT_TRUE(spy.wait(500)); // 0.5 sec
 }
 
-// TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
-// {
-//     client->changeConnection(0);
-//     QSignalSpy spy(client.get(), &Client::connectionStatusCodeChanged);
-//     ASSERT_TRUE(spy.isValid());
+TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
+{
+    QSignalSpy spy(client.get(), &Client::connectionStatusCodeChanged);
+    ASSERT_TRUE(spy.isValid());
 
-//     client->checkConnectionToServer();
-//     ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    client->checkConnectionToServer();
+    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
 
-//     ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
-// }
+    ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
+}
+
+TEST_F(ClientServerMessegingTest, GetDirectoryFromServer)
+{
+    QSignalSpy spy(client.get(), &Client::currentDirectoryChanged);
+    ASSERT_TRUE(spy.isValid());
+
+    client->getDirectory("/home/");
+    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+
+    auto list = spy.takeFirst().at(0).toList();
+    qCritical() << "Directory list size:" << list.size();
+    ASSERT_TRUE(list.size() > 0);
+}

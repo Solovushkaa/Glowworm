@@ -16,9 +16,10 @@ public:
     bool stopServer();
 
 private:
+    QString m_hostKey;
+
     ServerMessenger *m_serverMessenger;        ///< Base server messenger class
     ServerHttpMessenger m_serverHttpMessenger; ///< Http messenger
-    QString m_hostKey;
     // // ServerBluetoothMessenger *m_serverBluetoothMessenger;
 
     // ServerTransport *m_serverTransport;

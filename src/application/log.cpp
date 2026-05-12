@@ -77,7 +77,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 #ifdef QT_DEBUG
     QTextStream conStream(stdout);
-    conStream << QString("[%1] [%2] [%3:%4][%5]\e[107m\033[30m:\033[0m\e[0m %6")
+    conStream << QString("[%1] [%2] [%3:%4][%5]\033[107m\033[30m:\033[0m\033[0m %6")
                      .arg(level, -13) // alignment
                      .arg(context.category)
                      .arg(context.function)
