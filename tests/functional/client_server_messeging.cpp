@@ -5,6 +5,9 @@
 #include "server.hpp"
 #include <gtest/gtest.h>
 
+Q_DECLARE_LOGGING_CATEGORY(functional_client_server_messeging)
+Q_LOGGING_CATEGORY(functional_client_server_messeging, "functional.cs_messeging")
+
 struct ClientServerMessegingTest : ::testing::Test
 {
     ClientServerMessegingTest()
@@ -18,10 +21,10 @@ struct ClientServerMessegingTest : ::testing::Test
 
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
         int connectionIndex = 0;
-        client->changeConnection(connectionIndex);
+        client->setActiveConnection(connectionIndex);
         server = std::make_unique<Server>();
 
-        server->startServer();
+        server->startServers();
     }
 
     void SetUp() override {}
@@ -39,7 +42,7 @@ TEST_F(ClientServerMessegingTest, ConnectionToServer)
     ASSERT_TRUE(spy.isValid());
 
     client->checkConnectionToServer();
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    ASSERT_TRUE(spy.wait(100)); // 0.1 sec
 }
 
 TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
@@ -48,7 +51,7 @@ TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
     ASSERT_TRUE(spy.isValid());
 
     client->checkConnectionToServer();
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    ASSERT_TRUE(spy.wait(100)); // 0.1 sec
 
     ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
 }
@@ -58,10 +61,41 @@ TEST_F(ClientServerMessegingTest, GetDirectoryFromServer)
     QSignalSpy spy(client.get(), &Client::currentDirectoryChanged);
     ASSERT_TRUE(spy.isValid());
 
-    client->getDirectory("/home/");
-    ASSERT_TRUE(spy.wait(500)); // 0.5 sec
+    client->getDirectory(QDir::tempPath());
+    ASSERT_TRUE(spy.wait(100)); // 0.1 sec
 
     auto list = spy.takeFirst().at(0).toList();
-    qCritical() << "Directory list size:" << list.size();
+    qCDebug(functional_client_server_messeging)
+        << "Number of files in the directory:" << list.size();
     ASSERT_TRUE(list.size() > 0);
+}
+
+TEST_F(ClientServerMessegingTest, CorrectnessGetDirectoryFromServer)
+{
+    QSignalSpy spy(client.get(), &Client::currentDirectoryChanged);
+    ASSERT_TRUE(spy.isValid());
+
+    client->getDirectory(QDir::tempPath());
+    ASSERT_TRUE(spy.wait(100)); // 0.1 sec
+
+    auto list = spy.takeFirst().at(0).toList();
+    qCDebug(functional_client_server_messeging)
+        << "Number of files in the directory:" << list.size();
+    ASSERT_TRUE(list.size() > 0);
+
+    bool isFindConnectionsFile = false;
+    bool isFindDownloadsFile = false;
+    for (auto &fileInfo : list) {
+        if (qvariant_cast<FileInfo *>(fileInfo)->m_path == connectionsFile.fileName()) {
+            isFindConnectionsFile = true;
+            if (isFindDownloadsFile)
+                break;
+        }
+        if (qvariant_cast<FileInfo *>(fileInfo)->m_path == downloadsFile.fileName()) {
+            isFindDownloadsFile = true;
+            if (isFindConnectionsFile)
+                break;
+        }
+    }
+    ASSERT_TRUE(isFindConnectionsFile && isFindDownloadsFile);
 }

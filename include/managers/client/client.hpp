@@ -10,6 +10,8 @@
 #include "download_manager.hpp"
 // #include "client_tcp_transport.hpp"
 
+Q_DECLARE_LOGGING_CATEGORY(client)
+
 /**
  * @class Client
  * @brief The client class
@@ -30,16 +32,17 @@ public:
      */
     explicit Client(const QString &connectionsFilePath = QStandardPaths::writableLocation(
                                                              QStandardPaths::AppDataLocation)
-                                                         + "/AppData/Client/SavedConnections.json",
+                                                         + "/appdata/client/savedconnections.json",
                     const QString &downloadsFilePath = QStandardPaths::writableLocation(
                                                            QStandardPaths::AppDataLocation)
-                                                       + "/AppData/Client/UnfinishedDownloads.json",
+                                                       + "/appdata/client/unfinisheddownloads.json",
                     QObject *parent = nullptr);
+    ~Client();
 
     /**
      * @brief changeConnection
      */
-    Q_INVOKABLE void changeConnection(int index);
+    Q_INVOKABLE void setActiveConnection(int index);
     /**
      * @brief Checking the connection to the server.
      */
@@ -52,21 +55,23 @@ public:
     /**
      * @brief Getting a file from the server.
      */
-    // void getFile(const QString &path, const QString &savePath, const QString &saveName);
-
+    // Q_INVOKABLE void getFile(int fileIndex);
     /**
      * @brief Start current download
      * @param downloadID Download ID
      */
-    // void startDownload(const QString &downloadID);
+    // Q_INVOKABLE void startDownload(int downloadIndex);
     /**
      * @brief Stop current download
      * @param downloadID Download ID
      */
-    // void stopDownload(const QString &downloadID);
+    // Q_INVOKABLE void stopDownload(int downloadIndex);
 
     // --- Signal Slot Connection ---
 private:
+    ConnectionInfo *getActiveConnection();
+    void setConnectionPreferences();
+
     void signalSlotConnection();
 
 signals:
@@ -78,16 +83,16 @@ public slots:
 
     // --- Members ---
 private:
-    ClientMessenger *m_clientMessenger;
-    ClientHttpMessenger m_clientHttpMessenger;
+    ClientHttpMessenger m_httpMessenger;
+
+    // ClientTransport *m_transport;
+    // ClientTcpTransport m_tcpTransport;
+    // ClientUdpTransport m_udpTransport;
 
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager
 
     DirectoryManager m_directoryManager;
-
-    // BluetoothConnector m_bluetoothConnector; ///< !Connector! Подключения близких устройств через BlueTooth
-    // WiFiDirectConnector m_wiFiDirectConnector; ///< !Connector! Подключения близких устройств через Wifi Direct
 
     // --- Verifications ---
 private:

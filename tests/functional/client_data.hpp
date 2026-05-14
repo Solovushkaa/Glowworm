@@ -12,9 +12,8 @@ inline constexpr QStringView testClientConnectionsFileData = uR"json(
         "url": "http://127.0.0.1:6115",
         "transport": 1,
         "remoteUserName": "",
-        "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
-        "connectionState": 0
+        "connectionState": 0,
+        "isSecureConnection": true
     }
 }
 )json";

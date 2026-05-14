@@ -5,7 +5,7 @@ Q_LOGGING_CATEGORY(directory_file_info, "directory.file.info")
 FileInfo::FileInfo(QObject *parent)
     : QObject(parent)
 {
-    qCDebug(directory_file_info) << "FileInfo empty object successfully created";
+    qCDebug(directory_file_info) << "FileInfo - created";
 }
 
 FileInfo::FileInfo(const QString &name,
@@ -27,7 +27,7 @@ FileInfo::FileInfo(const QString &name,
     , m_isDir(isDir)
     , m_isReadable(isReadable)
 {
-    qCDebug(directory_file_info) << "FileInfo" << m_name << "object successfully created";
+    qCDebug(directory_file_info) << "FileInfo:" << m_name << "- created";
 }
 
 FileInfo::FileInfo(const FileInfo &directoryInfo)
@@ -47,7 +47,7 @@ FileInfo &FileInfo::operator=(const FileInfo &directoryInfo)
     m_isReadable = directoryInfo.m_isReadable;
     this->setParent(directoryInfo.parent());
 
-    qCDebug(directory_file_info) << "FileInfo" << m_name << "object successfully copyed";
+    qCDebug(directory_file_info) << "FileInfo:" << m_name << "- copyed";
 
     return *this;
 }
@@ -69,12 +69,12 @@ FileInfo &FileInfo::operator=(FileInfo &&directoryInfo)
     m_isReadable = directoryInfo.m_isReadable;
     this->setParent(directoryInfo.parent());
 
-    qCDebug(directory_file_info) << "FileInfo" << m_name << "object successfully moved";
+    qCDebug(directory_file_info) << "FileInfo:" << m_name << "- moved";
 
     return *this;
 }
 
 FileInfo::~FileInfo()
 {
-    qCDebug(directory_file_info) << "FileInfo" << m_name << "object successfully destroyed";
+    qCDebug(directory_file_info) << "FileInfo:" << m_name << "- destroyed";
 }

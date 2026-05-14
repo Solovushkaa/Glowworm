@@ -15,11 +15,47 @@ ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey, quint16 tcpPort
     , m_tcpServer(std::make_unique<QTcpServer>())
     , m_sslServer(std::make_unique<QSslServer>())
 {
-    qDebug() << "Create Server HTTP Messenger";
+    qDebug() << "ServerHttpMessenger - created";
     m_httpServer.router()->addConverter<RestPath>(u".+");
 
     routeConnection();
     routeFileSystem();
+}
+
+bool ServerHttpMessenger::startDefaultServer()
+{
+    if (m_activeDefault) {
+        qInfo() << "HTTP message server is already running";
+        return true;
+    }
+    return startServer(m_tcpServer, m_tcpPort);
+}
+
+void ServerHttpMessenger::stopDefaultServer()
+{
+    if (!m_activeDefault) {
+        qInfo() << "HTTP message server has already stopped";
+        return;
+    }
+    stopServer(m_tcpServer, m_tcpPort);
+}
+
+bool ServerHttpMessenger::startSecureServer()
+{
+    if (m_activeSecure) {
+        qInfo() << "HTTPS message server is already running";
+        return true;
+    }
+    return startServer(m_sslServer, m_sslPort);
+}
+
+void ServerHttpMessenger::stopSecureServer()
+{
+    if (!m_activeSecure) {
+        qInfo() << "HTTPS message server has already stopped";
+        return;
+    }
+    stopServer(m_sslServer, m_sslPort);
 }
 
 template<typename Server>
@@ -34,8 +70,41 @@ constexpr QStringView ServerHttpMessenger::getProtocolName()
     return protocolName;
 }
 
+bool ServerHttpMessenger::startAll()
+{
+    bool noError = true;
+
+    noError &= startDefaultServer();
+    noError &= startSecureServer();
+
+    return noError;
+}
+
+void ServerHttpMessenger::stopAll()
+{
+    bool isSecureConfig;
+    for (auto serverList = m_httpServer.servers(); auto &server : serverList) {
+        if (qobject_cast<QSslServer *>(server) == nullptr) {
+            isSecureConfig = false;
+        } else {
+            isSecureConfig = true;
+        }
+
+        if (!isSecureConfig) {
+            m_tcpServer.reset(server);
+            stopServer(m_tcpServer, m_tcpPort);
+            m_activeDefault = false;
+        }
+        if (isSecureConfig) {
+            m_sslServer.reset(qobject_cast<QSslServer *>(server));
+            stopServer(m_sslServer, m_sslPort);
+            m_activeSecure = false;
+        }
+    }
+}
+
 template<typename Server>
-bool ServerHttpMessenger::start(std::unique_ptr<Server> &server, quint16 port)
+bool ServerHttpMessenger::startServer(std::unique_ptr<Server> &server, quint16 port)
 {
     auto protocolName = getProtocolName<Server>();
 
@@ -47,24 +116,17 @@ bool ServerHttpMessenger::start(std::unique_ptr<Server> &server, quint16 port)
 
     qInfo() << protocolName << "messaging server is running on port:" << port;
 
+    if constexpr (std::is_same_v<Server, QTcpServer>) {
+        m_activeDefault = true;
+    } else {
+        m_activeSecure = true;
+    }
+
     return true;
 }
 
-bool ServerHttpMessenger::start(bool useDefaultConfig, bool useSecureConfig)
-{
-    bool isNotError = true;
-    if (useDefaultConfig) {
-        isNotError &= start(m_tcpServer, m_tcpPort);
-    }
-    if (useSecureConfig) {
-        isNotError &= start(m_sslServer, m_sslPort);
-    }
-
-    return isNotError;
-}
-
 template<typename Server>
-void ServerHttpMessenger::stop(std::unique_ptr<Server> &server, quint16 port)
+void ServerHttpMessenger::stopServer(std::unique_ptr<Server> &server, quint16 port)
 {
     auto protocolName = getProtocolName<Server>();
 
@@ -72,27 +134,6 @@ void ServerHttpMessenger::stop(std::unique_ptr<Server> &server, quint16 port)
     server.get()->setParent(nullptr);
 
     qInfo() << protocolName << "message server was stopped on port:" << port;
-}
-
-void ServerHttpMessenger::stop(bool stopDefaultConfig, [[maybe_unused]] bool stopSecureConfig)
-{
-    bool isSecureConfig;
-    for (auto serverList = m_httpServer.servers(); auto &server : serverList) {
-        if (qobject_cast<QSslServer *>(server) == nullptr) {
-            isSecureConfig = false;
-        } else {
-            isSecureConfig = true;
-        }
-
-        if (!isSecureConfig && stopDefaultConfig) {
-            m_tcpServer.reset(server);
-            stop(m_tcpServer, m_tcpPort);
-        }
-        if (isSecureConfig && stopDefaultConfig) {
-            m_sslServer.reset(qobject_cast<QSslServer *>(server));
-            stop(m_sslServer, m_sslPort);
-        }
-    }
 }
 
 void ServerHttpMessenger::routeConnection()

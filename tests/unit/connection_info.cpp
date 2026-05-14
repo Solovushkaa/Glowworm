@@ -11,10 +11,9 @@ TEST(ConnectionInfoTest, ClassVariableType)
 
     StaticAssertTypeEq<decltype(connectionInfo.m_url), QUrl>();
 
-    StaticAssertTypeEq<decltype(connectionInfo.m_bluetoothAddress), QBluetoothAddress>();
-    StaticAssertTypeEq<decltype(connectionInfo.m_bluetoothUUID), QBluetoothUuid>();
-
     StaticAssertTypeEq<decltype(connectionInfo.m_remoteUserName), QString>();
+
+    StaticAssertTypeEq<decltype(connectionInfo.m_isSecureConnection), bool>();
 }
 
 TEST(ConnectionInfoTest, SignalStateChanging)

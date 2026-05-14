@@ -8,12 +8,12 @@ DownloadManager::DownloadManager(const QString &savePath, QObject *parent)
     : QAbstractListModel(parent)
     , m_savePath(savePath)
 {
-    qCDebug(download_manager) << "DownloadManager successfully created";
+    qCDebug(download_manager) << "DownloadManager - created";
 }
 
 DownloadManager::~DownloadManager()
 {
-    qCDebug(download_manager) << "DownloadManager successfully destroyed";
+    qCDebug(download_manager) << "DownloadManager - destroyed";
 }
 
 int DownloadManager::rowCount(const QModelIndex &parent) const

@@ -30,7 +30,7 @@ function(create_libraries LIB_TARGETS)
             ${CMAKE_SOURCE_DIR}/include/utils
             ${CMAKE_SOURCE_DIR}/include
     )
-    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Bluetooth Qt6::Qml)
+    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Qml)
     LIST(APPEND LIB_TARGETS ClientManagers)
 
     # Server lib
@@ -39,7 +39,6 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/src/managers/server/server.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/server/server.hpp
 
-        ${CMAKE_SOURCE_DIR}/include/network/server/server_messenger.hpp
         ${CMAKE_SOURCE_DIR}/src/network/server/server_http_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/server/server_http_messenger.hpp
 
@@ -68,7 +67,6 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/src/managers/client/client.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/client.hpp
 
-        ${CMAKE_SOURCE_DIR}/include/network/client/client_messenger.hpp
         ${CMAKE_SOURCE_DIR}/src/network/client/client_http_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/client_http_messenger.hpp
 

@@ -1,8 +1,11 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <QLoggingCategory>
 #include "server_http_messenger.hpp"
 // #include "server_tcp_transport.hpp"
+
+Q_DECLARE_LOGGING_CATEGORY(server)
 
 class Server : public QObject
 {
@@ -10,22 +13,30 @@ class Server : public QObject
 
 public:
     explicit Server(QObject *parent = nullptr);
-    // ~Server() { stopServer(); }
+    ~Server();
 
-    bool startServer();
+    void setConfigPreferences(bool defaultConfigEnabled, bool secureConfigEnabled);
+
+    bool startServers();
+    bool stopServers();
+
     bool stopServer();
 
 private:
     QString m_hostKey;
 
-    ServerMessenger *m_serverMessenger;        ///< Base server messenger class
-    ServerHttpMessenger m_serverHttpMessenger; ///< Http messenger
-    // // ServerBluetoothMessenger *m_serverBluetoothMessenger;
+    ServerHttpMessenger m_httpMessenger; ///< Http messenger
 
-    // ServerTransport *m_serverTransport;
-    // ServerTcpTransport m_serverTcpTransport;
-    // ServerUdpTransport *m_serverUdpTransport;
-    // ServerBluetoothTransport *m_serverBluetoothTransport;
+    // ServerTcpTransport m_tcpTransport;
+    // ServerUdpTransport m_udpTransport;
+
+    bool m_httpMessengerEnabled{true};
+
+    bool m_tcpTransportEnabled{true};
+    bool m_udpTransportEnabled{true};
+
+    bool m_defaultConfigEnabled{true};
+    bool m_secureConfigEnabled{true};
 };
 
 #endif // SERVER_HPP

@@ -8,12 +8,12 @@ ClientConnectionManager::ClientConnectionManager(const QString &savePath, QObjec
     : QAbstractListModel(parent)
     , m_savePath(savePath)
 {
-    qCDebug(connection_manager) << "ClientConnectionManager successfully created";
+    qCDebug(connection_manager) << "ClientConnectionManager - created";
 }
 
 ClientConnectionManager::~ClientConnectionManager()
 {
-    qCDebug(connection_manager) << "ClientConnectionManager successfully destroyed";
+    qCDebug(connection_manager) << "ClientConnectionManager - destroyed";
 }
 
 int ClientConnectionManager::rowCount(const QModelIndex &parent) const
@@ -42,10 +42,6 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
         return info->m_url;
     case RemoteUserRole:
         return info->m_remoteUserName;
-    case BluetoothAddressRole:
-        return info->m_bluetoothAddress.toString();
-    case BluetoothUUIDRole:
-        return info->m_bluetoothUUID.toString();
     case StateRole:
         return static_cast<int>(info->m_connectionState);
     default:
@@ -60,8 +56,6 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
     roles[TransportRole] = constants::kTransport.toUtf8();
     roles[URLRole] = constants::kURL.toUtf8();
     roles[RemoteUserRole] = constants::kRemoteUserName.toUtf8();
-    roles[BluetoothAddressRole] = constants::kBluetoothAddress.toUtf8();
-    roles[BluetoothUUIDRole] = constants::kBluetoothUUID.toUtf8();
     roles[StateRole] = constants::kConnectionState.toUtf8();
     return roles;
 }
@@ -88,8 +82,7 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                             ConnectionInfo::Transport transport,
                                             const QUrl &url,
                                             const QString &remoteUserName,
-                                            const QBluetoothAddress &bluetoothAddress,
-                                            const QBluetoothUuid &bluetoothUUID)
+                                            bool isSecureConnection)
 {
     qCDebug(connection_manager) << "Adding a new connection";
 
@@ -102,9 +95,8 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                              transport,
                                              url,
                                              remoteUserName,
-                                             bluetoothAddress,
-                                             bluetoothUUID,
                                              ConnectionInfo::ConnectionState::Disconnected,
+                                             isSecureConnection,
                                              this);
 
     return addConnection(connectionInfo);
@@ -162,20 +154,10 @@ bool ClientConnectionManager::updateConnection(int index,
         roles << URLRole;
     if (property == constants::kRemoteUserName.toUtf8())
         roles << RemoteUserRole;
-    if (property == constants::kBluetoothAddress.toUtf8())
-        roles << BluetoothAddressRole;
-    if (property == constants::kBluetoothUUID.toUtf8())
-        roles << BluetoothUUIDRole;
     if (property == constants::kConnectionState.toUtf8())
         roles << StateRole;
 
-    static const QVector<int> allRoles{NameRole,
-                                       TransportRole,
-                                       URLRole,
-                                       RemoteUserRole,
-                                       BluetoothAddressRole,
-                                       BluetoothUUIDRole,
-                                       StateRole};
+    static const QVector<int> allRoles{NameRole, TransportRole, URLRole, RemoteUserRole, StateRole};
 
     QModelIndex idx = this->index(index);
 
@@ -223,23 +205,18 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     if (!jsonObject[constants::kRemoteUserName].isNull()) {
         connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
     }
-    if (!jsonObject[constants::kBluetoothAddress].isNull()) {
-        connectionInfo->m_bluetoothAddress = QBluetoothAddress(
-            jsonObject[constants::kBluetoothAddress].toString());
-    }
-    if (!jsonObject[constants::kBluetoothUUID].isNull()) {
-        connectionInfo->m_bluetoothUUID = QBluetoothUuid(
-            jsonObject[constants::kBluetoothUUID].toString());
-    }
+
+    connectionInfo->m_connectionState = ConnectionInfo::ConnectionState::Disconnected;
+    connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
 }
 
 void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
                                                               ConnectionInfo *connectionInfo)
 {
+    jsonObject[constants::kName] = connectionInfo->m_name;
     jsonObject[constants::kTransport] = static_cast<int>(connectionInfo->m_transport);
-    jsonObject[constants::kURL] = connectionInfo->m_url.host();
-    jsonObject[constants::kPort] = connectionInfo->m_url.port();
-    jsonObject[constants::kBluetoothAddress] = connectionInfo->m_bluetoothAddress.toString();
-    jsonObject[constants::kBluetoothUUID] = connectionInfo->m_bluetoothUUID.toString();
+    jsonObject[constants::kURL] = connectionInfo->m_url.url();
     jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;
+    jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);
+    jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
 }

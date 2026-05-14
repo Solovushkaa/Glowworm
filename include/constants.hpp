@@ -26,15 +26,12 @@ inline constexpr QStringView kProtocol = u"protocol";
 inline constexpr QStringView kTransport = u"transport";
 inline constexpr QStringView kAddress = u"address";
 inline constexpr QStringView kPort = u"port";
-inline constexpr QStringView kBluetoothAddress = u"bluetoothAddress";
-inline constexpr QStringView kBluetoothUUID = u"bluetoothUUID";
 inline constexpr QStringView kRemoteUserName = u"remoteUserName";
 inline constexpr QStringView kConnectionState = u"connectionState";
+inline constexpr QStringView kIsSecureConnection = u"isSecureConnection";
 
-inline constexpr QStringView DIRECT = u"DIRECT";       ///< Direct connection with HTTP protocol
-inline constexpr QStringView STUN = u"STUN";           ///< UDP protocol with STUN technology
-inline constexpr QStringView BLUETOOTH = u"BLUETOOTH"; ///< BlueTooth protocol
-inline constexpr QStringView TURN = u"TURN";           ///< Indirect connection with HTTP protocol
+inline constexpr QStringView TCP = u"TCP";
+inline constexpr QStringView UDP = u"UDP";
 
 // --- Universal Constatns ---
 inline constexpr QStringView kName = u"name";

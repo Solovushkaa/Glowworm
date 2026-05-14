@@ -79,7 +79,7 @@ DownloadInfo::DownloadInfo(const QString &downloadID,
     , m_accessed(accessed)
     , m_downloadState(downloadState)
 {
-    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully created";
+    qCDebug(download_info) << "DownloadInfo:" << m_name << "- created";
 }
 
 DownloadInfo::DownloadInfo(const DownloadInfo &downloadInfo)
@@ -104,7 +104,7 @@ DownloadInfo &DownloadInfo::operator=(const DownloadInfo &downloadInfo)
     m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
-    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully copyed";
+    qCDebug(download_info) << "DownloadInfo:" << m_name << "- copyed";
 
     return *this;
 }
@@ -131,12 +131,12 @@ DownloadInfo &DownloadInfo::operator=(DownloadInfo &&downloadInfo)
     m_downloadState = downloadInfo.m_downloadState;
     this->setParent(downloadInfo.parent());
 
-    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully moved";
+    qCDebug(download_info) << "DownloadInfo:" << m_name << "- moved";
 
     return *this;
 }
 
 DownloadInfo::~DownloadInfo()
 {
-    qCDebug(download_info) << "DownloadInfo" << m_name << "object successfully destroyed";
+    qCDebug(download_info) << "DownloadInfo:" << m_name << "- destroyed";
 }

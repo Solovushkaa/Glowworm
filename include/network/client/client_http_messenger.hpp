@@ -2,22 +2,37 @@
 #define CLIENTHTTPMESSENGER_HPP
 
 #include <QNetworkAccessManager>
-#include "client_messenger.hpp"
+#include <QNetworkReply>
+#include "client_connection_manager.hpp"
 #include "directory_manager.hpp"
 
-class ClientHttpMessenger : public ClientMessenger
+Q_DECLARE_LOGGING_CATEGORY(client_http_messenger)
+
+class ClientHttpMessenger : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ClientHttpMessenger(DirectoryManager &directoryManager);
+    explicit ClientHttpMessenger(ClientConnectionManager &clientConnectionManager,
+                                 DirectoryManager &directoryManager);
+    ~ClientHttpMessenger();
 
-    void checkConnectionToServer(ConnectionInfo *connectionInfo) override;
-    void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath) override;
+    void checkConnectionToServer(ConnectionInfo *connectionInfo);
+    void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath);
+
+private:
+    void networkErrorHandler(const QNetworkReply::NetworkError networkError);
 
 private slots:
-    void onConnectionStatusCodeReceived() override;
-    void onDirectoryReceived() override;
+    void onConnectionStatusCodeReceived();
+    void onDirectoryReceived();
+
+signals:
+    void requestConnectionStatusReceivedError();
+    void requestDirectoryReceivedError();
+
+    void statusCodeChanged(int statusCode);
+    void currentDirectoryChanged();
 
     // signals:
     //     void statusCodeChanged(int statusCode);
@@ -25,6 +40,7 @@ private slots:
     /* Members */
 private:
     QNetworkAccessManager m_networkManager;
+    ClientConnectionManager &r_clientConnectionManager;
     DirectoryManager &r_directoryManager;
 };
 

@@ -1,49 +1,86 @@
 #include "client.hpp"
 
+Q_LOGGING_CATEGORY(client, "client")
+
 Client::Client(const QString &connectionsFilePath, const QString &downloadsFilePath, QObject *parent)
     : QObject(parent)
-    , m_clientHttpMessenger(m_directoryManager)
+    , m_httpMessenger(m_connectionManager, m_directoryManager)
     , m_connectionManager(connectionsFilePath)
     , m_downloadManager(downloadsFilePath)
 
 {
-    m_clientMessenger = &m_clientHttpMessenger; // Temporarily
-    m_connectionManager.readSavedConnections();
-    signalSlotConnection();
     // connect(&m_timer, &QTimer::timeout, this, &ClientHttpMessenger::startConnectionVerification);
+    m_connectionManager.readSavedConnections();
+    m_downloadManager.readUnfinishedDownloads();
+
+    qCDebug(client) << "Client - created";
 }
 
-void Client::changeConnection(int index)
+Client::~Client()
 {
+    qCDebug(client) << "Client - destroyed";
+}
+
+void Client::setActiveConnection(int index)
+{
+    qCDebug(client) << "Changing the active connection";
+
     m_connectionManager.setActiveConnection(index);
+    setConnectionPreferences();
+
+    qCInfo(client) << "Active connection changed";
 }
 
 void Client::checkConnectionToServer()
 {
-    m_clientMessenger->checkConnectionToServer(m_connectionManager.getActiveConnection());
+    qCDebug(client) << "Connection check request";
+
+    m_httpMessenger.checkConnectionToServer(getActiveConnection());
 }
 
 void Client::getDirectory(const QString &dirPath)
 {
-    m_clientMessenger->getDirectory(m_connectionManager.getActiveConnection(), dirPath);
+    qCDebug(client) << "Directory request";
+
+    m_httpMessenger.getDirectory(getActiveConnection(), dirPath);
+}
+
+ConnectionInfo *Client::getActiveConnection()
+{
+    qCDebug(client) << "Getting an active connection";
+
+    return m_connectionManager.getActiveConnection();
+}
+
+void Client::setConnectionPreferences()
+{
+    qCDebug(client) << "Changing connection preferences";
+
+    ConnectionInfo *connectionInfo = getActiveConnection();
+    if (connectionInfo->m_transport != ConnectionInfo::Transport::TCP) {
+        // set TCP transport;
+    } else if (connectionInfo->m_transport != ConnectionInfo::Transport::UDP) {
+        // set UDP transport;
+    }
+
+    signalSlotConnection();
+
+    qCInfo(client) << "New connection settings have been applied.";
 }
 
 void Client::signalSlotConnection()
 {
-    connect(m_clientMessenger,
-            &ClientMessenger::statusCodeChanged,
+    qCDebug(client) << "Connecting slots and signals";
+
+    connect(&m_httpMessenger,
+            &ClientHttpMessenger::statusCodeChanged,
             this,
             &Client::connectionStatusCodeChanged);
 
-    connect(m_clientMessenger,
-            &ClientMessenger::currentDirectoryChanged,
+    connect(&m_httpMessenger,
+            &ClientHttpMessenger::currentDirectoryChanged,
             this,
             &Client::onCurrentDirectoryChanged);
-}
-
-void Client::onCurrentDirectoryChanged()
-{
-    emit currentDirectoryChanged(m_directoryManager.getActiveDirectory());
 }
 
 // void Client::getFile(const QString &path, const QString &savePath, const QString &saveName)
@@ -65,3 +102,8 @@ void Client::onCurrentDirectoryChanged()
 // {
 //     m_currentClientNetworkProtocol->stopDownload(downloadID);
 // }
+
+void Client::onCurrentDirectoryChanged()
+{
+    emit currentDirectoryChanged(m_directoryManager.getActiveDirectory());
+}

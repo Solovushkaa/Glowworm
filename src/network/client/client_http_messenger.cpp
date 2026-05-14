@@ -1,19 +1,31 @@
 #include "client_http_messenger.hpp"
-#include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
+#include "constants.hpp"
 #include "manager_utils.hpp"
 
-ClientHttpMessenger::ClientHttpMessenger(DirectoryManager &directoryManager)
-    : r_directoryManager(directoryManager)
-{}
+Q_LOGGING_CATEGORY(client_http_messenger, "client.messenger.http")
+
+ClientHttpMessenger::ClientHttpMessenger(ClientConnectionManager &clientConnectionManager,
+                                         DirectoryManager &directoryManager)
+    : r_clientConnectionManager(clientConnectionManager)
+    , r_directoryManager(directoryManager)
+{
+    qCDebug(client_http_messenger) << "ClientHttpMessenger - created";
+}
+
+ClientHttpMessenger::~ClientHttpMessenger()
+{
+    qCDebug(client_http_messenger) << "ClientHttpMessenger - destroyed";
+}
 
 void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo)
 {
-    qInfo() << "Check connection to server:" << connectionInfo->m_url;
+    qCInfo(client_http_messenger) << "Check connection to server:" << connectionInfo->m_url.url();
+
     QNetworkRequest request(connectionInfo->m_url);
     QNetworkReply *reply = m_networkManager.head(request);
+
+    reply->setProperty("connectionName", connectionInfo->m_name);
 
     connect(reply,
             &QNetworkReply::finished,
@@ -23,46 +35,83 @@ void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo
 
 void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
 {
-    qCritical() << "Full path:" << connectionInfo->m_url.toString() + dirPath;
-    QNetworkRequest request(connectionInfo->m_url.toString() + dirPath);
+    QString fullUrl = connectionInfo->m_url.url() + dirPath;
+    qCInfo(client_http_messenger) << "Directory query by address:" << fullUrl;
+
+    QNetworkRequest request(fullUrl);
     request.setRawHeader("Accept", "application/json");
 
     QNetworkReply *reply = m_networkManager.get(request);
-    reply->setProperty("dirPath", dirPath);
 
-    qDebug() << "A new request for the directory has been generated!";
-    qDebug() << "URL:" << connectionInfo->m_url;
+    reply->setProperty("dirPath", dirPath);
 
     connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onDirectoryReceived);
 }
 
+void ClientHttpMessenger::networkErrorHandler(const QNetworkReply::NetworkError networkError)
+{
+    if (networkError == QNetworkReply::ConnectionRefusedError) {
+        qCWarning(client_http_messenger) << "Connection Error: Connection refused";
+    } else if (networkError == QNetworkReply::HostNotFoundError) {
+        qCWarning(client_http_messenger) << "Connection Error: Host not found";
+    } else if (networkError == QNetworkReply::TimeoutError) {
+        qCWarning(client_http_messenger) << "Connection Error: Timeout";
+    } else if (networkError == QNetworkReply::SslHandshakeFailedError) {
+        qCWarning(client_http_messenger) << "Connection Error: SSL handshake failed";
+    } else {
+        qCWarning(client_http_messenger) << "Connection Error: Unknown error";
+    }
+}
+
 void ClientHttpMessenger::onConnectionStatusCodeReceived()
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    qCDebug(client_http_messenger) << "Received a signal that the connection check is complete";
 
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+
+#ifdef QT_DEBUG
     if (!reply) {
-        qWarning() << "Empty pointer to reply";
-        reply->close();
+        qCWarning(client_http_messenger) << "Empty pointer to check connection reply";
         return;
     }
+#endif
 
+    auto connectionName = reply->property("connectionName").toString();
+    auto connectionInfo = r_clientConnectionManager.getConnectionInfoDict()[connectionName];
+    int connectionIndex = r_clientConnectionManager.getConnectionInfoList().indexOf(connectionInfo);
     if (reply->error() == QNetworkReply::NoError) {
-        int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        qCInfo(client_http_messenger) << "The response from the server has been received";
 
-        emit statusCodeChanged(currentStatusCode);
+        int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
 
         if (currentStatusCode == 200) {
-            // QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
+            r_clientConnectionManager
+                .updateConnection(connectionIndex,
+                                  constants::kConnectionState.toString(),
+                                  static_cast<int>(ConnectionInfo::ConnectionState::Connected));
 
-            // emit currentHostChanged(std::move(
-            //     currentHostKey)); // Связывается со слотом в Client, который передаёт hostKey в менеджер подключений
-
-            // qDebug().nospace() << "The status code of the response from the \"" << currentHostKey
-            //                    << "\" host: " << currentStatusCode;
-            qDebug() << "Status success code: " << currentStatusCode;
+            qCInfo(client_http_messenger).nospace()
+                << "Good status code from " << currentHostKey << ": " << currentStatusCode;
         } else {
-            qDebug() << "Status error code: " << currentStatusCode;
+            r_clientConnectionManager
+                .updateConnection(connectionIndex,
+                                  constants::kConnectionState.toString(),
+                                  static_cast<int>(ConnectionInfo::ConnectionState::Disconnected));
+
+            qCWarning(client_http_messenger).nospace()
+                << "Bad status code from " << currentHostKey << ": " << currentStatusCode;
         }
+
+        emit statusCodeChanged(currentStatusCode);
+    } else {
+        r_clientConnectionManager.updateConnection(connectionIndex,
+                                                   constants::kConnectionState.toString(),
+                                                   static_cast<int>(
+                                                       ConnectionInfo::ConnectionState::Error));
+        networkErrorHandler(reply->error());
+
+        emit requestConnectionStatusReceivedError();
     }
 
     reply->deleteLater();
@@ -70,26 +119,42 @@ void ClientHttpMessenger::onConnectionStatusCodeReceived()
 
 void ClientHttpMessenger::onDirectoryReceived()
 {
+    qCDebug(client_http_messenger) << "Received a signal to get a directory";
+
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
+#ifdef QT_DEBUG
     if (!reply) {
         qDebug() << "Empty pointer to reply";
         return;
     }
+#endif
 
     if (reply->error() == QNetworkReply::NoError) {
         qDebug() << "Directory received!";
 
-        QByteArray data = reply->readAll();
+        int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
 
-        QString dirPath = reply->property("dirPath").toString();
-        auto newActiveDirectory = fromJsonToFileInfo(data);
-        r_directoryManager.updateDirectory(std::move(newActiveDirectory), dirPath);
+        if (currentStatusCode == 200) {
+            QByteArray data = reply->readAll();
+
+            QString dirPath = reply->property("dirPath").toString();
+            auto newActiveDirectory = fromJsonToFileInfo(data);
+            r_directoryManager.updateDirectory(std::move(newActiveDirectory), dirPath);
+
+            qCInfo(client_http_messenger).nospace()
+                << "Good status code from " << currentHostKey << ": " << currentStatusCode;
+        } else {
+            qCWarning(client_http_messenger).nospace()
+                << "Bad status code from " << currentHostKey << ": " << currentStatusCode;
+        }
 
         emit currentDirectoryChanged();
-        emit requestFinished();
     } else {
-        emit requestError("Some error");
+        networkErrorHandler(reply->error());
+
+        emit requestDirectoryReceivedError();
     }
 
     reply->deleteLater();

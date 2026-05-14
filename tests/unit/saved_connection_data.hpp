@@ -13,9 +13,8 @@ inline constexpr QStringView oneConnectionData = uR"json(
         "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
-        "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
-        "connectionState": 0
+        "connectionState": 0,
+        "isSecureConnection": true
     }
 }
 )json";
@@ -28,27 +27,24 @@ inline constexpr QStringView threeConnectionData = uR"json(
         "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
-        "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
-        "connectionState": 0
+        "connectionState": 0,
+        "isSecureConnection": true
     },
     "Second Test Local Connection": {
         "name": "Second Test Local Connection",
         "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
-        "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
-        "connectionState": 0
+        "connectionState": 0,
+        "isSecureConnection": false
     },
     "Connection": {
         "name": "Connection",
         "url": "http://98.222.12.12:6115",
         "transport": 1,
         "remoteUserName": "",
-        "bluetoothAddress": "00:00:00:00:00:00",
-        "bluetoothUUID": "00000000-0000-0000-0000-000000000000",
-        "connectionState": 0
+        "connectionState": 0,
+        "isSecureConnection": true
     }
 }
 )json";
@@ -61,14 +57,8 @@ inline constexpr std::array<QStringView, 3> savedConnectionsUrl = {u"http://98.2
                                                                    u"http://98.222.12.12:6115"};
 inline constexpr std::array<int, 3> transport = {1, 1, 1};
 inline constexpr std::array<QStringView, 3> remoteUserName = {u"", u"", u""};
-inline constexpr std::array<QStringView, 3> bluetoothAddress = {u"00:00:00:00:00:00",
-                                                                u"00:00:00:00:00:00",
-                                                                u"00:00:00:00:00:00"};
-inline constexpr std::array<QStringView, 3> bluetoothUUID
-    = {u"{00000000-0000-0000-0000-000000000000}",
-       u"{00000000-0000-0000-0000-000000000000}",
-       u"{00000000-0000-0000-0000-000000000000}"};
 inline constexpr std::array<int, 3> connectionState = {0, 0, 0};
+inline constexpr std::array<bool, 3> isSecureConnection = {true, false, true};
 
 } // namespace test
 

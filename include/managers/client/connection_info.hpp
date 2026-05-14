@@ -6,8 +6,6 @@
 #ifndef CONNECTIONINFO_HPP
 #define CONNECTIONINFO_HPP
 
-#include <QBluetoothAddress>
-#include <QBluetoothUuid>
 #include <QLoggingCategory>
 #include <QObject>
 #include <QProperty>
@@ -27,9 +25,8 @@ enum class ConnectionInfoMember {
     Transport,
     Url,
     RemoteUserName,
-    BluetoothAddress,
-    BluetoothUUID,
     ConnectionState,
+    SecureConnection,
     COUNT // To get the size of the enum
 };
 
@@ -53,12 +50,7 @@ class ConnectionInfo : public QObject
     QML_UNCREATABLE("Managed from C++")
 
 public:
-    enum class Transport {
-        DIRECT,   ///< Direct connection with HTTP protocol
-        NATTRAV,  ///<
-        TURN,     ///< Indirect connection with HTTP protocol
-        BLUETOOTH ///< BlueTooth protocol
-    };
+    enum class Transport { TCP, UDP };
     Q_ENUM(Transport)
 
     enum class ConnectionState {
@@ -73,9 +65,6 @@ private:
     Q_PROPERTY(Transport transport MEMBER m_transport NOTIFY transportChanged)
     Q_PROPERTY(QUrl url MEMBER m_url NOTIFY urlChanged)
     Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName NOTIFY remoteUserNameChanged)
-    Q_PROPERTY(
-        QBluetoothAddress bluetoothAddress MEMBER m_bluetoothAddress NOTIFY bluetoothAddressChanged)
-    Q_PROPERTY(QBluetoothUuid bluetoothUUID MEMBER m_bluetoothUUID NOTIFY bluetoothUUIDChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
 
     // --- Constructors ---
@@ -85,9 +74,8 @@ public:
                    Transport transport,
                    const QUrl &url,
                    const QString &remoteUserName,
-                   const QBluetoothAddress &bluetoothAddress,
-                   const QBluetoothUuid &bluetoothUUID,
                    ConnectionState connectionState,
+                   bool isSecureConnection,
                    QObject *parent = nullptr);
 
     ConnectionInfo(const ConnectionInfo &connectionInfo);
@@ -112,8 +100,6 @@ signals:
     void transportChanged();
     void urlChanged();
     void remoteUserNameChanged();
-    void bluetoothAddressChanged();
-    void bluetoothUUIDChanged();
     void connectionStateChanged();
 
 public:
@@ -125,11 +111,9 @@ public:
     QUrl m_url; ///< url
     QString m_remoteUserName; ///< Remote user (not needed for LAN)
 
-    // --- Bluetooth ---
-    QBluetoothAddress m_bluetoothAddress; ///< Bluetooth address
-    QBluetoothUuid m_bluetoothUUID;       ///< Bluetooth UUID
-
     ConnectionState m_connectionState; ///< Connection state
+
+    bool m_isSecureConnection;
 };
 
 #endif // CONNECTIONINFO_HPP

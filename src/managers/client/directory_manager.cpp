@@ -6,12 +6,12 @@ Q_LOGGING_CATEGORY(directory_manager, "directory.maanger")
 DirectoryManager::DirectoryManager(QObject *parent)
     : QAbstractListModel(parent)
 {
-    qCDebug(directory_manager) << "DirectoryManager successfully created";
+    qCDebug(directory_manager) << "DirectoryManager - created";
 }
 
 DirectoryManager::~DirectoryManager()
 {
-    qCDebug(directory_manager) << "DirectoryManager successfully destroyed";
+    qCDebug(directory_manager) << "DirectoryManager - destroyed";
 }
 
 int DirectoryManager::rowCount(const QModelIndex &parent) const

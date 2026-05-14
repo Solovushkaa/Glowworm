@@ -1,27 +1,47 @@
 #include "server.hpp"
 #include "server_utils.hpp"
 
+Q_LOGGING_CATEGORY(server, "server")
+
 Server::Server(QObject *parent)
     : QObject(parent)
     , m_hostKey(createHostKey())
-    , m_serverHttpMessenger(m_hostKey)
+    , m_httpMessenger(m_hostKey)
 {
-    qDebug() << "Creating Server";
-    m_serverMessenger = &m_serverHttpMessenger; // Temporarily
+    qCDebug(server) << "Server - created";
 }
 
-bool Server::startServer()
+Server::~Server()
 {
-    bool useDefaultConfig = true; // Temporarily
-    bool useSecureConfig = false; // Temporarily
-    return m_serverMessenger->start(useDefaultConfig, useSecureConfig);
+    stopServers();
+    qCDebug(server) << "Server - destroyed";
 }
 
-bool Server::stopServer()
+void Server::setConfigPreferences(bool defaultConfigEnabled, bool secureConfigEnabled)
 {
-    bool stopDefaultConfig = true; // Temporarily
-    bool stopSecureConfig = false; // Temporarily
-    m_serverMessenger->stop(stopDefaultConfig, stopSecureConfig);
+    m_defaultConfigEnabled = defaultConfigEnabled;
+    m_secureConfigEnabled = secureConfigEnabled;
+}
 
+bool Server::startServers()
+{
+    if (m_httpMessengerEnabled) {
+        m_httpMessenger.startAll();
+    }
+    if (m_tcpTransportEnabled) {
+        // TODO:
+    }
+    if (m_udpTransportEnabled) {
+        // TODO:
+    }
+
+    return true;
+}
+
+bool Server::stopServers()
+{
+    m_httpMessenger.stopAll();
+    // m_tcpTransport.stop();
+    // m_udpTransport.stop();
     return true;
 }

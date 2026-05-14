@@ -47,20 +47,18 @@ struct ClientConnectionManagerTest : ::testing::Test
         EXPECT_EQ(connectionInfo->m_url.toString(), test::savedConnectionsUrl[index]);
         EXPECT_EQ(static_cast<int>(connectionInfo->m_transport), test::transport[index]);
         EXPECT_EQ(connectionInfo->m_remoteUserName, test::remoteUserName[index]);
-        EXPECT_EQ(connectionInfo->m_bluetoothAddress.toString(), test::bluetoothAddress[index]);
-        EXPECT_EQ(connectionInfo->m_bluetoothUUID.toString(), test::bluetoothUUID[index]);
         EXPECT_EQ(static_cast<int>(connectionInfo->m_connectionState), test::connectionState[index]);
+        EXPECT_EQ(connectionInfo->m_isSecureConnection, test::isSecureConnection[index]);
     }
 
     void addConnectionToManager(int index, bool isDuplicate = false)
     {
-        clientConnectionManager
-            ->addConnection(test::name[index].toString(),
-                            static_cast<ConnectionInfo::Transport>(test::transport[index]),
-                            test::savedConnectionsUrl[index].toString(),
-                            test::remoteUserName[index].toString(),
-                            QBluetoothAddress(test::bluetoothAddress[index].toString()),
-                            QBluetoothUuid(test::bluetoothUUID[index]));
+        clientConnectionManager->addConnection(test::name[index].toString(),
+                                               static_cast<ConnectionInfo::Transport>(
+                                                   test::transport[index]),
+                                               test::savedConnectionsUrl[index].toString(),
+                                               test::remoteUserName[index].toString(),
+                                               test::isSecureConnection[index]);
 
         if (!isDuplicate)
             ++expectedConnectionCount;
@@ -78,11 +76,9 @@ struct ClientConnectionManagerTest : ::testing::Test
         connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(test::transport[index]);
         connectionInfo->m_url = test::savedConnectionsUrl[index].toString();
         connectionInfo->m_remoteUserName = test::remoteUserName[index].toString();
-        connectionInfo->m_bluetoothAddress = QBluetoothAddress(
-            test::bluetoothAddress[index].toString());
-        connectionInfo->m_bluetoothUUID = QBluetoothUuid(test::bluetoothUUID[index]);
         connectionInfo->m_connectionState = static_cast<ConnectionInfo::ConnectionState>(
             test::connectionState[index]);
+        connectionInfo->m_isSecureConnection = test::isSecureConnection[index];
     }
 
     int getRealConnectionCount() const { return clientConnectionManager->getConnectionCount(); }

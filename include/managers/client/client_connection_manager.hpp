@@ -19,15 +19,7 @@ class ClientConnectionManager : public QAbstractListModel
     Q_OBJECT
     QML_UNCREATABLE("Managed from C++")
 
-    enum ConnectionRoles {
-        NameRole,
-        TransportRole,
-        URLRole,
-        RemoteUserRole,
-        BluetoothAddressRole,
-        BluetoothUUIDRole,
-        StateRole
-    };
+    enum ConnectionRoles { NameRole, TransportRole, URLRole, RemoteUserRole, StateRole };
 
     // --- ModelView methods ---
 public:
@@ -46,8 +38,7 @@ public:
                                    ConnectionInfo::Transport transport,
                                    const QUrl &url,
                                    const QString &remoteUserName,
-                                   const QBluetoothAddress &bluetoothAddress,
-                                   const QBluetoothUuid &bluetoothUUID);
+                                   bool isSecureConnection);
     /**
      * @brief Removing connection
      */

@@ -4,10 +4,9 @@
 #include <QSslServer>
 #include <QTcpServer>
 #include <QtHttpServer/QHttpServer>
-#include "server_messenger.hpp"
 #include <memory>
 
-class ServerHttpMessenger : public ServerMessenger
+class ServerHttpMessenger : public QObject
 {
     Q_OBJECT
 
@@ -16,8 +15,14 @@ public:
                                  quint16 tcpPort = 6115,
                                  quint16 sslPort = 274);
 
-    bool start(bool useDefaultConfig, bool useSecureConfig) override;
-    void stop(bool stopDefaultConfig, bool stopSecureConfig) override;
+    bool startDefaultServer();
+    void stopDefaultServer();
+
+    bool startSecureServer();
+    void stopSecureServer();
+
+    bool startAll();
+    void stopAll();
 
 private:
     void routeConnection();
@@ -27,9 +32,9 @@ private:
     template<typename Server>
     constexpr QStringView getProtocolName();
     template<typename Server>
-    bool start(std::unique_ptr<Server> &server, quint16 port);
+    bool startServer(std::unique_ptr<Server> &server, quint16 port);
     template<typename Server>
-    void stop(std::unique_ptr<Server> &server, quint16 port);
+    void stopServer(std::unique_ptr<Server> &server, quint16 port);
 
 private:
     QString m_hostKey;
@@ -40,6 +45,9 @@ private:
 
     std::unique_ptr<QTcpServer> m_tcpServer;
     std::unique_ptr<QSslServer> m_sslServer;
+
+    bool m_activeDefault{false};
+    bool m_activeSecure{false};
 };
 
 #endif // SERVERHTTPMESSANGER_HPP

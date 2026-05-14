@@ -3,7 +3,7 @@ project(Glowworm VERSION 0.1 LANGUAGES CXX)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Bluetooth Network HttpServer)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Network HttpServer)
 find_package(GTest REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.9)
