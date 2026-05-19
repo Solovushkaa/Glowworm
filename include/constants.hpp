@@ -17,6 +17,8 @@ inline constexpr QStringView kSavePath = u"savePath";
 inline constexpr QStringView kLastReceivedByte = u"lastReceivedByte";
 inline constexpr QStringView kDownloadState = u"downloadState";
 
+inline constexpr int kDownloadIDLength = 60;
+
 // --- File Constatns ---
 inline constexpr QStringView kIsDir = u"isDir";
 inline constexpr QStringView kIsReadable = u"isReadable";

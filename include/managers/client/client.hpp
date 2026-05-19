@@ -6,9 +6,9 @@
 #include <QTimer>
 #include "client_connection_manager.hpp"
 #include "client_http_messenger.hpp"
+#include "client_tcp_transport.hpp"
 #include "directory_manager.hpp"
 #include "download_manager.hpp"
-// #include "client_tcp_transport.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(client)
 
@@ -55,7 +55,7 @@ public:
     /**
      * @brief Getting a file from the server.
      */
-    // Q_INVOKABLE void getFile(int fileIndex);
+    Q_INVOKABLE void getFile(int fileIndex);
     /**
      * @brief Start current download
      * @param downloadID Download ID
@@ -85,9 +85,7 @@ public slots:
 private:
     ClientHttpMessenger m_httpMessenger;
 
-    // ClientTransport *m_transport;
-    // ClientTcpTransport m_tcpTransport;
-    // ClientUdpTransport m_udpTransport;
+    ClientTcpTransport m_tcpTransport;
 
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager

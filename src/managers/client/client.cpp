@@ -5,6 +5,7 @@ Q_LOGGING_CATEGORY(client, "client")
 Client::Client(const QString &connectionsFilePath, const QString &downloadsFilePath, QObject *parent)
     : QObject(parent)
     , m_httpMessenger(m_connectionManager, m_directoryManager)
+    , m_tcpTransport()
     , m_connectionManager(connectionsFilePath)
     , m_downloadManager(downloadsFilePath)
 
@@ -56,12 +57,12 @@ void Client::setConnectionPreferences()
 {
     qCDebug(client) << "Changing connection preferences";
 
-    ConnectionInfo *connectionInfo = getActiveConnection();
-    if (connectionInfo->m_transport != ConnectionInfo::Transport::TCP) {
-        // set TCP transport;
-    } else if (connectionInfo->m_transport != ConnectionInfo::Transport::UDP) {
-        // set UDP transport;
-    }
+    // ConnectionInfo *connectionInfo = getActiveConnection();
+    // if (connectionInfo->m_transport != ConnectionInfo::Transport::TCP) {
+    //     // set TCP transport;
+    // } else if (connectionInfo->m_transport != ConnectionInfo::Transport::UDP) {
+    //     // set UDP transport;
+    // }
 
     signalSlotConnection();
 
@@ -83,15 +84,10 @@ void Client::signalSlotConnection()
             &Client::onCurrentDirectoryChanged);
 }
 
-// void Client::getFile(const QString &path, const QString &savePath, const QString &saveName)
-// {
-//     m_currentClientNetworkProtocol->getFile(m_currentDirectory,
-//                                       m_connectionManager.getActive().m_currentHostName,
-//                                       m_downloadManager,
-//                                       path,
-//                                       savePath,
-//                                       saveName);
-// }
+void Client::getFile(int fileIndex)
+{
+    qDebug() << fileIndex;
+}
 
 // void Client::startDownload(const QString &downloadID)
 // {

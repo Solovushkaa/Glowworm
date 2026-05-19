@@ -1,10 +1,13 @@
 #ifndef SERVERHTTPMESSANGER_HPP
 #define SERVERHTTPMESSANGER_HPP
 
+#include <QLoggingCategory>
 #include <QSslServer>
 #include <QTcpServer>
 #include <QtHttpServer/QHttpServer>
 #include <memory>
+
+Q_DECLARE_LOGGING_CATEGORY(server_http_messenger)
 
 class ServerHttpMessenger : public QObject
 {
@@ -14,6 +17,7 @@ public:
     explicit ServerHttpMessenger(const QString &hostKey,
                                  quint16 tcpPort = 6115,
                                  quint16 sslPort = 274);
+    ~ServerHttpMessenger();
 
     bool startDefaultServer();
     void stopDefaultServer();

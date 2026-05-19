@@ -1,227 +1,161 @@
-// void ClientHttpMessenger::getFile(QList<QVariantHash> &currentDirectory,
-//                                   const QString &currentHostKey,
-//                                   DownloadManager &downloadManager,
-//                                   const QString &path,
-//                                   const QString &savePath,
-//                                   const QString &saveName)
-// {
-//     qDebug() << "Sending a request to receive a file from host:" << currentHostKey;
-//     qDebug() << "The received file:" << path;
+#include "client_tcp_transport.hpp"
+#include <QDataStream>
+#include <QDir>
+#include <QFileInfo>
 
-//     QVariantHash *fileInfo;
-//     for (auto &file : currentDirectory) {
-//         if (file["path"] == path) {
-//             qDebug() << "File find and already exist for Downloading!";
-//             fileInfo = &file;
-//         }
-//     }
-//     QVariantHash &refFileInfo = *fileInfo;
+ClientTcpTransport::ClientTcpTransport(QObject *parent)
+    : QObject(parent)
+{
+    // connect(this, &ClientTcpTransport::fileReceived, this, &ClientTcpTransport::onFileReceived);
+}
 
-//     //-ДОБАВИТЬ В HELPER FUNCTIONS-//
-//     QString downloadID(
-//         QCryptographicHash::hash((path + currentHostKey).toUtf8(), QCryptographicHash::Md5).toHex());
-//     //-----------------------------//
+ClientTcpTransport::~ClientTcpTransport() {}
 
-//     if (downloadID.size() > 8) {
-//         downloadID = downloadID.left(8);
-//     }
+void ClientTcpTransport::getFile(const QUrl &url, DownloadInfo *downloadInfo)
+{
+    const QString &downloadID = downloadInfo->m_downloadID;
 
-//     // // Можно запихать создание объекта и прочее в DownloadInfo
-//     // QHash<QString, DownloadInfo> &downloadInfoDict = downloadManager.getDownloadInfoDict();
-//     // if (!downloadInfoDict.contains(downloadID)) {
-//     //     // Всё это внутри слота DownloadManager получающего newDownload
+    m_sockets[downloadID] = new ClientMessageSocket(this);
+    m_sockets[downloadID]->setDownloadInfo(downloadInfo);
+    connectSignals(m_sockets[downloadID]);
 
-//     //     DownloadInfo downloadInfo(downloadID,
-//     //                               m_url,
-//     //                               m_currentHostKey,
-//     //                               refFileInfo["name"].toString(),
-//     //                               refFileInfo["path"].toString(),
-//     //                               saveName,
-//     //                               savePath,
-//     //                               refFileInfo["size"].toLongLong(),
-//     //                               0,
-//     //                               refFileInfo["created"].toString(),
-//     //                               refFileInfo["modified"].toString(),
-//     //                               refFileInfo["accessed"].toString(),
-//     //                               State::Active);
+    createNewConnectionToServer(url, downloadID);
+}
 
-//     //     downloadManager.addDownloadToUnfinished(downloadInfo);
+void ClientTcpTransport::connectSignals(ClientMessageSocket *messenger)
+{
+    connect(messenger, &MessageSocket::connected, this, &ClientTcpTransport::onConnected);
+    connect(messenger, &MessageSocket::disconnected, this, &ClientTcpTransport::onDisconnected);
+    connect(messenger, &MessageSocket::errorOccurred, this, &ClientTcpTransport::onSocketError);
+    connect(messenger,
+            &MessageSocket::messageReceived,
+            this,
+            &ClientTcpTransport::onMessageReceived);
+}
 
-//     //     downloadInfoDict.emplace(downloadID, std::move(downloadInfo));
+void ClientTcpTransport::createNewConnectionToServer(const QUrl &url, const QString &downloadID)
+{
+    m_sockets[downloadID]->connectToHost(url.host(), url.port());
+}
 
-//     //     startDownload(downloadID);
+void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo)
+{
+    auto socket = m_sockets[downloadInfo->m_downloadID];
 
-//     //     emit newDownload(saveName, downloadID, downloadInfoDict[downloadID].m_size);
-//     // } else {
-//     //     qDebug().nospace() << downloadID << ": has already been added to downloads!";
-//     // }
-// }
+    if (socket->socket()->state() != QTcpSocket::ConnectedState) {
+        emit errorOccurred("Not connected");
+        return;
+    }
 
-// void ClientHttpMessenger::startDownload(const QString &downloadID)
-// {
-//     auto downloadInfoList = m_downloadManager.getDowloadInfoList();
+    QByteArray request;
+    request.append(message::toByteFromStatus(TransportStatus::RequestFile));
+    request.append(downloadInfo->m_downloadID.toUtf8());
+    request.append(downloadInfo->m_path.toUtf8());
 
-//     qDebug() << "downloadID:" << downloadInfoList[downloadID].m_downloadID;
-//     qDebug() << "Получение: bytes=" << downloadInfoList[downloadID].m_lastReceivedByte << "-"
-//              << downloadInfoList[downloadID].m_size;
+    socket->sendMessage(request);
+}
 
-//     downloadInfoList[downloadID].setDownloadStatus(State::Active);
-//     m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
-//     m_downloadManager.addDownloadToUnfinished(downloadInfoList[downloadID]);
+void ClientTcpTransport::onConnected()
+{
+    qInfo() << "Connected to server";
 
-//     /*
-//      * Добавить здесь поиск нужного хоста и в случае его отсутствия дать уведомление с подсказкой с какого устройства была загрузка
-//      */
-//     QNetworkRequest request(m_url.toString() + downloadInfoList[downloadID].m_path);
-//     request.setRawHeader("Accept", "application/octet-stream");
-//     request.setRawHeader("Range",
-//                          "bytes="
-//                              + QByteArray::number(
-//                                  downloadInfoList[downloadID].m_lastReceivedByte)
-//                              + "-" + QByteArray::number(downloadInfoList[downloadID].m_size));
-//     QNetworkReply *reply = m_networkManager->get(request);
+    auto messageSocket = qobject_cast<ClientMessageSocket *>(sender());
+    requestFile(messageSocket->getDownloadInfo());
 
-//     reply->setProperty("downloadID", downloadID);
+    emit connected();
+}
 
-//     connect(reply, &QNetworkReply::downloadProgress, this, &ClientHttpMessenger::onDownloadProgress);
-//     connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onFileReceived);
+void ClientTcpTransport::onDisconnected()
+{
+    auto messageSocket = qobject_cast<ClientMessageSocket *>(sender());
 
-//     // stopDownload(downloadID);
-// }
+    const QString &downloadID = messageSocket->getDownloadInfo()->m_downloadID;
+    if (m_outputFiles[downloadID]->isOpen()) {
+        m_outputFiles.remove(downloadID);
+    }
 
-// void ClientHttpMessenger::stopDownload(const QString &downloadID)
-// {
-//     auto &downloadInfoList = m_downloadManager.getDowloadInfoList();
+    emit disconnected();
+}
 
-//     // QNetworkRequest request(downloadInfoList[downloadID].m_URL+"/stop/...");
+void ClientTcpTransport::onMessageReceived(const QByteArray &message)
+{
+    if (message.isEmpty())
+        return;
 
-//     // QNetworkReply *reply = m_networkManager->post(request, "stop/...");
+    auto messageSocket = qobject_cast<ClientMessageSocket *>(sender());
+    auto downloadInfo = messageSocket->getDownloadInfo();
+    auto downloadID = downloadInfo->m_downloadID;
 
-//     downloadInfoList[downloadID].setDownloadStatus(State::Pause);
-// }
+    TransportStatus status = static_cast<TransportStatus>(message.at(0));
+    QByteArray payload = message.mid(1);
 
-// void ClientHttpMessenger::onFileReceived()
-// {
-//     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    switch (status) {
+    case TransportStatus::ResponseOk: {
+        qDebug() << "Response Ok";
+        bool statusOk;
+        downloadInfo->m_size = payload.toLongLong(&statusOk);
+        if (!statusOk || downloadInfo->m_size < 0) {
+            downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
 
-//     if(!reply){
-//         qDebug() << "Empty pointer to reply";
-//         qDebug() << "-------------------------------------------------";
-//         return;
-//     }
+            downloadInfo->m_size = 0;
+            emit errorOccurred("Invalid file size received");
+            return;
+        }
 
-//     if(reply->error() == QNetworkReply::NoError){
-//         qDebug() << "Get-Range Answer";
-//         int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        m_outputFiles.insert(downloadID, new QFile(downloadInfo->m_savePath, this));
+        if (!m_outputFiles[downloadID]->open(QIODevice::WriteOnly)) {
+            downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
 
-//         QByteArray data = reply->readAll();
+            emit errorOccurred("Cannot save file: " + m_outputFiles[downloadID]->errorString());
+            return;
+        }
 
-//         QString downloadID = reply->property("downloadID").toString();
+        downloadInfo->setDownloadState(DownloadInfo::DownloadState::Active);
 
-//         auto downloadInfoList = m_downloadManager.getDowloadInfoList();
+        qInfo() << "Receiving file of size" << downloadInfo->m_name << "bytes";
+        break;
+    }
+    case TransportStatus::ResponseError: {
+        downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
+        emit errorOccurred(QString::fromUtf8(payload));
+        break;
+    }
+    case TransportStatus::FileChunk: {
+        if (downloadInfo->m_downloadState != DownloadInfo::DownloadState::Active
+            || !m_outputFiles[downloadID]->isOpen()) {
+            emit errorOccurred("Unexpected file chunk");
+            return;
+        }
+        m_outputFiles[downloadID]->write(payload);
+        break;
+    }
+    case TransportStatus::TransferComplete: {
+        if (downloadInfo->m_downloadState != DownloadInfo::DownloadState::Active) {
+            emit errorOccurred("Unexpected transfer complete");
+            return;
+        }
 
-//         QString path = downloadInfoList[downloadID].m_path;
-//         QString savePath = downloadInfoList[downloadID].m_savePath;
-//         QString saveName = downloadInfoList[downloadID].m_saveName;
+        if (m_outputFiles[downloadID]->size() != downloadInfo->m_size) {
+            emit errorOccurred("File size mismatch");
+            return;
+        }
 
-//         qDebug() << "Место сохранения: " << savePath+saveName;
+        m_outputFiles[downloadID]->deleteLater();
+        m_outputFiles.remove(downloadID);
+        downloadInfo->setDownloadState(DownloadInfo::DownloadState::Finish);
 
-//         QFile file(savePath + saveName);
+        emit fileReceived(downloadInfo->m_saveName);
+        break;
+    }
+    default:
+        qWarning() << "Unknown message type:"
+                   << static_cast<std::underlying_type_t<TransportStatus>>(status);
+    }
+}
 
-//         if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-//             qWarning() << "Не удалось открыть файл для дозаписи:" << file.errorString();
-//             qDebug() << "-------------------------------------------------";
-//             return;
-//         } else {
-//             file.write(data);
-//             file.close();
-//         }
+void ClientTcpTransport::onSocketError([[maybe_unused]] QAbstractSocket::SocketError error)
+{
+    auto messageSocket = qobject_cast<ClientMessageSocket *>(sender());
 
-//         QByteArray contenRange = reply->rawHeader("Content-range");
-
-//         if(contenRange.isEmpty()){
-//             qWarning() << "Нет заголовка Content-Range";
-//             qDebug() << "-------------------------------------------------";
-//             return;
-//         }
-
-//         QRegularExpression rx("^bytes (\\d+)-(\\d+)/(\\d+)$");
-//         QRegularExpressionMatch match = rx.match(QString::fromUtf8(contenRange));
-
-//         qint64 start, end, length;
-//         if(match.hasMatch()){
-//             start = match.captured(1).toLongLong();
-//             end = match.captured(2).toLongLong();
-//             length = match.captured(3).toLongLong();
-//         } else{
-//             qWarning() << "Content-Range не соответствует ожидаемому формату:" << contenRange;
-//             qDebug() << "-------------------------------------------------";
-//             return;
-//         }
-
-//         if(start > end || end >= length){
-//             qWarning() << "Content-Range не соответствует ожидаемому значению:" << contenRange;
-//         }
-
-//         if(end+1 == length){
-//             m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
-
-//             emit rangeRequestSuccessfulFinished(downloadID);
-//             qDebug() << "удалённый файл успешно получен";
-//             qDebug() << "-------------------------------------------------";
-//             return;
-//         } else {
-//             startDownload(downloadID);
-//             return;
-//         }
-
-//     } else {
-//         emit requestError("Request Error...");
-//         qDebug() << "-------------------------------------------------";
-//     }
-
-//     reply->deleteLater();
-// }
-
-// void ClientHttpMessenger::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
-// {
-//     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
-
-//     QString downloadID = reply->property("downloadID").toString();
-
-//     qDebug() << "Download progress: Bytes Received -" << bytesReceived << "B";
-
-//     auto downloadInfoList = m_downloadManager.getDowloadInfoList();
-
-//     if (downloadInfoList[downloadID].getDownloadStatus() == State::Pause
-//         && bytesReceived != bytesTotal) {
-//         QByteArray data = reply->readAll();
-//         reply->close();
-//         qDebug() << "Text after reply->readAll()";
-
-//         QString path = downloadInfoList[downloadID].m_path;
-//         QString savePath = downloadInfoList[downloadID].m_savePath;
-//         QString saveName = downloadInfoList[downloadID].m_saveName;
-
-//         QFile file(savePath + saveName);
-
-//         if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-//             qWarning() << "Не удалось открыть файл для дозаписи:" << file.errorString();
-//             qDebug() << "-------------------------------------------------";
-//             return;
-//         } else {
-//             file.write(data);
-//             downloadInfoList[downloadID].m_lastReceivedByte = file.size();
-//             m_downloadManager.deleteFromUnfinishedDownload(downloadInfoList[downloadID]);
-//             m_downloadManager.addDownloadToUnfinished(downloadInfoList[downloadID]);
-
-//             file.close();
-//         }
-
-//         emit stopProgress(downloadID, downloadInfoList[downloadID].m_lastReceivedByte);
-//     } else {
-//         downloadInfoList[downloadID].m_lastReceivedByte = bytesReceived;
-
-//         emit changeProgress(downloadID, bytesReceived);
-//     }
-// }
+    emit errorOccurred(messageSocket->socket()->errorString());
+}

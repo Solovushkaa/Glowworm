@@ -19,12 +19,16 @@ Server::~Server()
 
 void Server::setConfigPreferences(bool defaultConfigEnabled, bool secureConfigEnabled)
 {
+    qCDebug(server) << "Installing a new server configuration";
+
     m_defaultConfigEnabled = defaultConfigEnabled;
     m_secureConfigEnabled = secureConfigEnabled;
 }
 
 bool Server::startServers()
 {
+    qCDebug(server) << "Starting all servers";
+
     if (m_httpMessengerEnabled) {
         m_httpMessenger.startAll();
     }
@@ -40,6 +44,8 @@ bool Server::startServers()
 
 bool Server::stopServers()
 {
+    qCDebug(server) << "Stopping all servers";
+
     m_httpMessenger.stopAll();
     // m_tcpTransport.stop();
     // m_udpTransport.stop();

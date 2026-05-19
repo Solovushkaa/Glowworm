@@ -1,66 +1,126 @@
-// else if (headers.value("Accept") == "application/octet-stream") {
-//     qDebug() << "Ответ на range запрос";
-//     if (headers.contains("Range")) {
-//         qDebug() << "Range: " << headers.value("Range");
+#include "server_tcp_transport.hpp"
+#include <QDir>
+#include <QTcpServer>
+#include "constants.hpp"
+#include "file_sender.hpp"
 
-//         auto [start, end] = parseRange(
-//             QString(headers.value("Range").toByteArray()));
+Q_LOGGING_CATEGORY(server_tcp_transport, "server.transport.tcp")
 
-//         if (start == -1 || end == -1) { // -1 == max(qint64)
-//             qDebug() << "-----------------------------------";
-//             return QHttpServerResponse(
-//                 QHttpServerResponse::StatusCode::BadRequest);
-//         }
+ServerTcpTransport::ServerTcpTransport(quint16 port, QObject *parent)
+    : QObject(parent)
+    , m_port(port)
+    , m_server(new QTcpServer(this))
+{
+    connect(m_server, &QTcpServer::newConnection, this, &ServerTcpTransport::onNewConnection);
 
-//         qDebug() << "-----------------------------------";
+    qCDebug(server_tcp_transport) << "ServerTcpTransport - created";
+}
 
-//         QFile file("/" + path.s);
-//         if (!file.open(QIODevice::ReadOnly)) {
-//             qWarning() << "Ошибка доступа к файлу: " << file.fileName();
-//         }
+ServerTcpTransport::~ServerTcpTransport()
+{
+    qCDebug(server_tcp_transport) << "ServerTcpTransport - destroyed";
+}
 
-//         if (start > end) {
-//             qWarning()
-//             << "Некорректные границы файла: start(" << start << "), end("
-//             << end << "), file size(" << file.size() << ")";
-//         }
+bool ServerTcpTransport::start()
+{
+    qCDebug(server_tcp_transport) << "ServerTcpTransport - started";
 
-//         if (!file.seek(start)) {
-//             qWarning() << "Ошибка чтения с позиции: " << start;
-//         }
+    if (!m_server->listen(QHostAddress::Any, m_port)) {
+        qCCritical(server_tcp_transport) << "Server error:" << m_server->errorString();
+        return false;
+    }
 
-//         end = std::min(end, file.size() - 1);
+    qCInfo(server_tcp_transport) << "Server listening on port" << m_port;
 
-//         // QFile *file = new QFile("large.bin");
-//         // file->open(QIODevice::ReadOnly); // QFile наследует QIODevice → можно передавать напрямую
-//         // auto reply = manager->post(request, file); // Qt будет читать файл по частям внутренним буфером (~64 КБ)
-//         QByteArray data = file.read(end - start
-//                                     + 1); // Не оптимизированный мусор
+    return true;
+}
 
-//         QHttpServerResponse response(data);
-//         QHttpHeaders responseHeader;
+void ServerTcpTransport::stop()
+{
+    qCDebug(server_tcp_transport) << "ServerTcpTransport - stopped";
 
-//         responseHeader.append(QHttpHeaders::WellKnownHeader::ContentRange,
-//                               "bytes " + QString::number(start) + "-"
-//                                   + QString::number(end) + "/"
-//                                   + QString::number(file.size()));
+    m_server->close();
+    for (MessageSocket *client : std::as_const(m_clients)) {
+        client->deleteLater();
+    }
+    m_clients.clear();
+}
 
-//         responseHeader.append(QHttpHeaders::WellKnownHeader::Server,
-//                               m_hostKey);
+void ServerTcpTransport::onNewConnection()
+{
+    qCDebug(server_tcp_transport) << "New connection detected";
 
-//         response.setHeaders(responseHeader);
+    while (m_server->hasPendingConnections()) {
+        QTcpSocket *socket = m_server->nextPendingConnection();
+        auto *client = new MessageSocket(socket, this);
 
-//         // С помощью потоковой передачи, без подгрузки в RAM можно передавать очень большие файлы
-//         // При необходимости докачать диапазон будет просто выбираться иная логика
-//         // httpServer.route("/download/<arg>", QHttpServerRequest::Method::Get,
-//         //                  [](const QString &filename) -> QHttpServerResponse {
-//         //                      QFile *file = new QFile("/path/" + filename);
-//         //                      if (!file->open(QIODevice::ReadOnly)) {
-//         //                          delete file;
-//         //                          return QHttpServerResponse(QHttpServerResponder::StatusCode::NotFound);
-//         //                      }
-//         //                      return QHttpServerResponse(file); // ← передаём QIODevice
-//         //                  });
-//         return response; // Тоже нужно подумать
-//     }
-// }
+        connect(client, &MessageSocket::messageReceived, this, &ServerTcpTransport::onClientMessage);
+        connect(client,
+                &MessageSocket::disconnected,
+                this,
+                &ServerTcpTransport::onClientDisconnected);
+
+        m_clients.append(client);
+
+        qCInfo(server_tcp_transport) << "Client connected:" << socket->peerAddress().toString();
+    }
+}
+
+void ServerTcpTransport::onClientMessage(const QByteArray &message)
+{
+    qCDebug(server_tcp_transport) << "New client message detected";
+
+    auto *client = qobject_cast<MessageSocket *>(sender());
+    if (!client || message.isEmpty())
+        return;
+
+    TransportStatus status = static_cast<TransportStatus>(message.at(0));
+
+    if (status == TransportStatus::RequestFile) {
+        QString downloadID = message.mid(1, constants::kDownloadIDLength);
+
+        QByteArray payload = message.mid(constants::kDownloadIDLength + 1);
+        QString fileName = QString::fromUtf8(payload);
+
+        // if (!isAvailable(fileName)) {
+        //     QByteArray err;
+        //     err.append(message::toByteFromStatus(TransportStatus::ResponseError));
+        //     err.append("Access denied");
+
+        //     client->sendMessage(err);
+
+        //     return;
+        // }
+
+        auto *sender = new FileSender(client, downloadID, fileName, this);
+        connect(sender, &FileSender::finished, this, &ServerTcpTransport::onFileSendFinished);
+        sender->start();
+    }
+}
+
+void ServerTcpTransport::onClientDisconnected()
+{
+    qCDebug(server_tcp_transport) << "Disconnecting the client";
+
+    auto *client = qobject_cast<MessageSocket *>(sender());
+
+    if (client) {
+        cleanupClient(client);
+    }
+}
+
+void ServerTcpTransport::cleanupClient(MessageSocket *client)
+{
+    m_clients.removeOne(client);
+
+    client->deleteLater();
+
+    qCInfo(server_tcp_transport) << "Client disconnected:"
+                                 << client->socket()->peerAddress().toString();
+}
+
+void ServerTcpTransport::onFileSendFinished()
+{
+    auto fileSender = qobject_cast<FileSender *>(sender());
+    fileSender->deleteLater();
+}

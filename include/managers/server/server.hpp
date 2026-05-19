@@ -1,9 +1,8 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <QLoggingCategory>
 #include "server_http_messenger.hpp"
-// #include "server_tcp_transport.hpp"
+#include "server_tcp_transport.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(server)
 
@@ -27,7 +26,7 @@ private:
 
     ServerHttpMessenger m_httpMessenger; ///< Http messenger
 
-    // ServerTcpTransport m_tcpTransport;
+    ServerTcpTransport m_tcpTransport;
     // ServerUdpTransport m_udpTransport;
 
     bool m_httpMessengerEnabled{true};

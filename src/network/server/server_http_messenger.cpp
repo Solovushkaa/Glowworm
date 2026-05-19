@@ -2,6 +2,8 @@
 #include <QFile>
 #include "json_utils.hpp"
 
+Q_LOGGING_CATEGORY(server_http_messenger, "server.messenger.http")
+
 struct RestPath {
     QString s;
     RestPath() = default;
@@ -15,17 +17,25 @@ ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey, quint16 tcpPort
     , m_tcpServer(std::make_unique<QTcpServer>())
     , m_sslServer(std::make_unique<QSslServer>())
 {
-    qDebug() << "ServerHttpMessenger - created";
     m_httpServer.router()->addConverter<RestPath>(u".+");
 
     routeConnection();
     routeFileSystem();
+
+    qCDebug(server_http_messenger) << "ServerHttpMessenger - created";
+}
+
+ServerHttpMessenger::~ServerHttpMessenger()
+{
+    qCDebug(server_http_messenger) << "ServerHttpMessenger - destroyed";
 }
 
 bool ServerHttpMessenger::startDefaultServer()
 {
+    qCDebug(server_http_messenger) << "Starting a default server";
+
     if (m_activeDefault) {
-        qInfo() << "HTTP message server is already running";
+        qCInfo(server_http_messenger) << "HTTP message server is already running";
         return true;
     }
     return startServer(m_tcpServer, m_tcpPort);
@@ -33,8 +43,10 @@ bool ServerHttpMessenger::startDefaultServer()
 
 void ServerHttpMessenger::stopDefaultServer()
 {
+    qCDebug(server_http_messenger) << "Stopping a default server";
+
     if (!m_activeDefault) {
-        qInfo() << "HTTP message server has already stopped";
+        qCInfo(server_http_messenger) << "HTTP message server has already stopped";
         return;
     }
     stopServer(m_tcpServer, m_tcpPort);
@@ -42,8 +54,10 @@ void ServerHttpMessenger::stopDefaultServer()
 
 bool ServerHttpMessenger::startSecureServer()
 {
+    qCDebug(server_http_messenger) << "Starting a secure server";
+
     if (m_activeSecure) {
-        qInfo() << "HTTPS message server is already running";
+        qCInfo(server_http_messenger) << "HTTPS message server is already running";
         return true;
     }
     return startServer(m_sslServer, m_sslPort);
@@ -51,8 +65,10 @@ bool ServerHttpMessenger::startSecureServer()
 
 void ServerHttpMessenger::stopSecureServer()
 {
+    qCDebug(server_http_messenger) << "Stopping a secure server";
+
     if (!m_activeSecure) {
-        qInfo() << "HTTPS message server has already stopped";
+        qCInfo(server_http_messenger) << "HTTPS message server has already stopped";
         return;
     }
     stopServer(m_sslServer, m_sslPort);
@@ -61,6 +77,8 @@ void ServerHttpMessenger::stopSecureServer()
 template<typename Server>
 constexpr QStringView ServerHttpMessenger::getProtocolName()
 {
+    qCDebug(server_http_messenger) << "Getting the protocol name";
+
     QStringView protocolName;
     if constexpr (std::is_same_v<Server, QTcpServer>) {
         protocolName = u"HTTP";
@@ -72,6 +90,8 @@ constexpr QStringView ServerHttpMessenger::getProtocolName()
 
 bool ServerHttpMessenger::startAll()
 {
+    qCDebug(server_http_messenger) << "Starting all servers";
+
     bool noError = true;
 
     noError &= startDefaultServer();
@@ -82,6 +102,8 @@ bool ServerHttpMessenger::startAll()
 
 void ServerHttpMessenger::stopAll()
 {
+    qCDebug(server_http_messenger) << "Stopping all servers";
+
     bool isSecureConfig;
     for (auto serverList = m_httpServer.servers(); auto &server : serverList) {
         if (qobject_cast<QSslServer *>(server) == nullptr) {
@@ -108,6 +130,8 @@ bool ServerHttpMessenger::startServer(std::unique_ptr<Server> &server, quint16 p
 {
     auto protocolName = getProtocolName<Server>();
 
+    qCDebug(server_http_messenger) << "Starting the" << protocolName << "server";
+
     if (!server->listen(QHostAddress::AnyIPv4, port) || !m_httpServer.bind(server.get())) {
         qCritical() << protocolName << "server cannot start. (Port" << port << "may be busy)";
         return false;
@@ -130,6 +154,8 @@ void ServerHttpMessenger::stopServer(std::unique_ptr<Server> &server, quint16 po
 {
     auto protocolName = getProtocolName<Server>();
 
+    qCDebug(server_http_messenger) << "Stopping the" << protocolName << "server";
+
     server->close();
     server.get()->setParent(nullptr);
 
@@ -138,6 +164,8 @@ void ServerHttpMessenger::stopServer(std::unique_ptr<Server> &server, quint16 po
 
 void ServerHttpMessenger::routeConnection()
 {
+    qCDebug(server_http_messenger) << "Installing a server health check handler";
+
     m_httpServer.route("/",
                        QHttpServerRequest::Method::Head,
                        [this](const QHttpServerRequest &request) {
@@ -157,6 +185,8 @@ void ServerHttpMessenger::routeConnection()
 
 void ServerHttpMessenger::routeFileSystem()
 {
+    qCDebug(server_http_messenger) << "Installing a directory retrieval handler";
+
     m_httpServer.route("/?<arg>",
                        QHttpServerRequest::Method::Get,
                        [](const RestPath &path, const QHttpServerRequest &request) {
@@ -165,7 +195,8 @@ void ServerHttpMessenger::routeFileSystem()
 
                            auto &headers = request.headers();
                            if (headers.contains("Accept")) {
-                               qDebug() << "Accept:" << headers.value("Accept");
+                               qCDebug(server_http_messenger)
+                                   << "Accept:" << headers.value("Accept");
 
                                if (headers.value("Accept") == "application/json") {
                                    QHttpServerResponse response(createJsonFromDirectory("/"
@@ -181,6 +212,8 @@ void ServerHttpMessenger::routeFileSystem()
 
 void ServerHttpMessenger::routeMissingHandler()
 {
+    qCDebug(server_http_messenger) << "Installing a missing message handler";
+
     m_httpServer.setMissingHandler(this, [](const QHttpServerRequest &request) {
         qWarning() << "Unknown request:";
         qWarning() << request.query().toString();

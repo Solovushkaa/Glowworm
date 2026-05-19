@@ -1,6 +1,43 @@
 function(create_libraries LIB_TARGETS)
     set(LIB_TARGETS "")
 
+    # Logger lib
+    qt_add_library(Logger STATIC)
+    target_sources(Logger PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/application/log.cpp
+        ${CMAKE_SOURCE_DIR}/include/application/log.hpp
+    )
+    target_include_directories(Logger
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/application
+    )
+    target_link_libraries(Logger PUBLIC Qt6::Core)
+    LIST(APPEND LIB_TARGETS Logger)
+
+    # Utils lib
+    qt_add_library(Utils STATIC)
+    target_sources(Utils PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/utils/manager_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/manager_utils.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/utils/server_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/server_utils.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/utils/message_socket.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/message_socket.hpp
+    )
+    target_include_directories(Utils
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/utils
+            ${CMAKE_SOURCE_DIR}/include/managers/client
+            ${CMAKE_SOURCE_DIR}/include
+    )
+    target_link_libraries(Utils PUBLIC Qt6::Core Qt6::Network)
+    LIST(APPEND LIB_TARGETS Utils)
+
     # Client managers lib
     qt_add_library(ClientManagers STATIC)
     target_sources(ClientManagers PRIVATE
@@ -18,19 +55,12 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/include/managers/client/file_info.hpp
         ${CMAKE_SOURCE_DIR}/src/managers/client/directory_manager.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/directory_manager.hpp
-
-        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
-        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
-        ${CMAKE_SOURCE_DIR}/src/utils/manager_utils.cpp
-        ${CMAKE_SOURCE_DIR}/include/utils/manager_utils.hpp
     )
     target_include_directories(ClientManagers
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/client
-            ${CMAKE_SOURCE_DIR}/include/utils
-            ${CMAKE_SOURCE_DIR}/include
     )
-    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Qml)
+    target_link_libraries(ClientManagers PUBLIC Qt6::Core Qt6::Qml Utils)
     LIST(APPEND LIB_TARGETS ClientManagers)
 
     # Server lib
@@ -42,23 +72,18 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/src/network/server/server_http_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/server/server_http_messenger.hpp
 
-        # ${CMAKE_SOURCE_DIR}/include/network/server/server_transport.hpp
-        # ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_transport.cpp
-        # ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_transport.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_transport.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_transport.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
-        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
-        ${CMAKE_SOURCE_DIR}/src/utils/server_utils.cpp
-        ${CMAKE_SOURCE_DIR}/include/utils/server_utils.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/server/file_sender.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/server/file_sender.hpp
     )
     target_include_directories(Server
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/server
             ${CMAKE_SOURCE_DIR}/include/network/server
-            ${CMAKE_SOURCE_DIR}/include/utils
-            ${CMAKE_SOURCE_DIR}/include
     )
-    target_link_libraries(Server PUBLIC Qt6::Core Qt6::HttpServer)
+    target_link_libraries(Server PUBLIC Qt6::Core Qt6::HttpServer Utils)
     LIST(APPEND LIB_TARGETS Server)
 
     # Client lib
@@ -70,35 +95,18 @@ function(create_libraries LIB_TARGETS)
         ${CMAKE_SOURCE_DIR}/src/network/client/client_http_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/client_http_messenger.hpp
 
-        ${CMAKE_SOURCE_DIR}/include/network/client/client_transport.hpp
         ${CMAKE_SOURCE_DIR}/src/network/client/client_tcp_transport.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/client_tcp_transport.hpp
-
-        ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
-        ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
     )
     target_include_directories(Client
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/client
             ${CMAKE_SOURCE_DIR}/include/network/client
-            ${CMAKE_SOURCE_DIR}/include/utils
     )
-    target_link_libraries(Client PUBLIC Qt6::Core Qt6::Network ClientManagers)
+    target_link_libraries(Client PUBLIC Qt6::Core ClientManagers)
     LIST(APPEND LIB_TARGETS Client)
 
-    # Logger lib
-    qt_add_library(Logger STATIC)
-    target_sources(Logger PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/application/log.cpp
-        ${CMAKE_SOURCE_DIR}/include/application/log.hpp
-    )
-    target_include_directories(Logger
-        PUBLIC
-            ${CMAKE_SOURCE_DIR}/include/application
-    )
-    target_link_libraries(Logger PUBLIC Qt6::Core)
-    LIST(APPEND LIB_TARGETS Logger)
-
+    # Adding flags
     foreach(LIB IN LISTS LIB_TARGETS)
         target_compile_features(${LIB} PUBLIC cxx_std_23)
 
