@@ -138,7 +138,7 @@ bool ServerHttpMessenger::startServer(std::unique_ptr<Server> &server, quint16 p
     }
     server.release();
 
-    qInfo() << protocolName << "messaging server is running on port:" << port;
+    qCInfo(server_http_messenger) << protocolName << "messaging server is running on port:" << port;
 
     if constexpr (std::is_same_v<Server, QTcpServer>) {
         m_activeDefault = true;
@@ -159,7 +159,7 @@ void ServerHttpMessenger::stopServer(std::unique_ptr<Server> &server, quint16 po
     server->close();
     server.get()->setParent(nullptr);
 
-    qInfo() << protocolName << "message server was stopped on port:" << port;
+    qCInfo(server_http_messenger) << protocolName << "message server was stopped on port:" << port;
 }
 
 void ServerHttpMessenger::routeConnection()
@@ -169,8 +169,8 @@ void ServerHttpMessenger::routeConnection()
     m_httpServer.route("/",
                        QHttpServerRequest::Method::Head,
                        [this](const QHttpServerRequest &request) {
-                           qInfo() << "HEAD request received";
-                           qInfo() << request.url().toString();
+                           qCInfo(server_http_messenger)
+                               << "HEAD request received:" << request.url().url();
 
                            QHttpServerResponse response(QHttpServerResponse::StatusCode::Ok);
 
@@ -190,8 +190,8 @@ void ServerHttpMessenger::routeFileSystem()
     m_httpServer.route("/?<arg>",
                        QHttpServerRequest::Method::Get,
                        [](const RestPath &path, const QHttpServerRequest &request) {
-                           qInfo() << "HEAD request received";
-                           qInfo() << request.query().toString();
+                           qCInfo(server_http_messenger)
+                               << "GET request received:" << request.url().url();
 
                            auto &headers = request.headers();
                            if (headers.contains("Accept")) {
@@ -215,8 +215,7 @@ void ServerHttpMessenger::routeMissingHandler()
     qCDebug(server_http_messenger) << "Installing a missing message handler";
 
     m_httpServer.setMissingHandler(this, [](const QHttpServerRequest &request) {
-        qWarning() << "Unknown request:";
-        qWarning() << request.query().toString();
+        qCWarning(server_http_messenger) << "Unknown request:" << request.query().toString();
 
         QHttpServerResponse response(QHttpServerResponse::StatusCode::BadRequest);
         return response;

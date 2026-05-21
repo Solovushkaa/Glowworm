@@ -6,6 +6,8 @@
 #include "download_info.hpp"
 #include "message_socket.hpp"
 
+Q_DECLARE_LOGGING_CATEGORY(client_tcp_transport)
+
 class ClientMessageSocket : public MessageSocket
 {
     Q_OBJECT

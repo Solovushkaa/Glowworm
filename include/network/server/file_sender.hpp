@@ -10,8 +10,9 @@ Q_DECLARE_LOGGING_CATEGORY(server_file_sender)
 namespace constants {
 
 inline constexpr qint32 kTransportChunkSize = 65536;
+inline constexpr qint32 kTransportMaxChunkSize = kTransportChunkSize * 2;
 
-}
+} // namespace constants
 
 class FileSender : public QObject
 {

@@ -18,6 +18,12 @@ inline constexpr QStringView testClientConnectionsFileData = uR"json(
     }
 }
 )json";
-}
+
+inline constexpr QStringView fakeFilePayload
+    = u"C++ gives you the power to build anything — from blazing-fast game engines to the "
+      "software that runs spacecraft.No other language balances raw hardware control and "
+      "high-level abstraction so perfectly — C++ is simply unmatched.";
+
+} // namespace test
 
 #endif // CLIENTDATA_HPP

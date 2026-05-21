@@ -31,6 +31,8 @@ void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo
             &QNetworkReply::finished,
             this,
             &ClientHttpMessenger::onConnectionStatusCodeReceived);
+
+    qCInfo(client_http_messenger) << "Connection status fetch request created";
 }
 
 void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
@@ -46,6 +48,8 @@ void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QSt
     reply->setProperty("dirPath", dirPath);
 
     connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onDirectoryReceived);
+
+    qCInfo(client_http_messenger) << "Directory fetch request created";
 }
 
 void ClientHttpMessenger::networkErrorHandler(const QNetworkReply::NetworkError networkError)
@@ -136,7 +140,6 @@ void ClientHttpMessenger::onDirectoryReceived()
         qDebug() << "Directory received!";
 
         int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
 
         if (currentStatusCode == 200) {
             QByteArray data = reply->readAll();
@@ -145,11 +148,9 @@ void ClientHttpMessenger::onDirectoryReceived()
             auto newActiveDirectory = fromJsonToFileInfo(data);
             r_directoryManager.updateDirectory(std::move(newActiveDirectory), dirPath);
 
-            qCInfo(client_http_messenger).nospace()
-                << "Good status code from " << currentHostKey << ": " << currentStatusCode;
+            qCInfo(client_http_messenger) << "Good status code:" << currentStatusCode;
         } else {
-            qCWarning(client_http_messenger).nospace()
-                << "Bad status code from " << currentHostKey << ": " << currentStatusCode;
+            qCWarning(client_http_messenger) << "Bad status code:" << currentStatusCode;
         }
 
         emit currentDirectoryChanged();

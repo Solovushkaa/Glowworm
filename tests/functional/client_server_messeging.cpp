@@ -14,15 +14,14 @@ struct ClientServerMessegingTest : ::testing::Test
     ClientServerMessegingTest()
     {
         connectionsFile.open();
-        connectionsFile.resize(0);
         connectionsFile.write(test::testClientConnectionsFileData.toUtf8());
         connectionsFile.flush();
 
-        downloadsFile.open();
-
         fakeFile.open();
-        fakeFile.write(fakeFilePayload.toUtf8());
+        fakeFile.write(test::fakeFilePayload.toUtf8());
         fakeFile.flush();
+
+        downloadsFile.open();
 
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
         int connectionIndex = 0;
@@ -42,10 +41,6 @@ struct ClientServerMessegingTest : ::testing::Test
     QTemporaryFile downloadsFile;
 
     QTemporaryFile fakeFile;
-    QString fakeFilePayload{
-        "C++ gives you the power to build anything — from blazing-fast game engines to the "
-        "software that runs spacecraft.No other language balances raw hardware control and "
-        "high-level abstraction so perfectly — C++ is simply unmatched."};
 };
 
 TEST_F(ClientServerMessegingTest, ConnectionToServer)
@@ -114,13 +109,17 @@ TEST_F(ClientServerMessegingTest, CorrectnessGettingDirectoryFromServer)
 
 TEST_F(ClientServerMessegingTest, GettingFileFromServer)
 {
+    // A temporary file opened with QTemporaryFile is not visible outside
+    // the object until another descriptor to this file is opened with QFile
+    QFile file(fakeFile.fileName());
+    ASSERT_TRUE(file.open(QIODevice::ReadOnly));
+
     QSignalSpy connectionSpy(client.get(), &Client::connectionStatusCodeChanged);
     ASSERT_TRUE(connectionSpy.isValid());
 
     client->checkConnectionToServer();
     ASSERT_TRUE(connectionSpy.wait(100)); // 0.1 sec
 
-    qCCritical(functional_client_server_messeging) << fakeFile.fileName();
     QSignalSpy directorySpy(client.get(), &Client::currentDirectoryChanged);
     ASSERT_TRUE(directorySpy.isValid());
 
@@ -131,6 +130,7 @@ TEST_F(ClientServerMessegingTest, GettingFileFromServer)
 
     bool isFindFakeFile = false;
     int fakeFileIndex = 0;
+    qCDebug(functional_client_server_messeging) << fakeFile.fileName();
     for (auto &fileInfo : list) {
         if (qvariant_cast<FileInfo *>(fileInfo)->m_path == fakeFile.fileName()) {
             isFindFakeFile = true;
@@ -152,10 +152,9 @@ TEST_F(ClientServerMessegingTest, GettingFileFromServer)
     ASSERT_TRUE(fileSpy.wait(200)); // 0.2 sec
 
     auto savedFilePath = fileSpy.takeFirst().at(0).toString();
-    qCCritical(functional_client_server_messeging) << fileName << savedFilePath;
-    ASSERT_EQ(fileName, savedFilePath);
+    ASSERT_EQ(filePath, savedFilePath);
 
     QFile savedFile(filePath);
     ASSERT_TRUE(savedFile.open(QIODevice::ReadOnly));
-    ASSERT_EQ(QString(savedFile.readAll()), fakeFilePayload);
+    ASSERT_EQ(QString(savedFile.readAll()), test::fakeFilePayload);
 }

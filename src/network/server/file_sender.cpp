@@ -26,6 +26,7 @@ void FileSender::start()
 
     if (!m_file.open(QIODevice::ReadOnly)) {
         qCWarning(server_file_sender) << "Unable to open file" << m_file.fileName();
+
         QByteArray response;
         response.append(message::toByteFromStatus(TransportStatus::ResponseError));
         response.append(m_file.errorString().toUtf8());
@@ -44,12 +45,9 @@ void FileSender::start()
 
     m_transferActive = true;
 
-    // Однократное подключение сигнала bytesWritten (с предварительным отключением на всякий случай)
     QTcpSocket *socket = m_client->socket();
-    disconnect(socket, &QTcpSocket::bytesWritten, this, &FileSender::onBytesWritten);
     connect(socket, &QTcpSocket::bytesWritten, this, &FileSender::onBytesWritten);
 
-    // Запускаем первый цикл отправки (через event loop для неблокирующего старта)
     QMetaObject::invokeMethod(this, "sendNextChunk", Qt::QueuedConnection);
 }
 
@@ -63,12 +61,8 @@ void FileSender::sendNextChunk()
 
     QTcpSocket *socket = m_client->socket();
 
-    // Пишем чанки, пока есть данные и буфер не достиг верхней границы
     while (!m_file.atEnd()) {
-        // Верхняя граница буфера (можно вынести в константу, например 256 КБ)
-        static const qint64 HighWaterMark = 2 * constants::kTransportChunkSize;
-        if (socket->bytesToWrite() > HighWaterMark) {
-            // Буфер почти полон – прекращаем запись, продолжим в onBytesWritten
+        if (socket->bytesToWrite() > constants::kTransportMaxChunkSize) {
             return;
         }
 
@@ -78,9 +72,6 @@ void FileSender::sendNextChunk()
         packet.append(chunk);
         m_client->sendMessage(packet);
     }
-
-    // Файл прочитан полностью. Если буфер ещё не пуст, дождёмся сигнала bytesWritten
-    // (окончание передачи обработаем в onBytesWritten)
 }
 
 void FileSender::onBytesWritten(qint64 bytes)
@@ -90,14 +81,9 @@ void FileSender::onBytesWritten(qint64 bytes)
     QTcpSocket *socket = m_client->socket();
     const qint64 buffered = socket->bytesToWrite();
 
-    // Нижняя граница – можно снова досылать данные
-    static const qint64 LowWaterMark = constants::kTransportChunkSize;
-
-    if (m_transferActive && buffered <= LowWaterMark && !m_file.atEnd()) {
-        // Буфер опустел достаточно – продолжаем отправку
+    if (m_transferActive && buffered <= constants::kTransportChunkSize && !m_file.atEnd()) {
         sendNextChunk();
     } else if (m_transferActive && m_file.atEnd() && buffered == 0) {
-        // Всё отправлено, завершаем передачу
         QByteArray complete;
         complete.append(message::toByteFromStatus(TransportStatus::TransferComplete));
         complete.append(m_downloadID.toUtf8());

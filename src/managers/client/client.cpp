@@ -48,8 +48,8 @@ void Client::getDirectory(const QString &dirPath)
 
 void Client::getFile(int fileIndex, const QString &saveName, const QString &savePath)
 {
-    qCCritical(client) << "Getting file:"
-                       << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
+    qCDebug(client) << "Getting file:"
+                    << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
 
     if (getActiveConnection()->m_connectionState != ConnectionInfo::ConnectionState::Connected) {
         return;
