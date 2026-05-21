@@ -36,13 +36,13 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
     switch (role) {
     case NameRole:
         return info->m_name;
-    case TransportRole:
-        return static_cast<int>(info->m_transport);
+    case ConnectionTypeRole:
+        return static_cast<int>(info->m_connectionType);
     case URLRole:
         return info->m_url;
     case RemoteUserRole:
         return info->m_remoteUserName;
-    case StateRole:
+    case ConnectionStateRole:
         return static_cast<int>(info->m_connectionState);
     default:
         return QVariant();
@@ -53,10 +53,10 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[NameRole] = constants::kName.toUtf8();
-    roles[TransportRole] = constants::kTransport.toUtf8();
+    roles[ConnectionTypeRole] = constants::kConnectionType.toUtf8();
     roles[URLRole] = constants::kURL.toUtf8();
     roles[RemoteUserRole] = constants::kRemoteUserName.toUtf8();
-    roles[StateRole] = constants::kConnectionState.toUtf8();
+    roles[ConnectionStateRole] = constants::kConnectionState.toUtf8();
     return roles;
 }
 
@@ -79,7 +79,7 @@ bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
 }
 
 bool ClientConnectionManager::addConnection(const QString &name,
-                                            ConnectionInfo::Transport transport,
+                                            ConnectionInfo::ConnectionType connectionType,
                                             const QUrl &url,
                                             const QString &remoteUserName,
                                             bool isSecureConnection)
@@ -92,7 +92,8 @@ bool ClientConnectionManager::addConnection(const QString &name,
     }
 
     auto connectionInfo = new ConnectionInfo(name,
-                                             transport,
+                                             "",
+                                             connectionType,
                                              url,
                                              remoteUserName,
                                              ConnectionInfo::ConnectionState::Disconnected,
@@ -148,16 +149,20 @@ bool ClientConnectionManager::updateConnection(int index,
     QVector<int> roles;
     if (property == constants::kName.toUtf8())
         roles << NameRole;
-    if (property == constants::kTransport.toUtf8())
-        roles << TransportRole;
+    if (property == constants::kConnectionType.toUtf8())
+        roles << ConnectionTypeRole;
     if (property == constants::kURL.toUtf8())
         roles << URLRole;
     if (property == constants::kRemoteUserName.toUtf8())
         roles << RemoteUserRole;
     if (property == constants::kConnectionState.toUtf8())
-        roles << StateRole;
+        roles << ConnectionStateRole;
 
-    static const QVector<int> allRoles{NameRole, TransportRole, URLRole, RemoteUserRole, StateRole};
+    static const QVector<int> allRoles{NameRole,
+                                       ConnectionTypeRole,
+                                       URLRole,
+                                       RemoteUserRole,
+                                       ConnectionStateRole};
 
     QModelIndex idx = this->index(index);
 
@@ -197,8 +202,8 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
                                                               QJsonObject &jsonObject)
 {
     connectionInfo->m_name = jsonObject[constants::kName].toString();
-    connectionInfo->m_transport = static_cast<ConnectionInfo::Transport>(
-        jsonObject[constants::kTransport].toInt());
+    connectionInfo->m_connectionType = static_cast<ConnectionInfo::ConnectionType>(
+        jsonObject[constants::kConnectionType].toInt());
 
     connectionInfo->m_url = jsonObject[constants::kURL].toString();
 
@@ -214,7 +219,7 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
                                                               ConnectionInfo *connectionInfo)
 {
     jsonObject[constants::kName] = connectionInfo->m_name;
-    jsonObject[constants::kTransport] = static_cast<int>(connectionInfo->m_transport);
+    jsonObject[constants::kConnectionType] = static_cast<int>(connectionInfo->m_connectionType);
     jsonObject[constants::kURL] = connectionInfo->m_url.url();
     jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;
     jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);

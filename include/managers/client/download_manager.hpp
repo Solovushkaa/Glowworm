@@ -33,7 +33,7 @@ class DownloadManager : public QAbstractListModel
         CreatedRole,
         ModifiedRole,
         AccessedRole,
-        StateRole
+        ConnectionStateRole
     };
 
     // --- ModelView methods ---

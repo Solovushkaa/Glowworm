@@ -19,7 +19,13 @@ class ClientConnectionManager : public QAbstractListModel
     Q_OBJECT
     QML_UNCREATABLE("Managed from C++")
 
-    enum ConnectionRoles { NameRole, TransportRole, URLRole, RemoteUserRole, StateRole };
+    enum ConnectionRoles {
+        NameRole,
+        ConnectionTypeRole,
+        URLRole,
+        RemoteUserRole,
+        ConnectionStateRole
+    };
 
     // --- ModelView methods ---
 public:
@@ -35,7 +41,7 @@ private:
 
 public:
     Q_INVOKABLE bool addConnection(const QString &name,
-                                   ConnectionInfo::Transport transport,
+                                   ConnectionInfo::ConnectionType connectionType,
                                    const QUrl &url,
                                    const QString &remoteUserName,
                                    bool isSecureConnection);

@@ -13,13 +13,15 @@ ClientTcpTransport::~ClientTcpTransport() {}
 
 void ClientTcpTransport::getFile(const QUrl &url, DownloadInfo *downloadInfo)
 {
+    qCritical() << "Get File";
+
     const QString &downloadID = downloadInfo->m_downloadID;
 
     m_sockets[downloadID] = new ClientMessageSocket(this);
     m_sockets[downloadID]->setDownloadInfo(downloadInfo);
     connectSignals(m_sockets[downloadID]);
 
-    createNewConnectionToServer(url, downloadID);
+    startNewDownload(url, downloadID);
 }
 
 void ClientTcpTransport::connectSignals(ClientMessageSocket *messenger)
@@ -33,9 +35,10 @@ void ClientTcpTransport::connectSignals(ClientMessageSocket *messenger)
             &ClientTcpTransport::onMessageReceived);
 }
 
-void ClientTcpTransport::createNewConnectionToServer(const QUrl &url, const QString &downloadID)
+void ClientTcpTransport::startNewDownload(const QUrl &url, const QString &downloadID)
 {
-    m_sockets[downloadID]->connectToHost(url.host(), url.port());
+    qCritical() << "Starting new download(host):" << url.host();
+    m_sockets[downloadID]->connectToHost(url.host(), 6821 /*url.port()*/);
 }
 
 void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo)
@@ -79,6 +82,7 @@ void ClientTcpTransport::onDisconnected()
 
 void ClientTcpTransport::onMessageReceived(const QByteArray &message)
 {
+    qInfo() << "onMessageReceived";
     if (message.isEmpty())
         return;
 
@@ -87,6 +91,7 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
     auto downloadID = downloadInfo->m_downloadID;
 
     TransportStatus status = static_cast<TransportStatus>(message.at(0));
+    qCritical() << static_cast<int>(status);
     QByteArray payload = message.mid(1);
 
     switch (status) {
@@ -112,10 +117,11 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
 
         downloadInfo->setDownloadState(DownloadInfo::DownloadState::Active);
 
-        qInfo() << "Receiving file of size" << downloadInfo->m_name << "bytes";
+        qInfo() << "Receiving file of size" << downloadInfo->m_size << "bytes";
         break;
     }
     case TransportStatus::ResponseError: {
+        qCritical() << QString::fromUtf8(payload);
         downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
         emit errorOccurred(QString::fromUtf8(payload));
         break;

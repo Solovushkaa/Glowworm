@@ -7,6 +7,7 @@ Server::Server(QObject *parent)
     : QObject(parent)
     , m_hostKey(createHostKey())
     , m_httpMessenger(m_hostKey)
+    , m_tcpTransport()
 {
     qCDebug(server) << "Server - created";
 }
@@ -29,14 +30,11 @@ bool Server::startServers()
 {
     qCDebug(server) << "Starting all servers";
 
-    if (m_httpMessengerEnabled) {
+    if (m_messengerEnabled) {
         m_httpMessenger.startAll();
     }
-    if (m_tcpTransportEnabled) {
-        // TODO:
-    }
-    if (m_udpTransportEnabled) {
-        // TODO:
+    if (m_transportEnabled) {
+        m_tcpTransport.start();
     }
 
     return true;
@@ -47,7 +45,6 @@ bool Server::stopServers()
     qCDebug(server) << "Stopping all servers";
 
     m_httpMessenger.stopAll();
-    // m_tcpTransport.stop();
-    // m_udpTransport.stop();
+    m_tcpTransport.stop();
     return true;
 }

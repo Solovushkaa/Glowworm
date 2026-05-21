@@ -23,9 +23,10 @@ inline constexpr int kDownloadIDLength = 60;
 inline constexpr QStringView kIsDir = u"isDir";
 inline constexpr QStringView kIsReadable = u"isReadable";
 
-// --- Transport Constants ---
+// --- Network Constants ---
 inline constexpr QStringView kProtocol = u"protocol";
 inline constexpr QStringView kTransport = u"transport";
+inline constexpr QStringView kConnectionType = u"connectionType";
 inline constexpr QStringView kAddress = u"address";
 inline constexpr QStringView kPort = u"port";
 inline constexpr QStringView kRemoteUserName = u"remoteUserName";

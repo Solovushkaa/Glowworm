@@ -27,15 +27,13 @@ private:
     ServerHttpMessenger m_httpMessenger; ///< Http messenger
 
     ServerTcpTransport m_tcpTransport;
-    // ServerUdpTransport m_udpTransport;
 
-    bool m_httpMessengerEnabled{true};
+    bool m_messengerEnabled{true};
 
-    bool m_tcpTransportEnabled{true};
-    bool m_udpTransportEnabled{true};
+    bool m_transportEnabled{true};
 
     bool m_defaultConfigEnabled{true};
-    bool m_secureConfigEnabled{true};
+    bool m_secureConfigEnabled{false};
 };
 
 #endif // SERVER_HPP

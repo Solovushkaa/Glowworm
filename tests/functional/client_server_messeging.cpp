@@ -1,3 +1,4 @@
+#include <QDir>
 #include <QSignalSpy>
 #include <QTemporaryFile>
 #include "client.hpp"
@@ -6,7 +7,7 @@
 #include <gtest/gtest.h>
 
 Q_DECLARE_LOGGING_CATEGORY(functional_client_server_messeging)
-Q_LOGGING_CATEGORY(functional_client_server_messeging, "functional.cs_messeging")
+Q_LOGGING_CATEGORY(functional_client_server_messeging, "functional.c_s.messeging")
 
 struct ClientServerMessegingTest : ::testing::Test
 {
@@ -18,6 +19,10 @@ struct ClientServerMessegingTest : ::testing::Test
         connectionsFile.flush();
 
         downloadsFile.open();
+
+        fakeFile.open();
+        fakeFile.write(fakeFilePayload.toUtf8());
+        fakeFile.flush();
 
         client = std::make_unique<Client>(connectionsFile.fileName(), downloadsFile.fileName());
         int connectionIndex = 0;
@@ -32,8 +37,15 @@ struct ClientServerMessegingTest : ::testing::Test
 
     std::unique_ptr<Client> client;
     std::unique_ptr<Server> server;
+
     QTemporaryFile connectionsFile;
     QTemporaryFile downloadsFile;
+
+    QTemporaryFile fakeFile;
+    QString fakeFilePayload{
+        "C++ gives you the power to build anything — from blazing-fast game engines to the "
+        "software that runs spacecraft.No other language balances raw hardware control and "
+        "high-level abstraction so perfectly — C++ is simply unmatched."};
 };
 
 TEST_F(ClientServerMessegingTest, ConnectionToServer)
@@ -56,7 +68,7 @@ TEST_F(ClientServerMessegingTest, CorrectnessConnectionToServer)
     ASSERT_EQ(spy.takeFirst().at(0).toInt(), 200);
 }
 
-TEST_F(ClientServerMessegingTest, GetDirectoryFromServer)
+TEST_F(ClientServerMessegingTest, GettingDirectoryFromServer)
 {
     QSignalSpy spy(client.get(), &Client::currentDirectoryChanged);
     ASSERT_TRUE(spy.isValid());
@@ -70,7 +82,7 @@ TEST_F(ClientServerMessegingTest, GetDirectoryFromServer)
     ASSERT_TRUE(list.size() > 0);
 }
 
-TEST_F(ClientServerMessegingTest, CorrectnessGetDirectoryFromServer)
+TEST_F(ClientServerMessegingTest, CorrectnessGettingDirectoryFromServer)
 {
     QSignalSpy spy(client.get(), &Client::currentDirectoryChanged);
     ASSERT_TRUE(spy.isValid());
@@ -98,4 +110,52 @@ TEST_F(ClientServerMessegingTest, CorrectnessGetDirectoryFromServer)
         }
     }
     ASSERT_TRUE(isFindConnectionsFile && isFindDownloadsFile);
+}
+
+TEST_F(ClientServerMessegingTest, GettingFileFromServer)
+{
+    QSignalSpy connectionSpy(client.get(), &Client::connectionStatusCodeChanged);
+    ASSERT_TRUE(connectionSpy.isValid());
+
+    client->checkConnectionToServer();
+    ASSERT_TRUE(connectionSpy.wait(100)); // 0.1 sec
+
+    qCCritical(functional_client_server_messeging) << fakeFile.fileName();
+    QSignalSpy directorySpy(client.get(), &Client::currentDirectoryChanged);
+    ASSERT_TRUE(directorySpy.isValid());
+
+    client->getDirectory(QDir::tempPath());
+    ASSERT_TRUE(directorySpy.wait(100)); // 0.1 sec
+
+    auto list = directorySpy.takeFirst().at(0).toList();
+
+    bool isFindFakeFile = false;
+    int fakeFileIndex = 0;
+    for (auto &fileInfo : list) {
+        if (qvariant_cast<FileInfo *>(fileInfo)->m_path == fakeFile.fileName()) {
+            isFindFakeFile = true;
+            break;
+        }
+        ++fakeFileIndex;
+    }
+    ASSERT_TRUE(isFindFakeFile);
+
+    fakeFile.close();
+
+    QString fileName = "savedFakeFile.txt";
+    QString filePath = QDir::tempPath() + "/" + fileName;
+
+    QSignalSpy fileSpy(client.get(), &Client::fileReceived);
+    ASSERT_TRUE(fileSpy.isValid());
+
+    client->getFile(fakeFileIndex, fileName, filePath);
+    ASSERT_TRUE(fileSpy.wait(200)); // 0.2 sec
+
+    auto savedFilePath = fileSpy.takeFirst().at(0).toString();
+    qCCritical(functional_client_server_messeging) << fileName << savedFilePath;
+    ASSERT_EQ(fileName, savedFilePath);
+
+    QFile savedFile(filePath);
+    ASSERT_TRUE(savedFile.open(QIODevice::ReadOnly));
+    ASSERT_EQ(QString(savedFile.readAll()), fakeFilePayload);
 }

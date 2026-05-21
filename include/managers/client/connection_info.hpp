@@ -22,7 +22,8 @@ namespace connections {
  */
 enum class ConnectionInfoMember {
     Name,
-    Transport,
+    HostKey,
+    ConnectionType,
     Url,
     RemoteUserName,
     ConnectionState,
@@ -50,8 +51,8 @@ class ConnectionInfo : public QObject
     QML_UNCREATABLE("Managed from C++")
 
 public:
-    enum class Transport { TCP, UDP };
-    Q_ENUM(Transport)
+    enum class ConnectionType { Direct, TURN };
+    Q_ENUM(ConnectionType)
 
     enum class ConnectionState {
         Disconnected, ///< No connection
@@ -62,7 +63,7 @@ public:
 
 private:
     Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
-    Q_PROPERTY(Transport transport MEMBER m_transport NOTIFY transportChanged)
+    Q_PROPERTY(ConnectionType connectionType MEMBER m_connectionType NOTIFY transportChanged)
     Q_PROPERTY(QUrl url MEMBER m_url NOTIFY urlChanged)
     Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName NOTIFY remoteUserNameChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
@@ -71,7 +72,8 @@ private:
 public:
     explicit ConnectionInfo(QObject *parent = nullptr);
     ConnectionInfo(const QString &name,
-                   Transport transport,
+                   const QString &hostKey,
+                   ConnectionType connectionType,
                    const QUrl &url,
                    const QString &remoteUserName,
                    ConnectionState connectionState,
@@ -103,11 +105,11 @@ signals:
     void connectionStateChanged();
 
 public:
-    // --- General ---
     QString m_name;        ///< Connection name
-    Transport m_transport; ///< Network transport
+    QString m_hostKey;     ///< Host key
 
-    // --- Network ---
+    ConnectionType m_connectionType; ///< Network connectionType
+
     QUrl m_url; ///< url
     QString m_remoteUserName; ///< Remote user (not needed for LAN)
 

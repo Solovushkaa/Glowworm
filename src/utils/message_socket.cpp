@@ -70,12 +70,11 @@ void MessageSocket::tryExtractMessages()
 {
     qCDebug(message_socket) << "Trying to extract a message";
 
-    QDataStream stream(m_buffer);
-    stream.setVersion(QDataStream::Qt_6_9);
     while (m_buffer.size() >= constants::kTransportHeaderSize) {
+        QDataStream stream(m_buffer);
+        stream.setVersion(QDataStream::Qt_6_9);
         quint32 messageSize = 0;
         stream >> messageSize;
-
         if (m_buffer.size() < constants::kTransportHeaderSize + static_cast<int>(messageSize)) {
             break;
         }
@@ -83,6 +82,7 @@ void MessageSocket::tryExtractMessages()
         QByteArray message = m_buffer.mid(constants::kTransportHeaderSize, messageSize);
         m_buffer.remove(0, constants::kTransportHeaderSize + messageSize);
 
+        qCInfo(message_socket) << "emit messageReceived(message)";
         emit messageReceived(message);
     }
 }

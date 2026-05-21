@@ -7,7 +7,7 @@ TEST(ConnectionInfoTest, ClassVariableType)
     ConnectionInfo connectionInfo;
     using namespace ::testing;
     StaticAssertTypeEq<decltype(connectionInfo.m_name), QString>();
-    StaticAssertTypeEq<decltype(connectionInfo.m_transport), ConnectionInfo::Transport>();
+    StaticAssertTypeEq<decltype(connectionInfo.m_connectionType), ConnectionInfo::ConnectionType>();
 
     StaticAssertTypeEq<decltype(connectionInfo.m_url), QUrl>();
 

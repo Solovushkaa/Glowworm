@@ -55,28 +55,31 @@ public:
     /**
      * @brief Getting a file from the server.
      */
-    Q_INVOKABLE void getFile(int fileIndex);
+    Q_INVOKABLE void getFile(int fileIndex, const QString &saveName, const QString &savePath);
     /**
      * @brief Start current download
      * @param downloadID Download ID
      */
-    // Q_INVOKABLE void startDownload(int downloadIndex);
+    Q_INVOKABLE void startDownload(int downloadIndex);
     /**
      * @brief Stop current download
      * @param downloadID Download ID
      */
-    // Q_INVOKABLE void stopDownload(int downloadIndex);
+    Q_INVOKABLE void stopDownload(int downloadIndex);
 
     // --- Signal Slot Connection ---
 private:
     ConnectionInfo *getActiveConnection();
     void setConnectionPreferences();
 
-    void signalSlotConnection();
+    QString generateDownloadID(int fileIndex);
+
+    void connectSignals();
 
 signals:
     void connectionStatusCodeChanged(int statusCode);
     void currentDirectoryChanged(QList<FileInfo *> directoryList);
+    void fileReceived(const QString &filePath);
 
 public slots:
     void onCurrentDirectoryChanged();
@@ -85,7 +88,7 @@ public slots:
 private:
     ClientHttpMessenger m_httpMessenger;
 
-    ClientTcpTransport m_tcpTransport;
+    ClientTcpTransport m_dataExchanger; ///< DownloadID, Transport
 
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager
@@ -94,15 +97,15 @@ private:
 
     // --- Verifications ---
 private:
-    void startConnectionVerification()
-    {
-        checkConnectionToServer();
-        m_timer.start(m_pingTime);
-    }
-    void stopConnectionVerification() { m_timer.stop(); }
+    // void startConnectionVerification()
+    // {
+    //     checkConnectionToServer();
+    //     m_timer.start(m_pingTime);
+    // }
+    // void stopConnectionVerification() { m_timer.stop(); }
 
-    QTimer m_timer;        ///< Таймер для проверки доступа к серверу
-    int m_pingTime{5'000}; ///< Время между опросом сервера (в секундах)
+    // QTimer m_timer;        ///< Timer for checking access to the server
+    // int m_pingTime{5'000}; ///< Time between server polls (in milliseconds)
 };
 
 #endif // CLIENT_HPP

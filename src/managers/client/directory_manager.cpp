@@ -1,7 +1,7 @@
 #include "directory_manager.hpp"
 #include "constants.hpp"
 
-Q_LOGGING_CATEGORY(directory_manager, "directory.maanger")
+Q_LOGGING_CATEGORY(directory_manager, "directory.manager")
 
 DirectoryManager::DirectoryManager(QObject *parent)
     : QAbstractListModel(parent)

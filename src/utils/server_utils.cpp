@@ -17,7 +17,7 @@ QString createHostKey()
     hostKey.append(QSysInfo::machineHostName());
     hostKey.append(QSysInfo::machineUniqueId().toHex());
 
-    hostKey = QCryptographicHash::hash(hostKey.toUtf8(), QCryptographicHash::Sha512).toHex();
+    hostKey = QCryptographicHash::hash(hostKey.toUtf8(), QCryptographicHash::Sha256).toHex();
 
     qInfo().nospace().noquote() << R"(HostKey: ")" << hostKey.slice(14) << R"(..." was generated)";
 

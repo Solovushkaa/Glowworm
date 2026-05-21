@@ -86,6 +86,8 @@ void ClientHttpMessenger::onConnectionStatusCodeReceived()
         QString currentHostKey = reply->header(QNetworkRequest::ServerHeader).toString();
 
         if (currentStatusCode == 200) {
+            connectionInfo->m_hostKey = currentHostKey;
+
             r_clientConnectionManager
                 .updateConnection(connectionIndex,
                                   constants::kConnectionState.toString(),

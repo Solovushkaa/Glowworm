@@ -4,7 +4,7 @@
 #include "constants.hpp"
 #include "file_sender.hpp"
 
-Q_LOGGING_CATEGORY(server_tcp_transport, "server.transport.tcp")
+Q_LOGGING_CATEGORY(server_tcp_transport, "server.connectionType.tcp")
 
 ServerTcpTransport::ServerTcpTransport(quint16 port, QObject *parent)
     : QObject(parent)
@@ -82,6 +82,7 @@ void ServerTcpTransport::onClientMessage(const QByteArray &message)
         QByteArray payload = message.mid(constants::kDownloadIDLength + 1);
         QString fileName = QString::fromUtf8(payload);
 
+        qCInfo(server_tcp_transport) << "TransportStatus::RequestFile:" << fileName;
         // if (!isAvailable(fileName)) {
         //     QByteArray err;
         //     err.append(message::toByteFromStatus(TransportStatus::ResponseError));

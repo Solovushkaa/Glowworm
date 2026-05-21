@@ -21,7 +21,7 @@ QByteArray createJsonFromDirectory(const QString &dirPath)
     QJsonObject jsonObject;
 
     for (auto &info : dirList) {
-        jsonObject[constants::kName] = info.baseName();
+        jsonObject[constants::kName] = info.fileName();
         jsonObject[constants::kPath] = info.absoluteFilePath();
         jsonObject[constants::kCreated] = info.birthTime().toString();
         jsonObject[constants::kModified] = info.lastModified().toString();

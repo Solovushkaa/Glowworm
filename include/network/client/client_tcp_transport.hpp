@@ -35,7 +35,7 @@ public:
 private:
     void connectSignals(ClientMessageSocket *messenger);
 
-    void createNewConnectionToServer(const QUrl &url, const QString &downloadID);
+    void startNewDownload(const QUrl &url, const QString &downloadID);
     void requestFile(DownloadInfo *downloadInfo);
 
 signals:

@@ -58,7 +58,7 @@ QVariant DownloadManager::data(const QModelIndex &index, int role) const
         return info->m_modified;
     case AccessedRole:
         return info->m_accessed;
-    case StateRole:
+    case ConnectionStateRole:
         return static_cast<int>(info->m_downloadState);
     default:
         return QVariant();
@@ -80,7 +80,7 @@ QHash<int, QByteArray> DownloadManager::roleNames() const
     roles[CreatedRole] = constants::kCreated.toUtf8();
     roles[ModifiedRole] = constants::kModified.toUtf8();
     roles[AccessedRole] = constants::kAccessed.toUtf8();
-    roles[StateRole] = constants::kDownloadState.toUtf8();
+    roles[ConnectionStateRole] = constants::kDownloadState.toUtf8();
     return roles;
 }
 
@@ -213,7 +213,7 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
     if (property == constants::kAccessed.toUtf8())
         roles << AccessedRole;
     if (property == constants::kDownloadState.toUtf8())
-        roles << StateRole;
+        roles << ConnectionStateRole;
 
     static const QVector<int> allRoles{DownloadIDRole,
                                        UrlRole,
@@ -227,7 +227,7 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
                                        CreatedRole,
                                        ModifiedRole,
                                        AccessedRole,
-                                       StateRole};
+                                       ConnectionStateRole};
 
     QModelIndex idx = this->index(index);
 

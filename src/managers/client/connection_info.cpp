@@ -1,6 +1,7 @@
 #include "connection_info.hpp"
 #include "constants.hpp"
 #include <stdexcept>
+
 Q_LOGGING_CATEGORY(connection_info, "connection.info")
 
 namespace connections {
@@ -12,8 +13,10 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
     switch (member) {
     case Name:
         return constants::kName;
-    case Transport:
-        return constants::kTransport;
+    case HostKey:
+        return constants::kHostkey;
+    case ConnectionType:
+        return constants::kConnectionType;
     case Url:
         return constants::kURL;
     case RemoteUserName:
@@ -36,7 +39,8 @@ ConnectionInfo::ConnectionInfo(QObject *parent)
 }
 
 ConnectionInfo::ConnectionInfo(const QString &name,
-                               Transport transport,
+                               const QString &hostKey,
+                               ConnectionType connectionType,
                                const QUrl &url,
                                const QString &remoteUserName,
                                ConnectionState connectionState,
@@ -44,7 +48,8 @@ ConnectionInfo::ConnectionInfo(const QString &name,
                                QObject *parent)
     : QObject(parent)
     , m_name(name)
-    , m_transport(transport)
+    , m_hostKey(hostKey)
+    , m_connectionType(connectionType)
     , m_url(url)
     , m_remoteUserName(remoteUserName)
     , m_connectionState(connectionState)
@@ -61,7 +66,8 @@ ConnectionInfo::ConnectionInfo(const ConnectionInfo &connectionInfo)
 ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
 {
     m_name = connectionInfo.m_name;
-    m_transport = connectionInfo.m_transport;
+    m_hostKey = connectionInfo.m_hostKey;
+    m_connectionType = connectionInfo.m_connectionType;
     m_url = connectionInfo.m_url;
     m_remoteUserName = connectionInfo.m_remoteUserName;
     m_connectionState = connectionInfo.m_connectionState;
@@ -81,7 +87,8 @@ ConnectionInfo::ConnectionInfo(ConnectionInfo &&connectionInfo)
 ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
 {
     m_name = std::move(connectionInfo.m_name);
-    m_transport = connectionInfo.m_transport;
+    m_hostKey = std::move(connectionInfo.m_hostKey);
+    m_connectionType = connectionInfo.m_connectionType;
     m_url = std::move(connectionInfo.m_url);
     m_remoteUserName = std::move(connectionInfo.m_remoteUserName);
     m_connectionState = connectionInfo.m_connectionState;
