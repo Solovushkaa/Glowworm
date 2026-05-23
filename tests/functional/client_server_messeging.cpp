@@ -28,7 +28,7 @@ struct ClientServerMessegingTest : ::testing::Test
         client->setActiveConnection(connectionIndex);
         server = std::make_unique<Server>();
 
-        server->startServers();
+        server->startDefaultServer();
     }
 
     void SetUp() override {}

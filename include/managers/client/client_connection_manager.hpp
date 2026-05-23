@@ -19,6 +19,8 @@ class ClientConnectionManager : public QAbstractListModel
     Q_OBJECT
     QML_UNCREATABLE("Managed from C++")
 
+    Q_PROPERTY(bool hasActiveConnection READ hasActiveConnection NOTIFY activeConnectionChanged)
+
     enum ConnectionRoles {
         NameRole,
         ConnectionTypeRole,
@@ -64,10 +66,6 @@ public:
     bool readSavedConnections();
 
     void initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
-    /**
-     * @brief Set active connection.
-     */
-    void setActiveConnection(int index);
 
     void setConnectionInfoFromJsonObject(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
     void setJsonObjectFromConnectionInfo(QJsonObject &jsonObject, ConnectionInfo *connectionInfo);
@@ -87,7 +85,13 @@ public:
     /**
      * @brief Get active connection.
      */
-    ConnectionInfo *getActiveConnection() { return m_activeConnection; }
+    Q_INVOKABLE ConnectionInfo *getActiveConnection() { return m_activeConnection; }
+    /**
+     * @brief Set active connection.
+     */
+    Q_INVOKABLE void setActiveConnection(int index);
+
+    bool hasActiveConnection() const { return m_activeConnection != nullptr; }
 
 signals:
     /**
@@ -103,7 +107,7 @@ private:
     QHash<QString, ConnectionInfo *> m_connectionInfoDict; ///< Information about connections
     QJsonObject m_jsonSavedConnections; ///< List of a save connections in json for working with file
 
-    ConnectionInfo *m_activeConnection; ///< Pointer to active connection
+    ConnectionInfo *m_activeConnection{nullptr}; ///< Pointer to active connection
 
     QString m_savePath; ///< Path to save connections
 

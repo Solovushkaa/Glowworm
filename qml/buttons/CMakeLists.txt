@@ -1,9 +1,5 @@
 qt_add_library(CustomButtonsLib)
 
-qt_standard_project_setup(REQUIRES 6.8)
-
-set_target_properties(CustomButtonsLib PROPERTIES AUTOMOC ON)
-
 qt_add_qml_module(CustomButtonsLib
     URI CustomButtons
     VERSION 1.0
@@ -14,7 +10,7 @@ qt_add_qml_module(CustomButtonsLib
 )
 
 target_link_libraries(CustomButtonsLib
-    PRIVATE
+    PUBLIC
     Qt6::Quick
     Qt6::Qml
 )

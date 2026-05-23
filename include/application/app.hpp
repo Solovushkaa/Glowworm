@@ -1,10 +1,10 @@
-#ifndef APP_H
-#define APP_H
+#ifndef APP_HPP
+#define APP_HPP
 
 #include <QObject>
-#include "client.h"
-#include "initialize.h"
-// #include "server.h"
+#include "client.hpp"
+#include "initialize.hpp"
+#include "server.hpp"
 
 /**
  * @brief The App class
@@ -15,13 +15,19 @@
 class App : public QObject
 {
     Q_OBJECT
+
 public:
     explicit App(QObject *parent = nullptr);
 
 private:
+    void registrateQmlTypes();
+    void setGraphicPreferences();
+
+private:
     Initialize m_initializer;
+
     Client m_client;
-    // Server m_server;
+    Server m_server;
 };
 
-#endif // APP_H
+#endif // APP_HPP

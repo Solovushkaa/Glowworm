@@ -61,7 +61,8 @@ Rectangle {
 
             textFormat: Text.RichText
 
-            text: "<font color='#505050'>" + prefix + "</font><font color='#000000'>" + name + postfix + "</font>"
+            text: "<font color='#505050'>" + prefix
+                  + "</font><font color='#000000'>" + name + postfix + "</font>"
         }
 
         ScrollBar.horizontal: ScrollBar {
@@ -99,7 +100,7 @@ Rectangle {
 
             anchors.fill: parent
 
-            source: "qrc:/Content/Icons/copy.svg"
+            source: "qrc:Icons/copy.svg"
 
             visible: false
 

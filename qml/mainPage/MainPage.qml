@@ -2,9 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import DirectClient
 import CustomButtons
-import ClientConnectionManager
 
 Page {
     id: mainPage
@@ -14,49 +12,22 @@ Page {
         color: "#eeeeee"
     }
 
+    property ApplicationWindow mainWindow: null
+
     property string currentPath: "/"
     property string currentName: ""
     property int currentSize: 0
-    property string downloadPath: ""
+    property int fileIndex: -1
     property bool isPageInteractiveActive: false
 
     Connections {
         target: Client
-        function onRequestSuccessfulFinished() {
-            if (typeof updateDirectoryLayout === "function")
-                updateDirectoryLayout()
-        }
-        function onChangeStatusCode(currentStatusCode) {
-            // if (mainFooter)
-            //     mainFooter.footerText = "Current connection code: " + currentStatusCode + "\n"
+        function onConnectionStatusCodeChanged(currentStatusCode) {
             if (currentStatusCode === 200)
-                isPageInteractiveActive = true
-        }
-        function onRangeRequestSuccessfulFinished() {
-            if (mainFooter)
-                mainFooter.footerText = "Range request successful ended\n"
+                mainPage.isPageInteractiveActive = true
         }
     }
 
-    function updateDirectoryLayout() {
-        var files = Client.getCurrentDirectory()
-
-        mainFooter.footerText = "Directory successful get!\n"
-
-        for (var i = 0; i < files.length; i++) {
-            if (files[i]["path"] === "/..") {
-
-            } else {
-                fileModel.append(files[i])
-            }
-        }
-    }
-    function getDirectoryLayout() {
-        fileModel.clear()
-        console.log("Запрос на ресурс")
-
-        Client.getDirectoryList(currentPath)
-    }
     function updateFileInfoPanel(name, type, location, size, created, modified, accessed) {
         fileInfo.name = name
         fileInfo.typeName = type
@@ -66,23 +37,11 @@ Page {
         fileInfo.modifiedName = modified
         fileInfo.accessedName = accessed
     }
-    function loadActivePreset() {
-        console.log("Active")
-
-        mainPageHeader.m_activeConnection = ConnectionManager.getActive(
-                    )["name"].toString()
-
-        Client.startConnectionVerification()
-
-        isPageInteractiveActive = false
-
-        mainFooter.footerText = "Preset Changed!"
-    }
 
     BurgerMenu {
         id: burgerMenu
+        mainWindow: mainPage.mainWindow
     }
-
     Item {
         id: burgerCollision
         anchors {
@@ -152,9 +111,7 @@ Page {
 
                     currentIndex: -1
 
-                    model: ListModel {
-                        id: fileModel
-                    }
+                    model: DirectoryManager
 
                     delegate: Rectangle {
                         id: click
@@ -165,20 +122,21 @@ Page {
 
                         Text {
                             anchors.left: parent.left
-                            text: isReadable ? (isDir ? "📁" : "📄") : "🔒"
+                            text: model.isReadable ? (model.isDir ? "📁" : "📄") : "🔒"
                             font.pixelSize: 14
+                            renderType: Text.NativeRendering
                         }
 
                         Text {
                             anchors.left: parent.left
                             anchors.margins: 20
-                            text: name
+                            text: model.name
                             font.pixelSize: 14
                         }
 
                         Text {
                             anchors.right: parent.right
-                            text: isDir ? "" : size
+                            text: model.isDir ? "" : model.size.toString()
                             font.pixelSize: 14
                         }
 
@@ -189,7 +147,7 @@ Page {
                                 console.log("Выбран элемент:", model.name)
                                 currentName = model.name
                                 currentSize = model.size
-                                downloadPath = model.path
+                                fileIndex = listView.currentIndex
                                 listView.forceActiveFocus()
 
                                 updateFileInfoPanel(
@@ -207,12 +165,12 @@ Page {
 
                                 if (model.isDir && model.isReadable) {
                                     currentPath = model.path
-                                    getDirectoryLayout()
+                                    Client.getDirectory(currentPath)
+                                    fileIndex = -1
                                 }
                             }
                         }
                     }
-
                     ScrollBar.vertical: ScrollBar {
                         id: verticalScrollBar
                         parent: listView.parent
@@ -279,32 +237,46 @@ Page {
                             fill: parent
                             leftMargin: 5
                         }
-                        CustomButton {
-                            id: getDirectoryButton
-                            isActive: isPageInteractiveActive
 
+                        CustomButton {
+                            id: connectionButton
+
+                            isActive: ClientConnectionManager.hasActiveConnection
                             buttonText: "Connect"
                             onClicked: {
-                                getDirectoryLayout()
+                                Client.checkConnectionToServer()
+                            }
+                        }
+                        CustomButton {
+                            id: getDirectoryButton
+
+                            isActive: isPageInteractiveActive
+                            buttonText: "Get directory"
+                            onClicked: {
+                                Client.getDirectory(currentPath)
                             }
                         }
                         CustomButton {
                             id: downloadContentButton
-                            isActive: isPageInteractiveActive
 
+                            isActive: mainPage.isPageInteractiveActive
                             buttonText: "Download"
                             onClicked: {
-                                if (downloadPath != "") {
-                                    var part = fileModel.get(
-                                                listView.currentIndex).isDir ? " Full directory " : " file "
-                                    downloadMenu.headerText = "Download" + part
-                                            + "\"" + currentName + "\"?"
-                                    console.log(part)
+                                if (fileIndex != -1) {
                                     downloadMenu.open()
+                                } else {
+                                    console.log("Download error")
                                 }
                             }
                         }
+                        CustomButton {
+                            id: startServer
 
+                            buttonText: "Start server"
+                            onClicked: {
+                                Server.startDefaultServer()
+                            }
+                        }
                         Item {
                             Layout.fillWidth: true
                         }
@@ -341,7 +313,7 @@ Page {
                 Layout.fillWidth: true
                 Layout.margins: 20
 
-                source: "qrc:/Content/Images/kitties.jpeg"
+                source: "qrc:Images/kitties.png"
 
                 fillMode: Image.PreserveAspectFit
             }

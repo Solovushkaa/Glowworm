@@ -1,15 +1,17 @@
-#include "initialize.h"
+#include "initialize.hpp"
 #include <QDir>
 #include <QStandardPaths>
-#include "log.h"
+#include "log.hpp"
+
+Q_LOGGING_CATEGORY(application_initialize, "app.initialize")
 
 Initialize::Initialize()
 {
-    loadPath("/AppData/Client/", "Client");
-    loadPath("/AppData/Server/", "Server");
+    setCustomMessageHandler();
 
-    // Install custom message handler
-    qInstallMessageHandler(messageHandler);
+    loadPath("/appdata/logs/", "logs");
+    loadPath("/appdata/client/", "client");
+    loadPath("/appdata/server/", "server");
 }
 
 void Initialize::loadPath(const char *path, const char *directoryName)
@@ -18,9 +20,14 @@ void Initialize::loadPath(const char *path, const char *directoryName)
                             + path);
     QDir dir(clientDirPath.absoluteDir());
 
-    qDebug() << dir.absolutePath();
     if (!dir.exists()) {
-        dir.mkpath(".");
-        qDebug() << directoryName << "directory has been created!";
+        qCInfo(application_initialize) << "Creating" << directoryName << "directory";
+        if (dir.mkpath(".")) {
+            qCInfo(application_initialize)
+                << directoryName << "directory created successfully:" << dir.absolutePath();
+        } else {
+            qCCritical(application_initialize)
+                << "error creating" << directoryName << "directory:" << dir.absolutePath();
+        }
     }
 }

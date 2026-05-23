@@ -93,6 +93,9 @@ public:
     QList<DownloadInfo *> &getDownloadInfoList() { return m_downloadInfoList; }
     int getDownloadCount() const { return m_downloadInfoList.size(); }
 
+private:
+    void deleteFinishedDownloads();
+
 signals:
     void downloadAdded();
     void downloadRemoved(int index);

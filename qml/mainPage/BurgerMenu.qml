@@ -1,10 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+// import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import CustomButtons
-import ClientConnectionManager
-import DirectClient
 
 Rectangle {
     id: root
@@ -14,45 +12,36 @@ Rectangle {
         bottom: parent.bottom
     }
 
-    property int m_activeConnection: 0
+    property ApplicationWindow mainWindow: null
+
     property bool isOpen: false
     property bool isAnimated: true
     property int animationInterval: 150
 
-    function loadPresetsToList() {
-        presetsModel.clear()
+    property int activeConnectionIndex: -1
 
-        var presets = ConnectionManager.getConnections()
-
-        for (var i = 0; i < presets.length; i++) {
-            presetsModel.append(presets[i])
-        }
-
-        loadActivePreset()
-    }
-
-    Connections {
-        target: ConnectionManager
-        function onConnectionsLoaded() {
-            if (ConnectionManager.isEmpty()) {
-                startAddPopup.open()
-            } else {
-                loadPresetsToList()
-            }
-        }
-        function onConnectionsChanged() {
-            isPageInteractiveActive = false
-        }
-    }
-
-    width: isOpen ? Math.min(Math.max(window.width * 0.2, 50), 400) : 50
+    // Connections {
+    //     target: ClientConnectionManager
+    //     function onConnectionsLoaded() {
+    //         if (ConnectionManager.isEmpty()) {
+    //             startAddPopup.open()
+    //         } else {
+    //             loadPresetsToList()
+    //         }
+    //     }
+    //     function onConnectionsChanged() {
+    //         isPageInteractiveActive = false
+    //     }
+    // }
+    width: root.isOpen ? Math.min(Math.max(mainWindow.width * 0.2,
+                                           50), 300) : 50
     z: 300
 
     color: "#efefef"
 
     Rectangle {
 
-        visible: isOpen
+        visible: root.isOpen
 
         anchors {
             top: parent.top
@@ -67,18 +56,18 @@ Rectangle {
     BurgerButton {
         id: burgerButton
         onClicked: {
-            isAnimated = true
-            isOpen = !isOpen
-            borderWidth = isOpen ? 0 : 1
+            root.isAnimated = true
+            root.isOpen = !root.isOpen
+            borderWidth = root.isOpen ? 0 : 1
 
-            isAnimated = false
+            root.isAnimated = false
         }
     }
 
     Behavior on width {
-        enabled: isAnimated
+        enabled: root.isAnimated
         NumberAnimation {
-            duration: animationInterval
+            duration: root.animationInterval
         }
     }
 
@@ -99,16 +88,11 @@ Rectangle {
         }
 
         clip: true
-
+        boundsBehavior: Flickable.StopAtBounds
+        visible: root.isOpen
         currentIndex: -1
 
-        boundsBehavior: Flickable.StopAtBounds
-
-        visible: isOpen
-
-        model: ListModel {
-            id: presetsModel
-        }
+        model: ClientConnectionManager
 
         delegate: Rectangle {
 
@@ -142,9 +126,10 @@ Rectangle {
                 }
 
                 width: 3
-                color: "lightgreen"
+                color: model.connectionState === 1 ? "lightgrey" : "lightgreen"
 
-                visible: (m_activeConnection === index)
+                visible: (activeConnectionIndex === index)
+                         && activeConnectionIndex != -1
 
                 radius: 2
             }
@@ -160,7 +145,7 @@ Rectangle {
 
                 color: "black"
 
-                text: name
+                text: model.name
                 clip: true
 
                 elide: Text.ElideRight
@@ -187,15 +172,13 @@ Rectangle {
                 onDoubleClicked: {
                     savedPresets.currentIndex = index
 
-                    ConnectionManager.setActive(index)
-                    m_activeConnection = index
-                    fileModel.clear()
-                    mainPageHeader.m_activeConnection = ConnectionManager.getActive(
-                                )["name"].toString()
-                    Client.checkConnectionToServer()
+                    ClientConnectionManager.setActiveConnection(index)
+                    activeConnectionIndex = index
+
+                    mainPageHeader.activeConnectionName
+                            = ClientConnectionManager.getActiveConnection().name
                 }
             }
-
             CustomImage {
                 anchors {
                     top: parent.top
@@ -205,12 +188,17 @@ Rectangle {
                 width: 15
                 height: 15
 
-                source: "qrc:/Content/Icons/delete.svg"
+                source: "qrc:Icons/delete.svg"
 
                 MouseArea {
                     anchors.centerIn: parent.centerIn
                     width: parent.width + 4
                     height: parent.height + 4
+
+                    onClicked: {
+                        ClientConnectionManager.deleteConnection(
+                                    savedPresets.currentIndex, index)
+                    }
                 }
             }
         }
@@ -229,7 +217,7 @@ Rectangle {
                     topMargin: 10
                 }
 
-                source: "qrc:/Content/Icons/plus.svg"
+                source: "qrc:Icons/plus.svg"
 
                 visible: false
 
@@ -260,7 +248,7 @@ Rectangle {
     Rectangle {
         id: settingsGear
 
-        visible: isOpen
+        visible: root.isOpen
 
         anchors {
             left: parent.left
@@ -292,7 +280,7 @@ Rectangle {
 
                 anchors.fill: parent
 
-                source: "qrc:/Content/Icons/settings.svg"
+                source: "qrc:Icons/settings.svg"
 
                 visible: false
 
@@ -308,23 +296,23 @@ Rectangle {
                 color: "#3d5482"
             }
 
-            onClicked: {
-                pagesStack.push(settingsPage)
-            }
+            // onClicked: {
+            //     pagesStack.push(settingsPage)
+            // }
         }
     }
 
     Rectangle {
-        visible: isOpen
+        visible: root.isOpen
         z: 200
         anchors {
             top: root.top
             left: root.right
             bottom: root.bottom
         }
-        width: window.width - root.width
+        width: root.mainWindow.width - root.width
         color: "#000"
-        opacity: isOpen ? 0.2 : 0
+        opacity: root.isOpen ? 0.2 : 0
 
         MouseArea {
             anchors.fill: parent

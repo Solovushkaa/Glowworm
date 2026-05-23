@@ -121,6 +121,11 @@ public:
 
     // --- Set Methods ---
 public:
+    void setLastReceivedByte(qint64 bytesCount)
+    {
+        m_lastReceivedByte = bytesCount;
+        emit lastReceivedByteChanged();
+    }
     void setDownloadState(DownloadState state)
     {
         m_downloadState = state;
@@ -158,6 +163,8 @@ public:
     QString m_modified;             ///< File last modification time
     QString m_accessed;             ///< File last access time
     DownloadState m_downloadState;  ///< Download state
+
+    bool m_forDelete{false};
 };
 
 #endif // DOWNLOADINFO_HPP

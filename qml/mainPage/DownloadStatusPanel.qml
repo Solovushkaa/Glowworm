@@ -2,8 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import DirectClient
-import ClientConnectionManager
 
 Rectangle {
     id: root
@@ -14,81 +12,15 @@ Rectangle {
     Layout.minimumHeight: 15
     Layout.bottomMargin: 20
 
-    function openUnfinishedDownloads() {
-        var unfinishedDownloads = Client.getUnfinishedDownloads()
-
-        if (unfinishedDownloads.length === 0) {
-            console.log(unfinishedDownloads.length)
-        } else {
-            for (var i = 0; i < unfinishedDownloads.length; i++) {
-                fileModelDownloadStatus.append({
-                                                   "name": unfinishedDownloads[i]["name"],
-                                                   "downloadID": unfinishedDownloads[i]["downloadID"],
-                                                   "size": parseInt(
-                                                                   unfinishedDownloads[i]["size"]),
-                                                   "lastReceivedByte": parseInt(unfinishedDownloads[i]["lastReceivedByte"]),
-                                                   "isPlayPauseButtonActive": true,
-                                                   "isBlockedPlayPause": false
-                                               })
-            }
-        }
-    }
-
-    function finishDownload(downloadID) {
-        console.log("Finish Download")
-        for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-            if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                fileModelDownloadStatus.get(i).isPlayPauseButtonActive = false
-                fileModelDownloadStatus.get(
-                            i).lastReceivedByte = fileModelDownloadStatus.get(
-                            i).size
-                break
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        openUnfinishedDownloads()
-    }
-
+    // function finishDownload(downloadID) {
+    //     // some code
+    // }
     Connections {
         target: Client
-        function onNewDownload(name, downloadID, size) {
-            fileModelDownloadStatus.append({
-                                               "name": name,
-                                               "downloadID": downloadID,
-                                               "size": size,
-                                               "lastReceivedByte": 0,
-                                               "isPlayPauseButtonActive": true,
-                                               "isBlockedPlayPause": false
-                                           })
-        }
 
-        function onChangeProgress(downloadID, bytesReceived) {
-            for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-                if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                    fileModelDownloadStatus.get(
-                                i).lastReceivedByte = bytesReceived
-                    fileModelDownloadStatus.get(i).isBlockedPlayPause = false
-                    break
-                }
-            }
-        }
-
-        function onStopProgress(downloadID, bytesReceived) {
-            for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-                if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                    fileModelDownloadStatus.get(
-                                i).lastReceivedByte = bytesReceived
-                    fileModelDownloadStatus.get(i).isBlockedPlayPause = false
-                    break
-                }
-            }
-        }
-
-        function onRangeRequestSuccessfulFinished(downloadID) {
-            finishDownload(downloadID)
-        }
+        // function onFileSuccessfulReceived(downloadID) {
+        //     finishDownload(downloadID)
+        // }
     }
 
     radius: 8
@@ -109,9 +41,7 @@ Rectangle {
 
         currentIndex: -1
 
-        model: ListModel {
-            id: fileModelDownloadStatus
-        }
+        model: DownloadManager
 
         delegate: Rectangle {
             id: click
@@ -120,9 +50,8 @@ Rectangle {
             focus: true
             color: "white"
 
-            property bool isDownloadActive: false
-
             Rectangle {
+                // TODO: visible only if not finished
                 id: playPauseBound
 
                 anchors {
@@ -130,8 +59,8 @@ Rectangle {
                     top: parent.top
                     bottom: parent.bottom
                 }
-                width: model.isPlayPauseButtonActive ? parent.width * 0.05 : parent.width * 0.01
-                visible: model.isPlayPauseButtonActive
+                visible: (model.downloadState !== 4)
+                width: parent.width * 0.05
 
                 color: "transparent"
 
@@ -149,8 +78,7 @@ Rectangle {
                         topMargin: 3
                         bottomMargin: 3
                     }
-                    source: isDownloadActive ? "qrc:/Content/Icons/pause.svg" : "qrc:/Content/Icons/play.svg"
-
+                    source: model.downloadState === 2 ? "qrc:Icons/play.svg" : "qrc:Icons/pause.svg"
                     fillMode: Image.PreserveAspectFit
 
                     smooth: true
@@ -160,7 +88,7 @@ Rectangle {
                 ColorOverlay {
                     anchors.fill: playPause
                     source: playPause
-                    color: isDownloadActive ? "#cc1616" : "#14cc1b"
+                    color: "#5371ad"
 
                     opacity: 0.6
                 }
@@ -169,15 +97,16 @@ Rectangle {
                     anchors.fill: parent
                     visible: !model.isBlockedPlayPause
                     onClicked: {
-                        isDownloadActive = !isDownloadActive
-                        model.isBlockedPlayPause = true
-
-                        if (!isDownloadActive) {
-                            console.log("Скачивание продолжено")
-                            Client.startDownload(model.downloadID)
-                        } else {
-                            console.log("Скачивание остановлено")
+                        if (model.downloadState === 2) {
+                            model.downloadState = 0
                             Client.stopDownload(model.downloadID)
+
+                            console.log("Download stopped")
+                        } else if (model.downloadState === 0) {
+                            model.downloadState = 2
+                            Client.startDownload(model.downloadID)
+
+                            console.log("Download continued")
                         }
                     }
                 }
@@ -188,7 +117,7 @@ Rectangle {
                     left: playPauseBound.right
                     verticalCenter: parent.verticalCenter
                 }
-                text: name
+                text: model.name
                 font.pixelSize: 14
             }
 
@@ -200,8 +129,7 @@ Rectangle {
                     bottom: parent.bottom
                     bottomMargin: parent.height * 0.12
                 }
-                value: (model.lastReceivedByte
-                        === 0) ? 0 : (model.lastReceivedByte / model.size)
+                value: (model.lastReceivedByte === 0) ? 0 : (model.lastReceivedByte / model.size)
 
                 width: parent.width * 0.15
             }

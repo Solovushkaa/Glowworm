@@ -1,27 +1,19 @@
 import QtQuick
 import QtQuick.Controls
-import "mainPage"
-import "settingsPage"
-import "popups"
-import ClientConnectionManager
 
+import "mainPage"
+
+// import "settingsPage"
+// import "popups"
 ApplicationWindow {
     id: window
     width: Screen.width * 0.5
     height: Screen.height * 0.48
     visible: true
-    title: qsTr("DFSystem")
+    title: qsTr("Glowworm")
 
     minimumWidth: Screen.width * 0.4
     minimumHeight: Screen.height * 0.48
-
-    function loadConfigs() {
-        ConnectionManager.connectionListUpdated()
-    }
-
-    Component.onCompleted: {
-        loadConfigs()
-    }
 
     property bool isStartAddPageVisible: true
     property bool isAddPageVisible: true
@@ -32,7 +24,6 @@ ApplicationWindow {
         anchors.fill: parent
 
         initialItem: mainPage
-
         popEnter: null
         popExit: null
         pushEnter: null
@@ -43,17 +34,20 @@ ApplicationWindow {
 
     Component {
         id: mainPage
-        MainPage {}
-    }
-    Component {
-        id: settingsPage
-        SettingsPage {}
+
+        MainPage {
+            mainWindow: window
+        }
     }
 
-    StartAddPopup {
-        id: startAddPopup
-    }
+    // Component {
+    //     id: settingsPage
+    //     SettingsPage {}
+    // }
 
+    // StartAddPopup {
+    //     id: startAddPopup
+    // }
     AddPopup {
         id: addPopup
     }

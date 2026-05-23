@@ -2,14 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import DirectClient
 import CustomButtons
 
 Popup {
     id: root
 
     property string headerText: ""
-    property bool isDownload: false
     property string savePath: ""
 
     anchors {
@@ -30,15 +28,6 @@ Popup {
 
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-    onClosed: {
-        if (isDownload) {
-            Client.getFile(downloadPath, savePath, currentName)
-            isDownload = false
-            downloadPath = ""
-            savePath = ""
-        }
-    }
-
     ColumnLayout {
 
         spacing: 10
@@ -55,11 +44,9 @@ Popup {
 
             Layout.fillWidth: true
 
-
             color: "black"
             font.bold: true
             font.pointSize: 11
-
 
             clip: true
             wrapMode: Text.Wrap
@@ -110,7 +97,7 @@ Popup {
                 Layout.preferredHeight: 30
 
                 onClicked: {
-                    console.log("мауу: ")
+                    console.log("FolderDialog open")
                     folderDialog.open()
                 }
             }
@@ -119,9 +106,9 @@ Popup {
                 id: folderDialog
                 currentFolder: "file:///"
                 onAccepted: {
-                    savePath = folderDialog.selectedFolder.toString(
-                                ).replace("file://", "") + "/"
-                    console.log("Выбрана эта директория: ", savePath)
+                    savePath = folderDialog.selectedFolder.toString().replace(
+                                "file://", "") + "/"
+                    console.log("Selected directory:", savePath)
                 }
             }
         }
@@ -138,10 +125,11 @@ Popup {
                 Layout.preferredHeight: 40
 
                 onClicked: {
-                    console.log("Подтверждение скачивания: ",
-                                currentName)
-                    if (savePath !== "") {
-                        isDownload = true
+                    console.log("Download verification:",
+                                selectSaveFolderTextArea.text)
+                    if (selectSaveFolderTextArea.text !== "") {
+                        Client.getFile(fileIndex, currentName,
+                                       selectSaveFolderTextArea.text)
                         root.close()
                     }
                 }
@@ -154,8 +142,7 @@ Popup {
                 Layout.preferredHeight: 40
 
                 onClicked: {
-                    console.log("Отмена скачивания: ", currentName)
-                    isDownload = false
+                    console.log("Download canceled:", currentName)
                     root.close()
                 }
             }

@@ -14,37 +14,33 @@ Server::Server(QObject *parent)
 
 Server::~Server()
 {
-    stopServers();
+    stopDefaultServer();
     qCDebug(server) << "Server - destroyed";
 }
 
-void Server::setConfigPreferences(bool defaultConfigEnabled, bool secureConfigEnabled)
+bool Server::startDefaultServer()
 {
-    qCDebug(server) << "Installing a new server configuration";
+    qCDebug(server) << "Starting default server";
 
-    m_defaultConfigEnabled = defaultConfigEnabled;
-    m_secureConfigEnabled = secureConfigEnabled;
-}
+    bool started = true;
+    started &= m_httpMessenger.startDefault();
+    started &= m_tcpTransport.start();
 
-bool Server::startServers()
-{
-    qCDebug(server) << "Starting all servers";
-
-    if (m_messengerEnabled) {
-        m_httpMessenger.startAll();
-    }
-    if (m_transportEnabled) {
-        m_tcpTransport.start();
+    if (started) {
+        qCInfo(server) << "Default server started";
+    } else {
+        qCCritical(server) << "Error starting default server";
     }
 
-    return true;
+    return started;
 }
 
-bool Server::stopServers()
+void Server::stopDefaultServer()
 {
-    qCDebug(server) << "Stopping all servers";
+    qCDebug(server) << "Stopping default server";
 
-    m_httpMessenger.stopAll();
+    m_httpMessenger.stopDefault();
     m_tcpTransport.stop();
-    return true;
+
+    qCInfo(server) << "Default server stopped";
 }

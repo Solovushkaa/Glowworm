@@ -219,6 +219,7 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
                                                               ConnectionInfo *connectionInfo)
 {
     jsonObject[constants::kName] = connectionInfo->m_name;
+    jsonObject[constants::kHostkey] = connectionInfo->m_hostKey;
     jsonObject[constants::kConnectionType] = static_cast<int>(connectionInfo->m_connectionType);
     jsonObject[constants::kURL] = connectionInfo->m_url.url();
     jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;

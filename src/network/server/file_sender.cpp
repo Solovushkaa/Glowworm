@@ -6,11 +6,13 @@ Q_LOGGING_CATEGORY(server_file_sender, "server.file.sender")
 FileSender::FileSender(MessageSocket *client,
                        const QString &downloadID,
                        const QString &filePath,
+                       qint64 readOffset,
                        QObject *parent)
     : QObject(parent)
     , m_client(client)
     , m_downloadID(downloadID)
     , m_file(filePath)
+    , m_readOffset(readOffset)
 {
     qCDebug(server_file_sender) << "FileSender - created";
 }
@@ -31,12 +33,19 @@ void FileSender::start()
         response.append(message::toByteFromStatus(TransportStatus::ResponseError));
         response.append(m_file.errorString().toUtf8());
         m_client->sendMessage(response);
-        emit errorOccurred(m_file.errorString());
+
+        if (m_file.size() < m_readOffset) {
+            emit errorOccurred("Read offset > file.size()");
+        } else {
+            emit errorOccurred(m_file.errorString());
+        }
         emit finished();
+
         return;
     }
 
     m_fileSize = m_file.size();
+    m_file.seek(m_readOffset);
 
     QByteArray response;
     response.append(message::toByteFromStatus(TransportStatus::ResponseOk));

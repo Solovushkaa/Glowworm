@@ -6,14 +6,8 @@
  */
 
 #include <QGuiApplication>
-#include <QLoggingCategory>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QQuickWindow>
-#include <QSGRendererInterface>
-// #include "app.h"
-// #include "download_info.hpp"
-// #include "download_manager.hpp"
+#include "app.hpp"
 
 /**
  * @brief The main function of the program
@@ -23,31 +17,19 @@
  */
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
-    // QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
+    QGuiApplication qtApp(argc, argv);
 
     QQmlApplicationEngine engine;
 
-    // App application;
+    App application;
 
-    // qmlRegisterSingletonInstance("ClientHttpMessenger", 1, 0, "Client", &core.m_guiHttpClientConnector);
+    QObject::connect(
+        &engine,
+        &QQmlApplicationEngine::objectCreationFailed,
+        &qtApp,
+        []() { QCoreApplication::exit(-1); },
+        Qt::QueuedConnection);
+    engine.loadFromModule("GlowwormModule", "Main");
 
-    // ClientConnectionManager connectionManager(client);
-    // qmlRegisterSingletonInstance("ClientConnectionManager",
-    //                              1,
-    //                              0,
-    //                              "ConnectionManager",
-    //                              &connectionManager);
-
-    // QLoggingCategory::setFilterRules("*.debug=false");
-
-    // QObject::connect(
-    //     &engine,
-    //     &QQmlApplicationEngine::objectCreationFailed,
-    //     &app,
-    //     []() { QCoreApplication::exit(-1); },
-    //     Qt::QueuedConnection);
-    // engine.loadFromModule("Glowworm", "Main");
-
-    return app.exec();
+    return qtApp.exec();
 }

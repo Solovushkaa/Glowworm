@@ -57,6 +57,13 @@ public:
      */
     Q_INVOKABLE void getFile(int fileIndex, const QString &saveName, const QString &savePath);
     /**
+     * @brief Getting a file from the server.
+     */
+    Q_INVOKABLE void getFileRange(int fileIndex,
+                                  const QString &saveName,
+                                  const QString &savePath,
+                                  qint64 begin);
+    /**
      * @brief Start current download
      * @param downloadID Download ID
      */
@@ -66,6 +73,10 @@ public:
      * @param downloadID Download ID
      */
     Q_INVOKABLE void stopDownload(int downloadIndex);
+
+    ClientConnectionManager &getClientConnectionManager() { return m_connectionManager; }
+    DownloadManager &getDownloadManager() { return m_downloadManager; }
+    DirectoryManager &getDirectoryManager() { return m_directoryManager; }
 
     // --- Signal Slot Connection ---
 private:

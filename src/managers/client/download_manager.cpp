@@ -13,6 +13,7 @@ DownloadManager::DownloadManager(const QString &savePath, QObject *parent)
 
 DownloadManager::~DownloadManager()
 {
+    deleteFinishedDownloads();
     qCDebug(download_manager) << "DownloadManager - destroyed";
 }
 
@@ -87,8 +88,14 @@ QHash<int, QByteArray> DownloadManager::roleNames() const
 bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
 {
     const int row = m_downloadInfoList.size();
+
     beginInsertRows(QModelIndex(), row, row);
+
     m_downloadInfoList.append(downloadInfo);
+    connect(downloadInfo, &DownloadInfo::lastReceivedByteChanged, this, [this, row]() {
+        emit dataChanged(index(row), index(row), {LastReceivedByteRole});
+    });
+
     endInsertRows();
 
     QJsonObject jsonObject;
@@ -291,4 +298,15 @@ void DownloadManager::setJsonObjectFromDownloadInfo(QJsonObject &jsonObject,
     jsonObject[constants::kModified] = downloadInfo->m_modified;
     jsonObject[constants::kAccessed] = downloadInfo->m_accessed;
     jsonObject[constants::kDownloadState] = static_cast<int>(downloadInfo->m_downloadState);
+}
+
+void DownloadManager::deleteFinishedDownloads()
+{
+    for (auto downloadInfo : std::as_const(m_downloadInfoList)) {
+        if (downloadInfo->m_forDelete) {
+            m_jsonUnfinishedDownloads.remove(downloadInfo->m_downloadID);
+        }
+    }
+
+    rewriteAppDataFile(m_savePath, m_jsonUnfinishedDownloads);
 }

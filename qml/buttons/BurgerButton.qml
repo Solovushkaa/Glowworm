@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Button {
+    id: internal_button
+
     anchors {
         top: parent.top
         left: parent.left
@@ -16,7 +18,7 @@ Button {
     background: Rectangle {
         radius: 4
         border {
-            width: borderWidth
+            width: internal_button.borderWidth
             color: "#cccccc"
         }
     }

@@ -8,10 +8,13 @@ find_package(GTest REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.9)
 
+add_subdirectory(qml/buttons)
+
+
 # === LIBS ===
 # Creating all library targets
 include(cmake/create_libraries.cmake)
-create_libraries(LIB_TARGETS) # Return all library targets in LIB_TARGETS
+create_libraries(APP_LIB) # Return application library targets in APP_LIB
 
 
 # === APP ===
@@ -20,10 +23,22 @@ qt_add_executable(Glowworm ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(Glowworm
     PUBLIC
-        Qt6::Core
         Qt6::Quick
-        ${LIB_TARGETS}
+        ${APP_LIB}
+        CustomButtonsLib
 )
+
+
+# === QML ===
+# Creating all qml modules
+include(cmake/create_qml_modules.cmake)
+create_qml_modules() # Creating qml modules
+
+
+# === Resources ===
+# Adding all application resources
+include(cmake/add_resources.cmake)
+add_resources(Glowworm)
 
 
 # === TESTS ===

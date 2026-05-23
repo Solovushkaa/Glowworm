@@ -21,6 +21,7 @@ public:
     explicit FileSender(MessageSocket *client,
                         const QString &downloadID,
                         const QString &filePath,
+                        qint64 readOffset,
                         QObject *parent = nullptr);
     ~FileSender();
 
@@ -39,6 +40,7 @@ private:
 
     QString m_downloadID;
     QFile m_file;
+    qint64 m_readOffset;
 
     qint64 m_fileSize{0};
     bool m_transferActive{false};

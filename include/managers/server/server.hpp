@@ -14,25 +14,16 @@ public:
     explicit Server(QObject *parent = nullptr);
     ~Server();
 
-    void setConfigPreferences(bool defaultConfigEnabled, bool secureConfigEnabled);
-
-    bool startServers();
-    bool stopServers();
-
-    bool stopServer();
+    Q_INVOKABLE bool startDefaultServer();
+    Q_INVOKABLE void stopDefaultServer();
 
 private:
     QString m_hostKey;
 
-    ServerHttpMessenger m_httpMessenger; ///< Http messenger
-
+    ServerHttpMessenger m_httpMessenger;
     ServerTcpTransport m_tcpTransport;
 
-    bool m_messengerEnabled{true};
-
-    bool m_transportEnabled{true};
-
-    bool m_defaultConfigEnabled{true};
+    bool m_defaultConfigEnabled{false};
     bool m_secureConfigEnabled{false};
 };
 

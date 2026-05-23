@@ -49,7 +49,7 @@ void MessageSocket::sendMessage(const QByteArray &data)
     block.append(data);
     m_socket->write(block);
 
-    qCInfo(message_socket) << "Another block of data has been sent.";
+    qCDebug(message_socket) << "Another block of data has been sent:" << block.size() << "B";
 }
 
 QTcpSocket *MessageSocket::socket() const
@@ -82,7 +82,7 @@ void MessageSocket::tryExtractMessages()
         QByteArray message = m_buffer.mid(constants::kTransportHeaderSize, messageSize);
         m_buffer.remove(0, constants::kTransportHeaderSize + messageSize);
 
-        qCInfo(message_socket) << "emit messageReceived(message)";
+        qCDebug(message_socket) << "Message received";
         emit messageReceived(message);
     }
 }

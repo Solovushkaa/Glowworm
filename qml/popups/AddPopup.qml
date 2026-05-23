@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import CustomButtons
-import ClientConnectionManager
 
 Popup {
     id: root
@@ -44,10 +43,10 @@ Popup {
 
             Text {
                 font.pointSize: 11
-                text: "name: "
+                text: "Name: "
             }
             TextArea {
-                id: newPresetName
+                id: newConnectionName
 
                 Layout.fillWidth: true
 
@@ -71,10 +70,10 @@ Popup {
 
             Text {
                 font.pointSize: 11
-                text: "ip: "
+                text: "Connection type: "
             }
             TextArea {
-                id: newPresetIp
+                id: newConnectionType
 
                 Layout.fillWidth: true
 
@@ -98,10 +97,10 @@ Popup {
 
             Text {
                 font.pointSize: 11
-                text: "port: "
+                text: "URL: "
             }
             TextArea {
-                id: newPresetPort
+                id: newConnectionURL
 
                 Layout.fillWidth: true
 
@@ -129,10 +128,12 @@ Popup {
 
             onClicked: {
 
-                ConnectionManager.add(newPresetName.text, "DIRECT",
-                                      newPresetIp.text, newPresetPort.text)
-                startAddPopup.close()
-                root.close()
+                ClientConnectionManager.addConnection(
+                            newConnectionName.text,
+                            parseInt(newConnectionType.text),
+                            newConnectionURL.text, "", false)
+                // startAddPopup.close()
+                addPopup.close()
             }
         }
         Item {

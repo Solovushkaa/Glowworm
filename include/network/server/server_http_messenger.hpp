@@ -19,19 +19,18 @@ public:
                                  quint16 sslPort = 274);
     ~ServerHttpMessenger();
 
-    bool startDefaultServer();
-    void stopDefaultServer();
+    bool startDefault();
+    void stopDefault();
 
-    bool startSecureServer();
-    void stopSecureServer();
-
-    bool startAll();
-    void stopAll();
+    bool startSecure();
+    void stopSecure();
 
 private:
     void routeConnection();
     void routeFileSystem();
     void routeMissingHandler();
+
+    void stopServer(bool stopSecretServer);
 
     template<typename Server>
     constexpr QStringView getProtocolName();
@@ -50,8 +49,8 @@ private:
     std::unique_ptr<QTcpServer> m_tcpServer;
     std::unique_ptr<QSslServer> m_sslServer;
 
-    bool m_activeDefault{false};
-    bool m_activeSecure{false};
+    bool m_defaultEnabled{false};
+    bool m_secureEnabled{false};
 };
 
 #endif // SERVERHTTPMESSANGER_HPP

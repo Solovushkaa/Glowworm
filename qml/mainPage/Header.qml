@@ -1,12 +1,11 @@
 import QtQuick
 import QtQuick.Controls
-import DirectClient
 
 Rectangle {
     color: "transparent"
     height: 22
 
-    property string m_activeConnection: ""
+    property string activeConnectionName: ""
 
     Rectangle {
         color: "transparent"
@@ -27,7 +26,7 @@ Rectangle {
 
             font.pointSize: 12
             color: "black"
-            text: "Active: " + m_activeConnection
+            text: "Active: " + activeConnectionName
         }
     }
 
@@ -51,8 +50,8 @@ Rectangle {
         Rectangle {
             width: 10
             height: 10
-            radius: width/2
-            color: isPageInteractiveActive ? "#009e05" : "gray"
+            radius: width / 2
+            color: isPageInteractiveActive ? "#7ff083" : "gray"
             anchors {
                 left: parent.left
                 leftMargin: 10

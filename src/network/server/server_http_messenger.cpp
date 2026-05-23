@@ -30,48 +30,52 @@ ServerHttpMessenger::~ServerHttpMessenger()
     qCDebug(server_http_messenger) << "ServerHttpMessenger - destroyed";
 }
 
-bool ServerHttpMessenger::startDefaultServer()
+bool ServerHttpMessenger::startDefault()
 {
     qCDebug(server_http_messenger) << "Starting a default server";
 
-    if (m_activeDefault) {
+    if (m_defaultEnabled) {
         qCInfo(server_http_messenger) << "HTTP message server is already running";
         return true;
     }
     return startServer(m_tcpServer, m_tcpPort);
 }
 
-void ServerHttpMessenger::stopDefaultServer()
+void ServerHttpMessenger::stopDefault()
 {
     qCDebug(server_http_messenger) << "Stopping a default server";
 
-    if (!m_activeDefault) {
+    if (!m_defaultEnabled) {
         qCInfo(server_http_messenger) << "HTTP message server has already stopped";
         return;
     }
-    stopServer(m_tcpServer, m_tcpPort);
+
+    bool secure = false;
+    stopServer(secure);
 }
 
-bool ServerHttpMessenger::startSecureServer()
+bool ServerHttpMessenger::startSecure()
 {
     qCDebug(server_http_messenger) << "Starting a secure server";
 
-    if (m_activeSecure) {
+    if (m_secureEnabled) {
         qCInfo(server_http_messenger) << "HTTPS message server is already running";
         return true;
     }
     return startServer(m_sslServer, m_sslPort);
 }
 
-void ServerHttpMessenger::stopSecureServer()
+void ServerHttpMessenger::stopSecure()
 {
     qCDebug(server_http_messenger) << "Stopping a secure server";
 
-    if (!m_activeSecure) {
+    if (!m_secureEnabled) {
         qCInfo(server_http_messenger) << "HTTPS message server has already stopped";
         return;
     }
-    stopServer(m_sslServer, m_sslPort);
+
+    bool secure = true;
+    stopServer(secure);
 }
 
 template<typename Server>
@@ -88,21 +92,9 @@ constexpr QStringView ServerHttpMessenger::getProtocolName()
     return protocolName;
 }
 
-bool ServerHttpMessenger::startAll()
+void ServerHttpMessenger::stopServer(bool stopSecretServer)
 {
-    qCDebug(server_http_messenger) << "Starting all servers";
-
-    bool noError = true;
-
-    noError &= startDefaultServer();
-    noError &= startSecureServer();
-
-    return noError;
-}
-
-void ServerHttpMessenger::stopAll()
-{
-    qCDebug(server_http_messenger) << "Stopping all servers";
+    qCDebug(server_http_messenger) << "Stopping server";
 
     bool isSecureConfig;
     for (auto serverList = m_httpServer.servers(); auto &server : serverList) {
@@ -112,15 +104,15 @@ void ServerHttpMessenger::stopAll()
             isSecureConfig = true;
         }
 
-        if (!isSecureConfig) {
+        if (!isSecureConfig && !stopSecretServer) {
             m_tcpServer.reset(server);
             stopServer(m_tcpServer, m_tcpPort);
-            m_activeDefault = false;
+            m_defaultEnabled = false;
         }
-        if (isSecureConfig) {
+        if (isSecureConfig && stopSecretServer) {
             m_sslServer.reset(qobject_cast<QSslServer *>(server));
             stopServer(m_sslServer, m_sslPort);
-            m_activeSecure = false;
+            m_secureEnabled = false;
         }
     }
 }
@@ -141,9 +133,9 @@ bool ServerHttpMessenger::startServer(std::unique_ptr<Server> &server, quint16 p
     qCInfo(server_http_messenger) << protocolName << "messaging server is running on port:" << port;
 
     if constexpr (std::is_same_v<Server, QTcpServer>) {
-        m_activeDefault = true;
+        m_defaultEnabled = true;
     } else {
-        m_activeSecure = true;
+        m_secureEnabled = true;
     }
 
     return true;

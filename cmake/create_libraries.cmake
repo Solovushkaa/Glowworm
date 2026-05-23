@@ -1,4 +1,4 @@
-function(create_libraries LIB_TARGETS)
+function(create_libraries APP_LIB)
     set(LIB_TARGETS "")
 
     # Logger lib
@@ -106,6 +106,23 @@ function(create_libraries LIB_TARGETS)
     target_link_libraries(Client PUBLIC Qt6::Core ClientManagers)
     LIST(APPEND LIB_TARGETS Client)
 
+    # App lib
+    qt_add_library(App STATIC)
+    target_sources(App PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/application/app.cpp
+        ${CMAKE_SOURCE_DIR}/include/application/app.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/application/initialize.cpp
+        ${CMAKE_SOURCE_DIR}/include/application/initialize.hpp
+    )
+    target_include_directories(App
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/application
+    )
+    target_link_libraries(App PUBLIC Client Server Logger Qt6::Quick)
+    LIST(APPEND LIB_TARGETS App)
+    set(APP_LIB App)
+
     # Adding flags
     foreach(LIB IN LISTS LIB_TARGETS)
         target_compile_features(${LIB} PUBLIC cxx_std_23)
@@ -124,6 +141,6 @@ function(create_libraries LIB_TARGETS)
         )
     endforeach()
 
-    return(PROPAGATE LIB_TARGETS)
+    return(PROPAGATE APP_LIB)
 
 endfunction()

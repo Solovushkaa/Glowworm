@@ -4,7 +4,7 @@
 #include "constants.hpp"
 #include "file_sender.hpp"
 
-Q_LOGGING_CATEGORY(server_tcp_transport, "server.connectionType.tcp")
+Q_LOGGING_CATEGORY(server_tcp_transport, "server.transport.tcp")
 
 ServerTcpTransport::ServerTcpTransport(quint16 port, QObject *parent)
     : QObject(parent)
@@ -18,12 +18,18 @@ ServerTcpTransport::ServerTcpTransport(quint16 port, QObject *parent)
 
 ServerTcpTransport::~ServerTcpTransport()
 {
+    stop();
     qCDebug(server_tcp_transport) << "ServerTcpTransport - destroyed";
 }
 
 bool ServerTcpTransport::start()
 {
-    qCDebug(server_tcp_transport) << "ServerTcpTransport - started";
+    qCDebug(server_tcp_transport) << "Starting ServerTcpTransport";
+
+    if (m_enabled) {
+        qCInfo(server_tcp_transport) << "TCP transport server is already running";
+        return true;
+    }
 
     if (!m_server->listen(QHostAddress::Any, m_port)) {
         qCCritical(server_tcp_transport) << "Server error:" << m_server->errorString();
@@ -37,7 +43,12 @@ bool ServerTcpTransport::start()
 
 void ServerTcpTransport::stop()
 {
-    qCDebug(server_tcp_transport) << "ServerTcpTransport - stopped";
+    qCDebug(server_tcp_transport) << "Stopping ServerTcpTransport";
+
+    if (m_enabled) {
+        qCInfo(server_tcp_transport) << "TCP transport server has already stopped";
+        return;
+    }
 
     m_server->close();
     for (MessageSocket *client : std::as_const(m_clients)) {
@@ -68,21 +79,27 @@ void ServerTcpTransport::onNewConnection()
 
 void ServerTcpTransport::onClientMessage(const QByteArray &message)
 {
-    qCDebug(server_tcp_transport) << "New client message detected";
+    qCDebug(server_tcp_transport) << "New client message detected:" << message.size() << "B";
 
     auto *client = qobject_cast<MessageSocket *>(sender());
     if (!client || message.isEmpty())
         return;
 
-    TransportStatus status = static_cast<TransportStatus>(message.at(0));
+    TransportStatus status = static_cast<TransportStatus>(message[0]);
 
     if (status == TransportStatus::RequestFile) {
-        QString downloadID = message.mid(1, constants::kDownloadIDLength);
+        int statusLength = sizeof(int8_t);
+        int readOffsetLength = sizeof(qint64);
 
-        QByteArray payload = message.mid(constants::kDownloadIDLength + 1);
-        QString fileName = QString::fromUtf8(payload);
+        qint64 readOffset = message.mid(statusLength, readOffsetLength).toLongLong();
+        qCDebug(server_tcp_transport) << "File read offset:" << readOffset;
 
-        qCInfo(server_tcp_transport) << "TransportStatus::RequestFile:" << fileName;
+        QString downloadID = message.mid(statusLength + readOffsetLength,
+                                         constants::kDownloadIDLength);
+        QString filePath = QString::fromUtf8(
+            message.mid(statusLength + readOffsetLength + constants::kDownloadIDLength));
+
+        qCDebug(server_tcp_transport) << "Request file:" << filePath;
         // if (!isAvailable(fileName)) {
         //     QByteArray err;
         //     err.append(message::toByteFromStatus(TransportStatus::ResponseError));
@@ -93,7 +110,7 @@ void ServerTcpTransport::onClientMessage(const QByteArray &message)
         //     return;
         // }
 
-        auto *sender = new FileSender(client, downloadID, fileName, this);
+        auto *sender = new FileSender(client, downloadID, filePath, readOffset, this);
         connect(sender, &FileSender::finished, this, &ServerTcpTransport::onFileSendFinished);
         sender->start();
     }

@@ -1,7 +1,16 @@
 #include "log.hpp"
 
+const QString &LogPath()
+{
+    static QString logPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                             + "/appdata/logs/" + logs::kLogFileName;
+
+    return logPath;
+}
+
 void rotateLogFileIfNeeded()
 {
+#ifdef QT_DEBUG
     QFileInfo logFile(logs::kLogFileName);
     if (logFile.exists() && logFile.size() > logs::kMaxLogSize) {
         // Remove the full log
@@ -9,6 +18,15 @@ void rotateLogFileIfNeeded()
         // And rename the log to the archive log
         QFile::rename(logs::kLogFileName, logs::kLogArchiveName);
     }
+#else
+    QFileInfo logFile(LogPath());
+    if (logFile.exists() && logFile.size() > logs::kMaxLogSize) {
+        // Remove the full log
+        QFile::remove(logs::kLogArchiveName);
+        // And rename the log to the archive log
+        QFile::rename(LogPath(), logs::kLogArchiveName);
+    }
+#endif
 }
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -19,38 +37,51 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 #ifdef QT_DEBUG
     QFile logFile(logs::kLogFileName);
 #else
-    QFile logFile(logs::kLogPath);
+    QFile logFile(LogPath());
 #endif
     if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
         fprintf(stderr,
-                "Unable to open file %s for writing\n",
-                logs::kLogPath.toLocal8Bit().constData());
+                "Unable to open file %s for writing: %s\n",
+                LogPath().toLocal8Bit().constData(),
+                logFile.errorString().toLocal8Bit().constData());
         return;
     }
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
     // Log level
+#ifdef QT_DEBUG
     const char *level;
+#endif
     const char *fileLevel;
     switch (type) {
     case QtDebugMsg:
+#ifdef QT_DEBUG
         level = "\033[00mDEBUG\033[0m";
+#endif
         fileLevel = "DEBUG";
         break;
     case QtInfoMsg:
+#ifdef QT_DEBUG
         level = "\033[94mINFO\033[0m";
+#endif
         fileLevel = "INFO";
         break;
     case QtWarningMsg:
+#ifdef QT_DEBUG
         level = "\033[33mWARN\033[0m";
+#endif
         fileLevel = "WARN";
         break;
     case QtCriticalMsg:
+#ifdef QT_DEBUG
         level = "\033[35mCRIT\033[0m";
+#endif
         fileLevel = "CRIT";
         break;
     case QtFatalMsg:
+#ifdef QT_DEBUG
         level = "\033[31mFATAL\033[0m";
+#endif
         fileLevel = "FATAL";
         break;
     }

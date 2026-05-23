@@ -12,10 +12,12 @@ namespace logs {
 inline constexpr qint64 kMaxLogSize = 10 * 1024 * 1024; // 10 MB
 inline constexpr const char *kLogFileName = "glowworm.log";
 inline constexpr const char *kLogArchiveName = "glowworm.log.1";
-inline QString kLogPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-                          + "/AppData/logs/" + kLogFileName;
+// inline static QString kLogPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+//                                  + "/appdata/logs/" + kLogFileName;
 
 } // namespace logs
+
+const QString &LogPath();
 
 /**
  * @brief Log file cleaner.

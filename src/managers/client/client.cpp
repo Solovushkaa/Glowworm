@@ -14,6 +14,8 @@ Client::Client(const QString &connectionsFilePath, const QString &downloadsFileP
     m_connectionManager.readSavedConnections();
     m_downloadManager.readUnfinishedDownloads();
 
+    connectSignals();
+
     qCDebug(client) << "Client - created";
 }
 
@@ -48,6 +50,14 @@ void Client::getDirectory(const QString &dirPath)
 
 void Client::getFile(int fileIndex, const QString &saveName, const QString &savePath)
 {
+    getFileRange(fileIndex, saveName, savePath, 0);
+}
+
+void Client::getFileRange(int fileIndex,
+                          const QString &saveName,
+                          const QString &savePath,
+                          qint64 begin)
+{
     qCDebug(client) << "Getting file:"
                     << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
 
@@ -67,7 +77,7 @@ void Client::getFile(int fileIndex, const QString &saveName, const QString &save
                                   saveName,
                                   savePath,
                                   fileInfo->m_size,
-                                  0,
+                                  begin,
                                   fileInfo->m_created,
                                   fileInfo->m_modified,
                                   fileInfo->m_accessed,
@@ -84,6 +94,7 @@ void Client::startDownload(int /*downloadIndex*/)
     if (getActiveConnection()->m_connectionState != ConnectionInfo::ConnectionState::Connected) {
         return;
     }
+
     // m_dataExchangers[downloadID].start(/**/);
 }
 

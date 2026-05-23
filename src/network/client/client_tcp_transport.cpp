@@ -58,14 +58,19 @@ void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo)
     auto socket = m_sockets[downloadInfo->m_downloadID];
 
     if (socket->socket()->state() != QTcpSocket::ConnectedState) {
+        downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
         emit errorOccurred("Not connected");
         return;
     }
 
     QByteArray request;
     request.append(message::toByteFromStatus(TransportStatus::RequestFile));
+    request.append(reinterpret_cast<const char *>(&downloadInfo->m_lastReceivedByte),
+                   sizeof(downloadInfo->m_lastReceivedByte));
     request.append(downloadInfo->m_downloadID.toUtf8());
     request.append(downloadInfo->m_path.toUtf8());
+
+    downloadInfo->setDownloadState(DownloadInfo::DownloadState::Active);
 
     socket->sendMessage(request);
 
@@ -105,20 +110,21 @@ void ClientTcpTransport::onDisconnected()
 
 void ClientTcpTransport::onMessageReceived(const QByteArray &message)
 {
-    qCInfo(client_tcp_transport) << "Received message";
+    qCDebug(client_tcp_transport) << "Received message";
     if (message.isEmpty())
         return;
 
     auto messageSocket = qobject_cast<ClientMessageSocket *>(sender());
 
-    qCInfo(client_tcp_transport) << "Message received on socket:"
-                                 << messageSocket->socket()->socketDescriptor();
+    qCDebug(client_tcp_transport) << "Message received on socket:"
+                                  << messageSocket->socket()->socketDescriptor();
 
     auto downloadInfo = messageSocket->getDownloadInfo();
     auto downloadID = downloadInfo->m_downloadID;
 
     TransportStatus status = static_cast<TransportStatus>(message.at(0));
-    qCDebug(client_tcp_transport) << "Message status" << static_cast<int>(status);
+    qCDebug(client_tcp_transport) << "Download state:" << downloadInfo->m_downloadState;
+    qCDebug(client_tcp_transport) << "Message status:" << static_cast<int>(status);
     QByteArray payload = message.mid(1);
 
     switch (status) {
@@ -127,6 +133,7 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
         bool statusOk;
         downloadInfo->m_size = payload.toLongLong(&statusOk);
         if (!statusOk || downloadInfo->m_size < 0) {
+            qCDebug(client_tcp_transport) << "Invalid file size received";
             downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
 
             downloadInfo->m_size = 0;
@@ -135,12 +142,15 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
         }
 
         m_outputFiles.insert(downloadID, new QFile(downloadInfo->m_savePath, this));
-        if (!m_outputFiles[downloadID]->open(QIODevice::WriteOnly)) {
+        if (!m_outputFiles[downloadID]->open(QIODevice::WriteOnly | QIODevice::Append)) {
+            qCDebug(client_tcp_transport) << "Cannot save" << downloadInfo->m_savePath
+                                          << "file:" << m_outputFiles[downloadID]->errorString();
             downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
 
             emit errorOccurred("Cannot save file: " + m_outputFiles[downloadID]->errorString());
             return;
         }
+        m_outputFiles[downloadID]->seek(downloadInfo->m_lastReceivedByte);
 
         downloadInfo->setDownloadState(DownloadInfo::DownloadState::Active);
 
@@ -150,7 +160,7 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
     }
     case TransportStatus::ResponseError: {
         qCInfo(client_tcp_transport) << "Response: Error";
-        qCWarning(client_tcp_transport) << QString::fromUtf8(payload);
+        qCWarning(client_tcp_transport) << "Error:" << QString::fromUtf8(payload);
 
         downloadInfo->setDownloadState(DownloadInfo::DownloadState::Error);
         emit errorOccurred(QString::fromUtf8(payload));
@@ -158,7 +168,7 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
         break;
     }
     case TransportStatus::FileChunk: {
-        qCInfo(client_tcp_transport) << "Response: FileChunk";
+        qCDebug(client_tcp_transport) << "Response: FileChunk";
 
         if (downloadInfo->m_downloadState != DownloadInfo::DownloadState::Active
             || !m_outputFiles[downloadID]->isOpen()) {
@@ -167,17 +177,21 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
         }
         m_outputFiles[downloadID]->write(payload);
 
+        downloadInfo->setLastReceivedByte(downloadInfo->m_lastReceivedByte + payload.size());
+
         break;
     }
     case TransportStatus::TransferComplete: {
         qCInfo(client_tcp_transport) << "Response: TransferComplete";
 
         if (downloadInfo->m_downloadState != DownloadInfo::DownloadState::Active) {
+            qCWarning(client_tcp_transport) << "Unexpected transfer complete";
             emit errorOccurred("Unexpected transfer complete");
             return;
         }
 
         if (m_outputFiles[downloadID]->size() != downloadInfo->m_size) {
+            qCWarning(client_tcp_transport) << "File size mismatch";
             emit errorOccurred("File size mismatch");
             return;
         }
@@ -185,6 +199,7 @@ void ClientTcpTransport::onMessageReceived(const QByteArray &message)
         m_outputFiles[downloadID]->deleteLater();
         m_outputFiles.remove(downloadID);
         downloadInfo->setDownloadState(DownloadInfo::DownloadState::Finish);
+        downloadInfo->m_forDelete = true;
 
         emit fileReceived(downloadInfo->m_savePath);
 

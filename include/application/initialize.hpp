@@ -1,10 +1,14 @@
 /**
- * @file initialize.h
+ * @file initialize.hpp
  * @brief Initializes the application's initial data.
  */
 
-#ifndef INITIALIZE_H
-#define INITIALIZE_H
+#ifndef INITIALIZE_HPP
+#define INITIALIZE_HPP
+
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(application_initialize)
 
 /**
  * @class Initialize
@@ -27,4 +31,4 @@ private:
     void loadPath(const char *path, const char *directoryName);
 };
 
-#endif // INITIALIZE_H
+#endif // INITIALIZE_HPP

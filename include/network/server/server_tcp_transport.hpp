@@ -34,6 +34,8 @@ private:
 
     QTcpServer *m_server;
     QList<MessageSocket *> m_clients;
+
+    bool m_enabled{false};
 };
 
 #endif // SERVERTCPTRANSPORT_HPP
