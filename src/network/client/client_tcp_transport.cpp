@@ -16,10 +16,10 @@ ClientTcpTransport::~ClientTcpTransport()
     qCDebug(client_tcp_transport) << "ClientTcpTransport - destroyed";
 }
 
-void ClientTcpTransport::getFile(const QUrl &url, DownloadInfo *downloadInfo)
+void ClientTcpTransport::getFile(const QString &address, qint16 port, DownloadInfo *downloadInfo)
 {
     qCDebug(client_tcp_transport) << "Getting file:" << downloadInfo->m_path
-                                  << "From host:" << url.host();
+                                  << "From host:" << address;
 
     const QString &downloadID = downloadInfo->m_downloadID;
 
@@ -27,7 +27,26 @@ void ClientTcpTransport::getFile(const QUrl &url, DownloadInfo *downloadInfo)
     m_sockets[downloadID]->setDownloadInfo(downloadInfo);
     connectSignals(m_sockets[downloadID]);
 
-    startNewDownload(url, downloadID);
+    startNewDownload(address, port, downloadID);
+
+    qCInfo(client_tcp_transport) << "File fetch request created:" << downloadInfo->m_path;
+}
+
+void ClientTcpTransport::getFileFromRelay(const QString &address,
+                                          qint16 port,
+                                          [[maybe_unused]] const QString &userName,
+                                          DownloadInfo *downloadInfo)
+{
+    qCCritical(client_tcp_transport)
+        << "Getting file:" << downloadInfo->m_path << "From host:" << address;
+
+    const QString &downloadID = downloadInfo->m_downloadID;
+
+    m_sockets[downloadID] = new ClientMessageSocket(this);
+    m_sockets[downloadID]->setDownloadInfo(downloadInfo);
+    connectSignals(m_sockets[downloadID]);
+
+    startNewDownload(address, port, downloadID);
 
     qCInfo(client_tcp_transport) << "File fetch request created:" << downloadInfo->m_path;
 }
@@ -45,13 +64,27 @@ void ClientTcpTransport::connectSignals(ClientMessageSocket *messenger)
             &ClientTcpTransport::onMessageReceived);
 }
 
-void ClientTcpTransport::startNewDownload(const QUrl &url, const QString &downloadID)
+void ClientTcpTransport::startNewDownload(const QString &address,
+                                          qint16 port,
+                                          const QString &downloadID)
 {
-    qCDebug(client_tcp_transport) << "Starting new download on host:" << url.host();
-    m_sockets[downloadID]->connectToHost(url.host(), 6821 /*url.port()*/);
+    qCDebug(client_tcp_transport) << "Starting new download on host:" << address;
+    m_sockets[downloadID]->connectToHost(address, port);
 }
 
-void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo)
+void ClientTcpTransport::startNewDownload(const QString &address,
+                                          qint16 port,
+                                          const QString &username,
+                                          const QString &downloadID)
+{
+    qCDebug(client_tcp_transport) << "Starting new download on host:" << address;
+    m_sockets[downloadID]->setProperty("username", username);
+    m_sockets[downloadID]->connectToHost(address, port);
+}
+
+void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo,
+                                     const QString &username,
+                                     bool isUsername)
 {
     qCDebug(client_tcp_transport) << "File request:" << downloadInfo->m_path;
 
@@ -64,6 +97,10 @@ void ClientTcpTransport::requestFile(DownloadInfo *downloadInfo)
     }
 
     QByteArray request;
+    if (isUsername) {
+        request.append(message::toByteFromStatus(TransportStatus::RequestFile));
+        request.append(username.toUtf8());
+    }
     request.append(message::toByteFromStatus(TransportStatus::RequestFile));
     request.append(reinterpret_cast<const char *>(&downloadInfo->m_lastReceivedByte),
                    sizeof(downloadInfo->m_lastReceivedByte));
@@ -84,7 +121,12 @@ void ClientTcpTransport::onConnected()
     qCInfo(client_tcp_transport) << "Connection established via socket descriptor:"
                                  << messageSocket->socket()->socketDescriptor();
 
-    requestFile(messageSocket->getDownloadInfo());
+    bool isUsername = false;
+    auto username = messageSocket->property("username");
+    if (username.isValid()) {
+        isUsername = true;
+    }
+    requestFile(messageSocket->getDownloadInfo(), username.toString(), isUsername);
 
     emit connected();
 }

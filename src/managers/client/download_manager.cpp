@@ -92,9 +92,7 @@ bool DownloadManager::addDownload(DownloadInfo *downloadInfo)
     beginInsertRows(QModelIndex(), row, row);
 
     m_downloadInfoList.append(downloadInfo);
-    connect(downloadInfo, &DownloadInfo::lastReceivedByteChanged, this, [this, row]() {
-        emit dataChanged(index(row), index(row), {LastReceivedByteRole});
-    });
+    connectListViewSignals(downloadInfo, row);
 
     endInsertRows();
 
@@ -240,12 +238,21 @@ bool DownloadManager::updateDownload(int index, const QString &property, const Q
 
     emit dataChanged(idx, idx, roles.isEmpty() ? allRoles : roles);
 
-    return true;
+    return rewriteSelectAppData(info);
 }
 
 bool DownloadManager::readUnfinishedDownloads()
 {
     return readAppData(*this, m_savePath, m_jsonUnfinishedDownloads);
+}
+
+bool DownloadManager::rewriteSelectAppData(DownloadInfo *downloadInfo)
+{
+    QJsonObject jsonObject;
+    setJsonObjectFromDownloadInfo(jsonObject, downloadInfo);
+    m_jsonUnfinishedDownloads[downloadInfo->m_downloadID] = jsonObject;
+
+    return rewriteAppDataFile(m_savePath, m_jsonUnfinishedDownloads);
 }
 
 void DownloadManager::initInfo(DownloadInfo *downloadInfo, QJsonObject &jsonObject)
@@ -258,6 +265,9 @@ void DownloadManager::initInfo(DownloadInfo *downloadInfo, QJsonObject &jsonObje
 
     m_downloadInfoList.push_back(downloadInfo);
     m_downloadInfoDict.insert(downloadInfo->m_downloadID, downloadInfo);
+
+    int row = m_downloadInfoList.size() - 1;
+    connectListViewSignals(downloadInfo, row);
 
     // Set the download state to "paused" on startup because the previous
     // session may have ended improperly without pausing.
@@ -298,6 +308,17 @@ void DownloadManager::setJsonObjectFromDownloadInfo(QJsonObject &jsonObject,
     jsonObject[constants::kModified] = downloadInfo->m_modified;
     jsonObject[constants::kAccessed] = downloadInfo->m_accessed;
     jsonObject[constants::kDownloadState] = static_cast<int>(downloadInfo->m_downloadState);
+}
+
+void DownloadManager::connectListViewSignals(DownloadInfo *downloadInfo, int row)
+{
+    connect(downloadInfo, &DownloadInfo::downloadStateChanged, this, [this, row, downloadInfo]() {
+        emit dataChanged(index(row), index(row), {ConnectionStateRole});
+        rewriteSelectAppData(downloadInfo);
+    });
+    connect(downloadInfo, &DownloadInfo::lastReceivedByteChanged, this, [this, row]() {
+        emit dataChanged(index(row), index(row), {LastReceivedByteRole});
+    });
 }
 
 void DownloadManager::deleteFinishedDownloads()

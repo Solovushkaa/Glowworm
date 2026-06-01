@@ -19,6 +19,7 @@ public:
 
     void checkConnectionToServer(ConnectionInfo *connectionInfo);
     void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath);
+    void connectToRelayServer(ConnectionInfo *connectionInfo);
 
 private:
     void networkErrorHandler(const QNetworkReply::NetworkError networkError);
@@ -26,6 +27,7 @@ private:
 private slots:
     void onConnectionStatusCodeReceived();
     void onDirectoryReceived();
+    void onRelayStatusCodeReceived();
 
 signals:
     void requestConnectionStatusReceivedError();
@@ -33,9 +35,6 @@ signals:
 
     void statusCodeChanged(int statusCode);
     void currentDirectoryChanged();
-
-    // signals:
-    //     void statusCodeChanged(int statusCode);
 
     /* Members */
 private:

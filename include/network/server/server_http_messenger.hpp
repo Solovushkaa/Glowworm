@@ -14,9 +14,7 @@ class ServerHttpMessenger : public QObject
     Q_OBJECT
 
 public:
-    explicit ServerHttpMessenger(const QString &hostKey,
-                                 quint16 tcpPort = 6115,
-                                 quint16 sslPort = 274);
+    explicit ServerHttpMessenger(const QString &hostKey);
     ~ServerHttpMessenger();
 
     bool startDefault();

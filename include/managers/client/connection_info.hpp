@@ -24,9 +24,13 @@ enum class ConnectionInfoMember {
     Name,
     HostKey,
     ConnectionType,
-    Url,
+    Address,
     RemoteUserName,
     ConnectionState,
+    DefaultMessengerPort,
+    SecureMessengerPort,
+    DefaultTransportPort,
+    SecureTransportPort,
     SecureConnection,
     COUNT // To get the size of the enum
 };
@@ -64,7 +68,7 @@ public:
 private:
     Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
     Q_PROPERTY(ConnectionType connectionType MEMBER m_connectionType NOTIFY transportChanged)
-    Q_PROPERTY(QUrl url MEMBER m_url NOTIFY urlChanged)
+    Q_PROPERTY(QString address MEMBER m_address NOTIFY urlChanged)
     Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName NOTIFY remoteUserNameChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
 
@@ -74,10 +78,14 @@ public:
     ConnectionInfo(const QString &name,
                    const QString &hostKey,
                    ConnectionType connectionType,
-                   const QUrl &url,
+                   const QString &address,
                    const QString &remoteUserName,
                    ConnectionState connectionState,
                    bool isSecureConnection,
+                   qint16 defaultMessengerPort,
+                   qint16 secureMessengerPort,
+                   qint16 defaultTransportPort,
+                   qint16 secureTransportPort,
                    QObject *parent = nullptr);
 
     ConnectionInfo(const ConnectionInfo &connectionInfo);
@@ -110,10 +118,15 @@ public:
 
     ConnectionType m_connectionType; ///< Network connectionType
 
-    QUrl m_url; ///< url
+    QString m_address;        ///< Ip-address
     QString m_remoteUserName; ///< Remote user (not needed for LAN)
 
     ConnectionState m_connectionState; ///< Connection state
+
+    qint16 m_defaultMessengerPort;
+    qint16 m_secureMessengerPort;
+    qint16 m_defaultTransportPort;
+    qint16 m_secureTransportPort;
 
     bool m_isSecureConnection;
 };

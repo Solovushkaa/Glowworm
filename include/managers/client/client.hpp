@@ -74,6 +74,12 @@ public:
      */
     Q_INVOKABLE void stopDownload(int downloadIndex);
 
+    Q_INVOKABLE void connectToRelayServer();
+    Q_INVOKABLE void getFileFromRelayServer(int fileIndex,
+                                            const QString &userName,
+                                            const QString &saveName,
+                                            const QString &savePath);
+
     ClientConnectionManager &getClientConnectionManager() { return m_connectionManager; }
     DownloadManager &getDownloadManager() { return m_downloadManager; }
     DirectoryManager &getDirectoryManager() { return m_directoryManager; }

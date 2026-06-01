@@ -44,7 +44,7 @@ struct ClientConnectionManagerTest : ::testing::Test
 
     void compareRealAndExpectedValues(ConnectionInfo *connectionInfo, int index)
     {
-        EXPECT_EQ(connectionInfo->m_url.toString(), test::savedConnectionsUrl[index]);
+        EXPECT_EQ(connectionInfo->m_address, test::savedConnectionsUrl[index]);
         EXPECT_EQ(static_cast<int>(connectionInfo->m_connectionType), test::connectionType[index]);
         EXPECT_EQ(connectionInfo->m_remoteUserName, test::remoteUserName[index]);
         EXPECT_EQ(static_cast<int>(connectionInfo->m_connectionState), test::connectionState[index]);
@@ -74,7 +74,7 @@ struct ClientConnectionManagerTest : ::testing::Test
     {
         connectionInfo->m_name = test::name[index].toString();
         connectionInfo->m_connectionType = static_cast<ConnectionInfo::ConnectionType>(test::connectionType[index]);
-        connectionInfo->m_url = test::savedConnectionsUrl[index].toString();
+        connectionInfo->m_address = test::savedConnectionsUrl[index].toString();
         connectionInfo->m_remoteUserName = test::remoteUserName[index].toString();
         connectionInfo->m_connectionState = static_cast<ConnectionInfo::ConnectionState>(
             test::connectionState[index]);

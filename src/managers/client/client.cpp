@@ -70,7 +70,7 @@ void Client::getFileRange(int fileIndex,
     auto activeConnection = getActiveConnection();
     auto fileInfo = m_directoryManager.getActiveDirectory()[fileIndex];
     m_downloadManager.addDownload(downloadID,
-                                  activeConnection->m_url,
+                                  activeConnection->m_address,
                                   activeConnection->m_hostKey,
                                   fileInfo->m_name,
                                   fileInfo->m_path,
@@ -85,7 +85,8 @@ void Client::getFileRange(int fileIndex,
 
     connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
 
-    m_dataExchanger.getFile(getActiveConnection()->m_url,
+    m_dataExchanger.getFile(getActiveConnection()->m_address,
+                            getActiveConnection()->m_defaultTransportPort,
                             m_downloadManager.getDownloadInfoDict()[downloadID]);
 }
 
@@ -101,6 +102,51 @@ void Client::startDownload(int /*downloadIndex*/)
 void Client::stopDownload(int /*downloadIndex*/)
 {
     // m_dataExchangers[downloadID].stop(/**/);
+}
+
+void Client::connectToRelayServer()
+{
+    qCDebug(client) << "Connection check realy server request";
+
+    m_httpMessenger.connectToRelayServer(getActiveConnection());
+}
+
+void Client::getFileFromRelayServer(int fileIndex,
+                                    const QString &userName,
+                                    const QString &saveName,
+                                    const QString &savePath)
+{
+    qCDebug(client) << "Getting file:"
+                    << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
+
+    if (getActiveConnection()->m_connectionState != ConnectionInfo::ConnectionState::Connected) {
+        return;
+    }
+
+    const QString downloadID = generateDownloadID(fileIndex);
+
+    auto activeConnection = getActiveConnection();
+    auto fileInfo = m_directoryManager.getActiveDirectory()[fileIndex];
+    m_downloadManager.addDownload(downloadID,
+                                  activeConnection->m_address,
+                                  activeConnection->m_hostKey,
+                                  fileInfo->m_name,
+                                  fileInfo->m_path,
+                                  saveName,
+                                  savePath,
+                                  fileInfo->m_size,
+                                  0,
+                                  fileInfo->m_created,
+                                  fileInfo->m_modified,
+                                  fileInfo->m_accessed,
+                                  DownloadInfo::DownloadState::Wait);
+
+    connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
+
+    m_dataExchanger.getFileFromRelay(getActiveConnection()->m_address,
+                                     getActiveConnection()->m_defaultTransportPort,
+                                     userName,
+                                     m_downloadManager.getDownloadInfoDict()[downloadID]);
 }
 
 ConnectionInfo *Client::getActiveConnection()

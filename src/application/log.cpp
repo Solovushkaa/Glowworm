@@ -1,4 +1,5 @@
 #include "log.hpp"
+#include <QStandardPaths>
 
 const QString &LogPath()
 {

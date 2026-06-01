@@ -175,8 +175,8 @@ Rectangle {
                     ClientConnectionManager.setActiveConnection(index)
                     activeConnectionIndex = index
 
-                    mainPageHeader.activeConnectionName
-                            = ClientConnectionManager.getActiveConnection().name
+                    // mainPageHeader.activeConnectionName
+                    //         = ClientConnectionManager.getActiveConnection().name
                 }
             }
             CustomImage {

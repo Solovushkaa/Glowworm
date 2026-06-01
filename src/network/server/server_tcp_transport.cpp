@@ -1,16 +1,19 @@
 #include "server_tcp_transport.hpp"
 #include <QDir>
+#include <QSettings>
 #include <QTcpServer>
 #include "constants.hpp"
 #include "file_sender.hpp"
 
 Q_LOGGING_CATEGORY(server_tcp_transport, "server.transport.tcp")
 
-ServerTcpTransport::ServerTcpTransport(quint16 port, QObject *parent)
+ServerTcpTransport::ServerTcpTransport(QObject *parent)
     : QObject(parent)
-    , m_port(port)
     , m_server(new QTcpServer(this))
 {
+    QSettings settings;
+    m_port = settings.value(constants::kDefaultTransportPortName).toInt();
+
     connect(m_server, &QTcpServer::newConnection, this, &ServerTcpTransport::onNewConnection);
 
     qCDebug(server_tcp_transport) << "ServerTcpTransport - created";

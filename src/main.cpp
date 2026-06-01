@@ -19,6 +19,9 @@ int main(int argc, char *argv[])
 {
     QGuiApplication qtApp(argc, argv);
 
+    QGuiApplication::setOrganizationName("Glowworm");
+    QGuiApplication::setApplicationName("Glowworm");
+
     QQmlApplicationEngine engine;
 
     App application;

@@ -277,6 +277,23 @@ Page {
                                 Server.startDefaultServer()
                             }
                         }
+                        CustomButton {
+                            id: connectToRelayServer
+
+                            buttonText: "Connect relay server"
+                            onClicked: {
+                                Client.connectToRelayServer()
+                            }
+                        }
+                        CustomButton {
+                            id: downloadFromRelayServer
+
+                            buttonText: "Dw Rserv"
+                            onClicked: {
+
+                                Client.getFileFromRelayServer()
+                            }
+                        }
                         Item {
                             Layout.fillWidth: true
                         }

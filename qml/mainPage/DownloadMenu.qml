@@ -130,6 +130,9 @@ Popup {
                     if (selectSaveFolderTextArea.text !== "") {
                         Client.getFile(fileIndex, currentName,
                                        selectSaveFolderTextArea.text)
+                        // Client.getFileFromRelayServer(
+                        //             fileIndex, "user", currentName,
+                        //             selectSaveFolderTextArea.text)
                         root.close()
                     }
                 }

@@ -1,5 +1,7 @@
 #include "server_http_messenger.hpp"
 #include <QFile>
+#include <QSettings>
+#include "constants.hpp"
 #include "json_utils.hpp"
 
 Q_LOGGING_CATEGORY(server_http_messenger, "server.messenger.http")
@@ -10,13 +12,15 @@ struct RestPath {
     RestPath(const QString &x) : s(x) {}
 };
 
-ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey, quint16 tcpPort, quint16 sslPort)
+ServerHttpMessenger::ServerHttpMessenger(const QString &hostKey)
     : m_hostKey(hostKey)
-    , m_tcpPort(tcpPort)
-    , m_sslPort(sslPort)
     , m_tcpServer(std::make_unique<QTcpServer>())
     , m_sslServer(std::make_unique<QSslServer>())
 {
+    QSettings settings;
+    m_tcpPort = settings.value(constants::kDefaultMessengerPortName).toInt();
+    m_sslPort = settings.value(constants::kSecureMessengerPortName).toInt();
+
     m_httpServer.router()->addConverter<RestPath>(u".+");
 
     routeConnection();

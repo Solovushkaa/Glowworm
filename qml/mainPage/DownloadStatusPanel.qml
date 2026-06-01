@@ -51,7 +51,6 @@ Rectangle {
             color: "white"
 
             Rectangle {
-                // TODO: visible only if not finished
                 id: playPauseBound
 
                 anchors {
@@ -59,8 +58,8 @@ Rectangle {
                     top: parent.top
                     bottom: parent.bottom
                 }
-                visible: (model.downloadState !== 4)
-                width: parent.width * 0.05
+                visible: (model.downloadState !== 3)
+                width: parent.width * 0.03
 
                 color: "transparent"
 
@@ -78,7 +77,7 @@ Rectangle {
                         topMargin: 3
                         bottomMargin: 3
                     }
-                    source: model.downloadState === 2 ? "qrc:Icons/play.svg" : "qrc:Icons/pause.svg"
+                    source: model.downloadState === 2 ? "qrc:Icons/pause.svg" : "qrc:Icons/play.svg"
                     fillMode: Image.PreserveAspectFit
 
                     smooth: true

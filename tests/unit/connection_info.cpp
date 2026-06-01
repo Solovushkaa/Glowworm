@@ -9,7 +9,7 @@ TEST(ConnectionInfoTest, ClassVariableType)
     StaticAssertTypeEq<decltype(connectionInfo.m_name), QString>();
     StaticAssertTypeEq<decltype(connectionInfo.m_connectionType), ConnectionInfo::ConnectionType>();
 
-    StaticAssertTypeEq<decltype(connectionInfo.m_url), QUrl>();
+    StaticAssertTypeEq<decltype(connectionInfo.m_address), QString>();
 
     StaticAssertTypeEq<decltype(connectionInfo.m_remoteUserName), QString>();
 

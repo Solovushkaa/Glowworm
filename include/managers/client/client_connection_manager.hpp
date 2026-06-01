@@ -8,6 +8,7 @@
 #include <QAbstractListModel>
 #include <QJsonObject>
 #include "connection_info.hpp"
+#include "constants.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(connection_manager)
 
@@ -22,9 +23,9 @@ class ClientConnectionManager : public QAbstractListModel
     Q_PROPERTY(bool hasActiveConnection READ hasActiveConnection NOTIFY activeConnectionChanged)
 
     enum ConnectionRoles {
-        NameRole,
+        NameRole = Qt::UserRole + 1,
         ConnectionTypeRole,
-        URLRole,
+        AddressRole,
         RemoteUserRole,
         ConnectionStateRole
     };
@@ -42,11 +43,16 @@ private:
     bool addConnection(ConnectionInfo *info);
 
 public:
-    Q_INVOKABLE bool addConnection(const QString &name,
-                                   ConnectionInfo::ConnectionType connectionType,
-                                   const QUrl &url,
-                                   const QString &remoteUserName,
-                                   bool isSecureConnection);
+    Q_INVOKABLE bool addConnection(
+        const QString &name,
+        ConnectionInfo::ConnectionType connectionType,
+        const QString &address,
+        const QString &remoteUserName,
+        bool isSecureConnection,
+        qint16 defaultMessengerPort = constants::kDefaultMessengerPortValue,
+        qint16 secureMessengerPort = constants::kSecureMessengerPortValue,
+        qint16 defaultTransportPort = constants::kDefaultTransportPortValue,
+        qint16 secureTransportPort = constants::kSecureTransportPortValue);
     /**
      * @brief Removing connection
      */
@@ -64,6 +70,8 @@ public:
      * @brief Read saved connections from file.
      */
     bool readSavedConnections();
+
+    bool rewriteSelectAppData(ConnectionInfo *connectionInfo);
 
     void initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject);
 

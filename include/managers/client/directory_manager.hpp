@@ -18,7 +18,7 @@ class DirectoryManager : public QAbstractListModel
     QML_UNCREATABLE("Managed from C++")
 
     enum DirectoryRoles {
-        NameRole,
+        NameRole = Qt::UserRole + 1,
         PathRole,
         CreatedRole,
         ModifiedRole,

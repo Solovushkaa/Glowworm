@@ -29,6 +29,8 @@ private:
      * @param directoryName Directory name for debug logging
      */
     void loadPath(const char *path, const char *directoryName);
+
+    void initializeSettings();
 };
 
 #endif // INITIALIZE_HPP

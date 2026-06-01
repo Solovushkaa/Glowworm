@@ -38,8 +38,8 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
         return info->m_name;
     case ConnectionTypeRole:
         return static_cast<int>(info->m_connectionType);
-    case URLRole:
-        return info->m_url;
+    case AddressRole:
+        return info->m_address;
     case RemoteUserRole:
         return info->m_remoteUserName;
     case ConnectionStateRole:
@@ -54,7 +54,7 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
     QHash<int, QByteArray> roles;
     roles[NameRole] = constants::kName.toUtf8();
     roles[ConnectionTypeRole] = constants::kConnectionType.toUtf8();
-    roles[URLRole] = constants::kURL.toUtf8();
+    roles[AddressRole] = constants::kAddress.toUtf8();
     roles[RemoteUserRole] = constants::kRemoteUserName.toUtf8();
     roles[ConnectionStateRole] = constants::kConnectionState.toUtf8();
     return roles;
@@ -80,9 +80,13 @@ bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
 
 bool ClientConnectionManager::addConnection(const QString &name,
                                             ConnectionInfo::ConnectionType connectionType,
-                                            const QUrl &url,
+                                            const QString &address,
                                             const QString &remoteUserName,
-                                            bool isSecureConnection)
+                                            bool isSecureConnection,
+                                            qint16 defaultMessengerPort,
+                                            qint16 secureMessengerPort,
+                                            qint16 defaultTransportPort,
+                                            qint16 secureTransportPort)
 {
     qCDebug(connection_manager) << "Adding a new connection";
 
@@ -94,10 +98,14 @@ bool ClientConnectionManager::addConnection(const QString &name,
     auto connectionInfo = new ConnectionInfo(name,
                                              "",
                                              connectionType,
-                                             url,
+                                             address,
                                              remoteUserName,
                                              ConnectionInfo::ConnectionState::Disconnected,
                                              isSecureConnection,
+                                             defaultMessengerPort,
+                                             secureMessengerPort,
+                                             defaultTransportPort,
+                                             secureTransportPort,
                                              this);
 
     return addConnection(connectionInfo);
@@ -114,6 +122,7 @@ bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
 
     if (activeIndex == deleteIndex) {
         m_activeConnection = nullptr;
+        emit activeConnectionChanged();
     }
 
     QString deleteID = std::move(m_connectionInfoList[deleteIndex]->m_name);
@@ -151,8 +160,8 @@ bool ClientConnectionManager::updateConnection(int index,
         roles << NameRole;
     if (property == constants::kConnectionType.toUtf8())
         roles << ConnectionTypeRole;
-    if (property == constants::kURL.toUtf8())
-        roles << URLRole;
+    if (property == constants::kAddress.toUtf8())
+        roles << AddressRole;
     if (property == constants::kRemoteUserName.toUtf8())
         roles << RemoteUserRole;
     if (property == constants::kConnectionState.toUtf8())
@@ -160,7 +169,7 @@ bool ClientConnectionManager::updateConnection(int index,
 
     static const QVector<int> allRoles{NameRole,
                                        ConnectionTypeRole,
-                                       URLRole,
+                                       AddressRole,
                                        RemoteUserRole,
                                        ConnectionStateRole};
 
@@ -168,12 +177,21 @@ bool ClientConnectionManager::updateConnection(int index,
 
     emit dataChanged(idx, idx, roles.isEmpty() ? allRoles : roles);
 
-    return true;
+    return rewriteSelectAppData(info);
 }
 
 bool ClientConnectionManager::readSavedConnections()
 {
     return readAppData(*this, m_savePath, m_jsonSavedConnections);
+}
+
+bool ClientConnectionManager::rewriteSelectAppData(ConnectionInfo *connectionInfo)
+{
+    QJsonObject jsonObject;
+    setJsonObjectFromConnectionInfo(jsonObject, connectionInfo);
+    m_jsonSavedConnections[connectionInfo->m_name] = jsonObject;
+
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
 }
 
 void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject)
@@ -204,15 +222,14 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     connectionInfo->m_name = jsonObject[constants::kName].toString();
     connectionInfo->m_connectionType = static_cast<ConnectionInfo::ConnectionType>(
         jsonObject[constants::kConnectionType].toInt());
-
-    connectionInfo->m_url = jsonObject[constants::kURL].toString();
-
-    if (!jsonObject[constants::kRemoteUserName].isNull()) {
-        connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
-    }
-
+    connectionInfo->m_address = jsonObject[constants::kAddress].toString();
+    connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
     connectionInfo->m_connectionState = ConnectionInfo::ConnectionState::Disconnected;
     connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
+    connectionInfo->m_defaultMessengerPort = jsonObject[constants::kDefaultMessengerPort].toInt();
+    connectionInfo->m_secureMessengerPort = jsonObject[constants::kSecureMessengerPort].toInt();
+    connectionInfo->m_defaultTransportPort = jsonObject[constants::kDefaultTransportPort].toInt();
+    connectionInfo->m_secureTransportPort = jsonObject[constants::kSecureTransportPort].toInt();
 }
 
 void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
@@ -221,8 +238,12 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
     jsonObject[constants::kName] = connectionInfo->m_name;
     jsonObject[constants::kHostkey] = connectionInfo->m_hostKey;
     jsonObject[constants::kConnectionType] = static_cast<int>(connectionInfo->m_connectionType);
-    jsonObject[constants::kURL] = connectionInfo->m_url.url();
+    jsonObject[constants::kAddress] = connectionInfo->m_address;
     jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;
     jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);
     jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
+    jsonObject[constants::kDefaultMessengerPort] = connectionInfo->m_defaultMessengerPort;
+    jsonObject[constants::kSecureMessengerPort] = connectionInfo->m_secureMessengerPort;
+    jsonObject[constants::kDefaultTransportPort] = connectionInfo->m_defaultTransportPort;
+    jsonObject[constants::kSecureTransportPort] = connectionInfo->m_secureTransportPort;
 }

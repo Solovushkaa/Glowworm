@@ -20,9 +20,12 @@ ClientHttpMessenger::~ClientHttpMessenger()
 
 void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo)
 {
-    qCInfo(client_http_messenger) << "Check connection to server:" << connectionInfo->m_url.url();
+    QString fullUrl = "http://" + connectionInfo->m_address + ":"
+                      + QString::number(connectionInfo->m_defaultMessengerPort);
 
-    QNetworkRequest request(connectionInfo->m_url);
+    qCInfo(client_http_messenger) << "Check connection to server:" << fullUrl;
+
+    QNetworkRequest request(fullUrl);
     QNetworkReply *reply = m_networkManager.head(request);
 
     reply->setProperty("connectionName", connectionInfo->m_name);
@@ -37,7 +40,9 @@ void ClientHttpMessenger::checkConnectionToServer(ConnectionInfo *connectionInfo
 
 void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
 {
-    QString fullUrl = connectionInfo->m_url.url() + dirPath;
+    QString fullUrl = "http://" + connectionInfo->m_address + ":"
+                      + QString::number(connectionInfo->m_defaultMessengerPort) + dirPath;
+
     qCInfo(client_http_messenger) << "Directory query by address:" << fullUrl;
 
     QNetworkRequest request(fullUrl);
@@ -50,6 +55,25 @@ void ClientHttpMessenger::getDirectory(ConnectionInfo *connectionInfo, const QSt
     connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onDirectoryReceived);
 
     qCInfo(client_http_messenger) << "Directory fetch request created";
+}
+
+void ClientHttpMessenger::connectToRelayServer(ConnectionInfo *connectionInfo)
+{
+    QString fullUrl = "http://" + connectionInfo->m_address + ":"
+                      + QString::number(connectionInfo->m_defaultMessengerPort);
+
+    qCInfo(client_http_messenger) << "Connection to relay server:" << fullUrl;
+
+    QNetworkRequest request(fullUrl);
+    request.setRawHeader("Name", "user");
+
+    QNetworkReply *reply = m_networkManager.head(request);
+
+    reply->setProperty("connectionName", connectionInfo->m_name);
+
+    connect(reply, &QNetworkReply::finished, this, &ClientHttpMessenger::onRelayStatusCodeReceived);
+
+    qCInfo(client_http_messenger) << "Connection status fetch request created";
 }
 
 void ClientHttpMessenger::networkErrorHandler(const QNetworkReply::NetworkError networkError)
@@ -161,4 +185,25 @@ void ClientHttpMessenger::onDirectoryReceived()
     }
 
     reply->deleteLater();
+}
+
+void ClientHttpMessenger::onRelayStatusCodeReceived()
+{
+    qCCritical(client_http_messenger)
+        << "Received a signal that the RELAY server connection check is complete";
+
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() == QNetworkReply::NoError) {
+        qCInfo(client_http_messenger) << "The response from the RELAY server has been received";
+        int currentStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+        if (currentStatusCode == 200) {
+            qCInfo(client_http_messenger).nospace()
+                << "Good status code from: " << currentStatusCode;
+        } else {
+            qCWarning(client_http_messenger).nospace()
+                << "Bad status code from: " << currentStatusCode;
+        }
+    }
 }

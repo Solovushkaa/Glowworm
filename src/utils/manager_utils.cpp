@@ -86,7 +86,8 @@ template<typename Manager>
 bool readAppData(Manager &manager, const QString &filePath, QJsonObject &jsonInfo)
 {
     using InfoType = typename Manager::InfoType;
-    if constexpr (std::is_same_v<InfoType, DownloadManager::InfoType>) {
+    constexpr bool isDownloadInfoType = std::is_same_v<InfoType, DownloadManager::InfoType>;
+    if constexpr (isDownloadInfoType) {
         qCDebug(manager_utils) << "Reading application data for DownloadManager";
     } else {
         qCDebug(manager_utils) << "Reading application data for ClientConnectionManager";
@@ -112,7 +113,16 @@ bool readAppData(Manager &manager, const QString &filePath, QJsonObject &jsonInf
         jsonObject = jsonInfo[dictKey].toObject();
         if (!isCorrectAppDataKey<InfoType>(jsonObject)) {
             qCWarning(manager_utils) << "Skip the JSON Object:" << dictKey;
+            jsonInfo.remove(dictKey);
             break;
+        }
+        if constexpr (isDownloadInfoType) {
+            if (static_cast<DownloadInfo::DownloadState>(
+                    jsonObject[constants::kDownloadState].toInt())
+                == DownloadInfo::DownloadState::Finish) {
+                jsonInfo.remove(dictKey);
+                break;
+            }
         }
 
         info = new InfoType();

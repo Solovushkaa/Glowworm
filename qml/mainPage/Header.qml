@@ -7,6 +7,15 @@ Rectangle {
 
     property string activeConnectionName: ""
 
+    Connections {
+        target: ClientConnectionManager
+        function onActiveConnectionChanged() {
+            activeConnectionName = ClientConnectionManager.getActiveConnection(
+                        ) !== null ? ClientConnectionManager.getActiveConnection(
+                                         ).name : ""
+        }
+    }
+
     Rectangle {
         color: "transparent"
         anchors {
@@ -26,7 +35,7 @@ Rectangle {
 
             font.pointSize: 12
             color: "black"
-            text: "Active: " + activeConnectionName
+            text: activeConnectionName
         }
     }
 

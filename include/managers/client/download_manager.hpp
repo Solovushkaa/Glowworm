@@ -81,6 +81,8 @@ public:
      */
     bool readUnfinishedDownloads();
 
+    bool rewriteSelectAppData(DownloadInfo *downloadInfo);
+
     void initInfo(DownloadInfo *downloadInfo, QJsonObject &jsonObject);
 
     void setDownloadInfoFromJsonObject(DownloadInfo *downloadInfo, QJsonObject &jsonObject);
@@ -94,6 +96,7 @@ public:
     int getDownloadCount() const { return m_downloadInfoList.size(); }
 
 private:
+    void connectListViewSignals(DownloadInfo *downloadInfo, int row);
     void deleteFinishedDownloads();
 
 signals:

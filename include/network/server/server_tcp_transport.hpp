@@ -13,7 +13,7 @@ class ServerTcpTransport : public QObject
     Q_OBJECT
 
 public:
-    explicit ServerTcpTransport(quint16 port = 6821, QObject *parent = nullptr);
+    explicit ServerTcpTransport(QObject *parent = nullptr);
     ~ServerTcpTransport();
 
 public:

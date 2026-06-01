@@ -32,13 +32,21 @@ public:
     explicit ClientTcpTransport(QObject *parent = nullptr);
     ~ClientTcpTransport();
 
-    void getFile(const QUrl &url, DownloadInfo *downloadInfo);
+    void getFile(const QString &address, qint16 port, DownloadInfo *downloadInfo);
+    void getFileFromRelay(const QString &address,
+                          qint16 port,
+                          const QString &userName,
+                          DownloadInfo *downloadInfo);
 
 private:
     void connectSignals(ClientMessageSocket *messenger);
 
-    void startNewDownload(const QUrl &url, const QString &downloadID);
-    void requestFile(DownloadInfo *downloadInfo);
+    void startNewDownload(const QString &address, qint16 port, const QString &downloadID);
+    void startNewDownload(const QString &address,
+                          qint16 port,
+                          const QString &username,
+                          const QString &downloadID);
+    void requestFile(DownloadInfo *downloadInfo, const QString &username, bool isUsername);
 
 signals:
     void connected();
