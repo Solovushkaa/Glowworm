@@ -11,6 +11,7 @@
 #include <QProperty>
 #include <QStringView>
 #include <QUrl>
+#include <QUuid>
 #include <QtQmlIntegration/qqmlintegration.h>
 
 Q_DECLARE_LOGGING_CATEGORY(connection_info)
@@ -25,12 +26,10 @@ enum class ConnectionInfoMember {
     HostKey,
     ConnectionType,
     Address,
-    RemoteUserName,
+    RemoteUserUuid,
     ConnectionState,
-    DefaultMessengerPort,
-    SecureMessengerPort,
-    DefaultTransportPort,
-    SecureTransportPort,
+    MessengerPort,
+    TransportPort,
     SecureConnection,
     COUNT // To get the size of the enum
 };
@@ -55,7 +54,7 @@ class ConnectionInfo : public QObject
     QML_UNCREATABLE("Managed from C++")
 
 public:
-    enum class ConnectionType { Direct, TURN };
+    enum class ConnectionType { Direct, Relay };
     Q_ENUM(ConnectionType)
 
     enum class ConnectionState {
@@ -69,7 +68,7 @@ private:
     Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
     Q_PROPERTY(ConnectionType connectionType MEMBER m_connectionType NOTIFY transportChanged)
     Q_PROPERTY(QString address MEMBER m_address NOTIFY urlChanged)
-    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserName NOTIFY remoteUserNameChanged)
+    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserUuid NOTIFY remoteUserNameChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
 
     // --- Constructors ---
@@ -79,13 +78,11 @@ public:
                    const QString &hostKey,
                    ConnectionType connectionType,
                    const QString &address,
-                   const QString &remoteUserName,
+                   const QString &remoteUserUuid,
                    ConnectionState connectionState,
+                   qint16 messengerPort,
+                   qint16 transportPort,
                    bool isSecureConnection,
-                   qint16 defaultMessengerPort,
-                   qint16 secureMessengerPort,
-                   qint16 defaultTransportPort,
-                   qint16 secureTransportPort,
                    QObject *parent = nullptr);
 
     ConnectionInfo(const ConnectionInfo &connectionInfo);
@@ -119,14 +116,12 @@ public:
     ConnectionType m_connectionType; ///< Network connectionType
 
     QString m_address;        ///< Ip-address
-    QString m_remoteUserName; ///< Remote user (not needed for LAN)
+    QString m_remoteUserUuid; ///< Remote user (not needed for LAN)
 
     ConnectionState m_connectionState; ///< Connection state
 
-    qint16 m_defaultMessengerPort;
-    qint16 m_secureMessengerPort;
-    qint16 m_defaultTransportPort;
-    qint16 m_secureTransportPort;
+    qint16 m_messengerPort;
+    qint16 m_transportPort;
 
     bool m_isSecureConnection;
 };

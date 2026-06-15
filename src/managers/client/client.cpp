@@ -5,16 +5,14 @@ Q_LOGGING_CATEGORY(client, "client")
 
 Client::Client(const QString &connectionsFilePath, const QString &downloadsFilePath, QObject *parent)
     : QObject(parent)
-    , m_httpMessenger(m_connectionManager, m_directoryManager)
     , m_connectionManager(connectionsFilePath)
     , m_downloadManager(downloadsFilePath)
 
 {
-    // connect(&m_timer, &QTimer::timeout, this, &ClientHttpMessenger::startConnectionVerification);
     m_connectionManager.readSavedConnections();
     m_downloadManager.readUnfinishedDownloads();
 
-    connectSignals();
+    // connectSignals();
 
     qCDebug(client) << "Client - created";
 }
@@ -29,23 +27,30 @@ void Client::setActiveConnection(int index)
     qCDebug(client) << "Changing the active connection";
 
     m_connectionManager.setActiveConnection(index);
+
+    if (!m_webSocketMessengers.contains(getActiveConnection()->m_name)) {
+        auto messenger
+            = new ClientWebSocketMessenger(getActiveConnection(),
+                                           getActiveConnection()->m_remoteUserUuid.right(62).toUtf8(),
+                                           m_directoryManager,
+                                           this);
+        m_webSocketMessengers.insert(getActiveConnection()->m_name, messenger);
+    }
+
     setConnectionPreferences();
 
     qCInfo(client) << "Active connection changed";
-}
-
-void Client::checkConnectionToServer()
-{
-    qCDebug(client) << "Connection check request";
-
-    m_httpMessenger.checkConnectionToServer(getActiveConnection());
 }
 
 void Client::getDirectory(const QString &dirPath)
 {
     qCDebug(client) << "Directory request";
 
-    m_httpMessenger.getDirectory(getActiveConnection(), dirPath);
+    if (m_webSocketMessengers.contains(getActiveConnection()->m_name)) {
+        m_webSocketMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
+    } else {
+        qCWarning(client) << "Directory create request error: Connection doesn't exist";
+    }
 }
 
 void Client::getFile(int fileIndex, const QString &saveName, const QString &savePath)
@@ -86,7 +91,7 @@ void Client::getFileRange(int fileIndex,
     connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
 
     m_dataExchanger.getFile(getActiveConnection()->m_address,
-                            getActiveConnection()->m_defaultTransportPort,
+                            getActiveConnection()->m_transportPort,
                             m_downloadManager.getDownloadInfoDict()[downloadID]);
 }
 
@@ -108,7 +113,7 @@ void Client::connectToRelayServer()
 {
     qCDebug(client) << "Connection check realy server request";
 
-    m_httpMessenger.connectToRelayServer(getActiveConnection());
+    // m_webSocketMessengers[getActiveConnection()->m_name].connectToRelayServer(getActiveConnection());
 }
 
 void Client::getFileFromRelayServer(int fileIndex,
@@ -144,7 +149,7 @@ void Client::getFileFromRelayServer(int fileIndex,
     connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
 
     m_dataExchanger.getFileFromRelay(getActiveConnection()->m_address,
-                                     getActiveConnection()->m_defaultTransportPort,
+                                     getActiveConnection()->m_transportPort,
                                      userName,
                                      m_downloadManager.getDownloadInfoDict()[downloadID]);
 }
@@ -182,13 +187,13 @@ void Client::connectSignals()
 {
     qCDebug(client) << "Connecting slots and signals";
 
-    connect(&m_httpMessenger,
-            &ClientHttpMessenger::statusCodeChanged,
+    connect(m_webSocketMessengers[getActiveConnection()->m_name],
+            &ClientWebSocketMessenger::statusCodeChanged,
             this,
             &Client::connectionStatusCodeChanged);
 
-    connect(&m_httpMessenger,
-            &ClientHttpMessenger::currentDirectoryChanged,
+    connect(m_webSocketMessengers[getActiveConnection()->m_name],
+            &ClientWebSocketMessenger::currentDirectoryChanged,
             this,
             &Client::onCurrentDirectoryChanged);
 }

@@ -3,10 +3,9 @@
 
 #include <QObject>
 #include <QStandardPaths>
-#include <QTimer>
 #include "client_connection_manager.hpp"
-#include "client_http_messenger.hpp"
-#include "client_tcp_transport.hpp"
+#include "client_websocket_messenger.hpp"
+#include "client_tls_transport.hpp"
 #include "directory_manager.hpp"
 #include "download_manager.hpp"
 
@@ -46,7 +45,7 @@ public:
     /**
      * @brief Checking the connection to the server.
      */
-    Q_INVOKABLE void checkConnectionToServer();
+    // Q_INVOKABLE void checkConnectionToServer();
 
     /**
      * @brief Getting a list of directories.
@@ -103,7 +102,7 @@ public slots:
 
     // --- Members ---
 private:
-    ClientHttpMessenger m_httpMessenger;
+    QHash<QString, ClientWebSocketMessenger *> m_webSocketMessengers;
 
     ClientTcpTransport m_dataExchanger; ///< DownloadID, Transport
 
@@ -111,18 +110,6 @@ private:
     DownloadManager m_downloadManager;           ///< Download manager
 
     DirectoryManager m_directoryManager;
-
-    // --- Verifications ---
-private:
-    // void startConnectionVerification()
-    // {
-    //     checkConnectionToServer();
-    //     m_timer.start(m_pingTime);
-    // }
-    // void stopConnectionVerification() { m_timer.stop(); }
-
-    // QTimer m_timer;        ///< Timer for checking access to the server
-    // int m_pingTime{5'000}; ///< Time between server polls (in milliseconds)
 };
 
 #endif // CLIENT_HPP

@@ -16,7 +16,7 @@ Rectangle {
 
     property bool isOpen: false
     property bool isAnimated: true
-    property int animationInterval: 150
+    property int animationInterval: 250
 
     property int activeConnectionIndex: -1
 
@@ -68,6 +68,7 @@ Rectangle {
         enabled: root.isAnimated
         NumberAnimation {
             duration: root.animationInterval
+            easing.type: Easing.OutCubic
         }
     }
 
@@ -126,11 +127,10 @@ Rectangle {
                 }
 
                 width: 3
-                color: model.connectionState === 1 ? "lightgrey" : "lightgreen"
+                color: model.connectionState === 1 ? "#75e075" : "#cfcfcf"
 
-                visible: (activeConnectionIndex === index)
-                         && activeConnectionIndex != -1
-
+                // visible: (activeConnectionIndex === index)
+                //          && activeConnectionIndex != -1
                 radius: 2
             }
 
@@ -172,7 +172,7 @@ Rectangle {
                 onDoubleClicked: {
                     savedPresets.currentIndex = index
 
-                    ClientConnectionManager.setActiveConnection(index)
+                    Client.setActiveConnection(index)
                     activeConnectionIndex = index
 
                     // mainPageHeader.activeConnectionName
@@ -293,7 +293,7 @@ Rectangle {
             ColorOverlay {
                 anchors.fill: settings
                 source: settings
-                color: "#3d5482"
+                color: "#5371ad"
             }
 
             // onClicked: {
@@ -323,7 +323,8 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 100
+                duration: root.animationInterval
+                easing.type: Easing.OutCubic
             }
         }
     }

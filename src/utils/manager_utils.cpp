@@ -140,22 +140,14 @@ template bool readAppData<ClientConnectionManager>(ClientConnectionManager &,
                                                    const QString &,
                                                    QJsonObject &);
 
-std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(QByteArray &data)
+std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(const QJsonArray &directoryJsonArray)
 {
     qCDebug(manager_utils) << "Generating FileInfo from the JSON";
 
     std::vector<std::unique_ptr<FileInfo>> filesInfo;
 
-    auto jsonDoc = QJsonDocument::fromJson(data);
-
-    if (!jsonDoc.isArray()) {
-        qCWarning(manager_utils) << "JSON Document isn't JSON Array";
-    }
-
-    const QJsonArray &jsonArray = jsonDoc.array();
-
     QJsonObject jsonObject;
-    for (auto jsonValue : jsonArray) {
+    for (auto jsonValue : directoryJsonArray) {
         if (jsonValue.isObject()) {
             jsonObject = jsonValue.toObject();
 
@@ -168,6 +160,8 @@ std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(QByteArray &data)
                                            jsonObject[constants::kSize].toInteger(),
                                            jsonObject[constants::kIsDir].toBool(),
                                            jsonObject[constants::kIsReadable].toBool()));
+        } else {
+            return {};
         }
     }
     return filesInfo;

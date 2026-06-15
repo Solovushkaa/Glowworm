@@ -19,18 +19,14 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
         return constants::kConnectionType;
     case Address:
         return constants::kAddress;
-    case RemoteUserName:
-        return constants::kRemoteUserName;
+    case RemoteUserUuid:
+        return constants::kRemoteUserUuid;
     case ConnectionState:
         return constants::kConnectionState;
-    case DefaultMessengerPort:
-        return constants::kDefaultMessengerPort;
-    case SecureMessengerPort:
-        return constants::kSecureMessengerPort;
-    case DefaultTransportPort:
-        return constants::kDefaultTransportPort;
-    case SecureTransportPort:
-        return constants::kSecureTransportPort;
+    case MessengerPort:
+        return constants::kMessengerPort;
+    case TransportPort:
+        return constants::kTransportPort;
     case SecureConnection:
         return constants::kIsSecureConnection;
     default:
@@ -52,23 +48,19 @@ ConnectionInfo::ConnectionInfo(const QString &name,
                                const QString &address,
                                const QString &remoteUserName,
                                ConnectionState connectionState,
+                               qint16 messengerPort,
+                               qint16 transportPort,
                                bool isSecureConnection,
-                               qint16 defaultMessengerPort,
-                               qint16 secureMessengerPort,
-                               qint16 defaultTransportPort,
-                               qint16 secureTransportPort,
                                QObject *parent)
     : QObject(parent)
     , m_name(name)
     , m_hostKey(hostKey)
     , m_connectionType(connectionType)
     , m_address(address)
-    , m_remoteUserName(remoteUserName)
+    , m_remoteUserUuid(remoteUserName)
     , m_connectionState(connectionState)
-    , m_defaultMessengerPort(defaultMessengerPort)
-    , m_secureMessengerPort(secureMessengerPort)
-    , m_defaultTransportPort(defaultTransportPort)
-    , m_secureTransportPort(secureTransportPort)
+    , m_messengerPort(messengerPort)
+    , m_transportPort(transportPort)
     , m_isSecureConnection(isSecureConnection)
 {
     qCDebug(connection_info) << "ConnectionInfo:" << m_name << "- created";
@@ -85,12 +77,10 @@ ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
     m_hostKey = connectionInfo.m_hostKey;
     m_connectionType = connectionInfo.m_connectionType;
     m_address = connectionInfo.m_address;
-    m_remoteUserName = connectionInfo.m_remoteUserName;
+    m_remoteUserUuid = connectionInfo.m_remoteUserUuid;
     m_connectionState = connectionInfo.m_connectionState;
-    m_defaultMessengerPort = connectionInfo.m_defaultMessengerPort;
-    m_secureMessengerPort = connectionInfo.m_secureMessengerPort;
-    m_defaultTransportPort = connectionInfo.m_defaultTransportPort;
-    m_secureTransportPort = connectionInfo.m_secureTransportPort;
+    m_messengerPort = connectionInfo.m_messengerPort;
+    m_transportPort = connectionInfo.m_transportPort;
     m_isSecureConnection = connectionInfo.m_isSecureConnection;
     this->setParent(connectionInfo.parent());
 
@@ -110,13 +100,11 @@ ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
     m_hostKey = std::move(connectionInfo.m_hostKey);
     m_connectionType = connectionInfo.m_connectionType;
     m_address = std::move(connectionInfo.m_address);
-    m_remoteUserName = std::move(connectionInfo.m_remoteUserName);
+    m_remoteUserUuid = std::move(connectionInfo.m_remoteUserUuid);
     m_connectionState = connectionInfo.m_connectionState;
     m_connectionState = connectionInfo.m_connectionState;
-    m_defaultMessengerPort = connectionInfo.m_defaultMessengerPort;
-    m_secureMessengerPort = connectionInfo.m_secureMessengerPort;
-    m_defaultTransportPort = connectionInfo.m_defaultTransportPort;
-    m_secureTransportPort = connectionInfo.m_secureTransportPort;
+    m_messengerPort = connectionInfo.m_messengerPort;
+    m_transportPort = connectionInfo.m_transportPort;
     m_isSecureConnection = connectionInfo.m_isSecureConnection;
     this->setParent(connectionInfo.parent());
 

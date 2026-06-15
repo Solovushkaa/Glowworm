@@ -1,14 +1,13 @@
 #include "json_utils.hpp"
 #include <QDir>
 #include <QFile>
-#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "constants.hpp"
 
 Q_LOGGING_CATEGORY(json_utils, "utils.json")
 
-QByteArray createJsonFromDirectory(const QString &dirPath)
+QJsonArray createJsonFromDirectory(const QString &dirPath)
 {
     qCDebug(json_utils) << "Generating JSON from the directory at the path:" << dirPath;
 
@@ -37,9 +36,7 @@ QByteArray createJsonFromDirectory(const QString &dirPath)
         jsonArray.append(jsonObject);
     }
 
-    QJsonDocument jsonDoc(jsonArray);
-
-    return jsonDoc.toJson();
+    return jsonArray;
 }
 
 QJsonObject parseJsonToObject(const QByteArray &jsonFileData)

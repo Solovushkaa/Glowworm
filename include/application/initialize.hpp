@@ -31,6 +31,8 @@ private:
     void loadPath(const char *path, const char *directoryName);
 
     void initializeSettings();
+
+    void generateCerts();
 };
 
 #endif // INITIALIZE_HPP

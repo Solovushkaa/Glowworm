@@ -41,7 +41,7 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
     case AddressRole:
         return info->m_address;
     case RemoteUserRole:
-        return info->m_remoteUserName;
+        return info->m_remoteUserUuid;
     case ConnectionStateRole:
         return static_cast<int>(info->m_connectionState);
     default:
@@ -55,7 +55,7 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
     roles[NameRole] = constants::kName.toUtf8();
     roles[ConnectionTypeRole] = constants::kConnectionType.toUtf8();
     roles[AddressRole] = constants::kAddress.toUtf8();
-    roles[RemoteUserRole] = constants::kRemoteUserName.toUtf8();
+    roles[RemoteUserRole] = constants::kRemoteUserUuid.toUtf8();
     roles[ConnectionStateRole] = constants::kConnectionState.toUtf8();
     return roles;
 }
@@ -82,11 +82,9 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                             ConnectionInfo::ConnectionType connectionType,
                                             const QString &address,
                                             const QString &remoteUserName,
-                                            bool isSecureConnection,
                                             qint16 defaultMessengerPort,
-                                            qint16 secureMessengerPort,
                                             qint16 defaultTransportPort,
-                                            qint16 secureTransportPort)
+                                            bool isSecureConnection)
 {
     qCDebug(connection_manager) << "Adding a new connection";
 
@@ -101,11 +99,9 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                              address,
                                              remoteUserName,
                                              ConnectionInfo::ConnectionState::Disconnected,
-                                             isSecureConnection,
                                              defaultMessengerPort,
-                                             secureMessengerPort,
                                              defaultTransportPort,
-                                             secureTransportPort,
+                                             isSecureConnection,
                                              this);
 
     return addConnection(connectionInfo);
@@ -162,7 +158,7 @@ bool ClientConnectionManager::updateConnection(int index,
         roles << ConnectionTypeRole;
     if (property == constants::kAddress.toUtf8())
         roles << AddressRole;
-    if (property == constants::kRemoteUserName.toUtf8())
+    if (property == constants::kRemoteUserUuid.toUtf8())
         roles << RemoteUserRole;
     if (property == constants::kConnectionState.toUtf8())
         roles << ConnectionStateRole;
@@ -223,13 +219,11 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     connectionInfo->m_connectionType = static_cast<ConnectionInfo::ConnectionType>(
         jsonObject[constants::kConnectionType].toInt());
     connectionInfo->m_address = jsonObject[constants::kAddress].toString();
-    connectionInfo->m_remoteUserName = jsonObject[constants::kRemoteUserName].toString();
+    connectionInfo->m_remoteUserUuid = jsonObject[constants::kRemoteUserUuid].toString();
     connectionInfo->m_connectionState = ConnectionInfo::ConnectionState::Disconnected;
+    connectionInfo->m_messengerPort = jsonObject[constants::kMessengerPort].toInt();
+    connectionInfo->m_transportPort = jsonObject[constants::kTransportPort].toInt();
     connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
-    connectionInfo->m_defaultMessengerPort = jsonObject[constants::kDefaultMessengerPort].toInt();
-    connectionInfo->m_secureMessengerPort = jsonObject[constants::kSecureMessengerPort].toInt();
-    connectionInfo->m_defaultTransportPort = jsonObject[constants::kDefaultTransportPort].toInt();
-    connectionInfo->m_secureTransportPort = jsonObject[constants::kSecureTransportPort].toInt();
 }
 
 void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
@@ -239,11 +233,9 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
     jsonObject[constants::kHostkey] = connectionInfo->m_hostKey;
     jsonObject[constants::kConnectionType] = static_cast<int>(connectionInfo->m_connectionType);
     jsonObject[constants::kAddress] = connectionInfo->m_address;
-    jsonObject[constants::kRemoteUserName] = connectionInfo->m_remoteUserName;
+    jsonObject[constants::kRemoteUserUuid] = connectionInfo->m_remoteUserUuid;
     jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);
     jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
-    jsonObject[constants::kDefaultMessengerPort] = connectionInfo->m_defaultMessengerPort;
-    jsonObject[constants::kSecureMessengerPort] = connectionInfo->m_secureMessengerPort;
-    jsonObject[constants::kDefaultTransportPort] = connectionInfo->m_defaultTransportPort;
-    jsonObject[constants::kSecureTransportPort] = connectionInfo->m_secureTransportPort;
+    jsonObject[constants::kMessengerPort] = connectionInfo->m_messengerPort;
+    jsonObject[constants::kTransportPort] = connectionInfo->m_transportPort;
 }

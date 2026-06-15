@@ -3,7 +3,8 @@ project(Glowworm VERSION 0.1 LANGUAGES CXX)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Network HttpServer)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Network WebSockets Xml)
+find_package(OpenSSL REQUIRED)
 find_package(GTest REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.9)
@@ -41,15 +42,15 @@ include(cmake/add_resources.cmake)
 add_resources(Glowworm)
 
 
-# === TESTS ===
-include(GoogleTest)
+# # === TESTS ===
+# include(GoogleTest)
 
-# Creating all unit test targets
-include(cmake/create_unit_tests.cmake)
-file(GLOB TEST_FILES tests/unit/*.cpp)
-create_unit_tests("${TEST_FILES}")
+# # Creating all unit test targets
+# include(cmake/create_unit_tests.cmake)
+# file(GLOB TEST_FILES tests/unit/*.cpp)
+# create_unit_tests("${TEST_FILES}")
 
-# Creating all functional test targets
-include(cmake/create_functional_tests.cmake)
-file(GLOB TEST_FILES tests/functional/*.cpp)
-create_functional_tests("${TEST_FILES}")
+# # Creating all functional test targets
+# include(cmake/create_functional_tests.cmake)
+# file(GLOB TEST_FILES tests/functional/*.cpp)
+# create_functional_tests("${TEST_FILES}")

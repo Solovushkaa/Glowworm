@@ -27,6 +27,6 @@ bool readAppData(Manager &manager, const QString &filePath, QJsonObject &jsonInf
  * @param data JSON object converted to a ByteArray
  * @return Array of directory files
  */
-std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(QByteArray &data);
+std::vector<std::unique_ptr<FileInfo>> fromJsonToFileInfo(const QJsonArray &directoryJsonArray);
 
 #endif // MANAGERUTILS_HPP

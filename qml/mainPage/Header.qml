@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 
 Rectangle {
     color: "transparent"
@@ -40,6 +41,7 @@ Rectangle {
     }
 
     Rectangle {
+        id: headerConnectionState
         color: "#efefef"
         anchors {
             right: parent.right
@@ -47,37 +49,43 @@ Rectangle {
             bottom: parent.bottom
         }
 
-        radius: 6
+        topLeftRadius: 6
+        bottomLeftRadius: 6
+        bottomRightRadius: 6
 
+        // radius: 6
         border {
             width: 1
             color: "#cccccc"
         }
 
-        width: isPageInteractiveActive ? 100 : 110
+        width: 30
 
         Rectangle {
-            width: 10
-            height: 10
+            id: connLight
+            width: 14
+            height: 14
             radius: width / 2
-            color: isPageInteractiveActive ? "#7ff083" : "gray"
+            // color: isPageInteractiveActive ? "#5371ad" : "#a5a5a5"
+            color: isPageInteractiveActive ? "#75e075" : "#a5a5a5"
             anchors {
-                left: parent.left
-                leftMargin: 10
-                verticalCenter: parent.verticalCenter
+                centerIn: parent
             }
-        }
 
-        Text {
-            anchors {
-                fill: parent
-                rightMargin: 5
+            border {
+                width: 1
+                color: "#dddddd"
             }
-            font.pointSize: 10
-            color: "black"
-            text: isPageInteractiveActive ? "Connected" : "Disconnected"
 
-            horizontalAlignment: Text.AlignRight
+            // Shadow
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowBlur: 0.5
+                shadowHorizontalOffset: 2
+                shadowVerticalOffset: 2
+                shadowColor: "#20000000"
+            }
         }
     }
 }

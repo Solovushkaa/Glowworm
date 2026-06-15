@@ -1,6 +1,7 @@
 #ifndef ADDITIONAL_HPP
 #define ADDITIONAL_HPP
 
+#include <QStandardPaths>
 #include <QStringView>
 
 /**
@@ -29,14 +30,12 @@ inline constexpr QStringView kTransport = u"transport";
 inline constexpr QStringView kConnectionType = u"connectionType";
 inline constexpr QStringView kAddress = u"address";
 inline constexpr QStringView kPort = u"port";
-inline constexpr QStringView kRemoteUserName = u"remoteUserName";
+inline constexpr QStringView kRemoteUserUuid = u"remoteUserUuid";
 inline constexpr QStringView kConnectionState = u"connectionState";
 inline constexpr QStringView kIsSecureConnection = u"isSecureConnection";
 
-inline constexpr QStringView kDefaultMessengerPort = u"defaultMessengerPort";
-inline constexpr QStringView kSecureMessengerPort = u"secureMessengerPort";
-inline constexpr QStringView kDefaultTransportPort = u"defaultTransportPort";
-inline constexpr QStringView kSecureTransportPort = u"secureTransportPort";
+inline constexpr QStringView kMessengerPort = u"messengerPort";
+inline constexpr QStringView kTransportPort = u"transportPort";
 
 inline constexpr QStringView TCP = u"TCP";
 inline constexpr QStringView UDP = u"UDP";
@@ -51,15 +50,19 @@ inline constexpr QStringView kModified = u"modified";
 inline constexpr QStringView kAccessed = u"accessed";
 
 // --- Settings ---
-inline constexpr QStringView kDefaultMessengerPortName = u"network/DefaultMessengerPort";
-inline constexpr QStringView kSecureMessengerPortName = u"network/SecureMessengerPort";
-inline constexpr QStringView kDefaultTransportPortName = u"network/DefaultTransportPort";
-inline constexpr QStringView kSecureTransportPortName = u"network/SecureTransportPort";
+inline constexpr QStringView kMessengerPortName = u"network/MessengerPort";
+inline constexpr QStringView kTransportPortName = u"network/TransportPort";
 
 inline constexpr qint16 kDefaultMessengerPortValue = 6115;
-inline constexpr qint16 kSecureMessengerPortValue = 274;
-inline constexpr qint16 kDefaultTransportPortValue = 6821;
-inline constexpr qint16 kSecureTransportPortValue = 13119;
+inline constexpr qint16 kDefaultTransportPortValue = 1274;
+
+// --- Dynamic Paths ---
+inline const QString kServerCertPath = QStandardPaths::writableLocation(
+                                           QStandardPaths::AppDataLocation)
+                                       + "/appdata/server/server_cert.crt";
+inline const QString kServerKeyPath = QStandardPaths::writableLocation(
+                                          QStandardPaths::AppDataLocation)
+                                      + "/appdata/server/server_key.key";
 
 } // namespace constants
 

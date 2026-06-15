@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "server_http_messenger.hpp"
+#include "server_websocket_messenger.hpp"
 #include "server_tcp_transport.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(server)
@@ -14,17 +14,16 @@ public:
     explicit Server(QObject *parent = nullptr);
     ~Server();
 
-    Q_INVOKABLE bool startDefaultServer();
-    Q_INVOKABLE void stopDefaultServer();
+    Q_INVOKABLE bool startServers();
+    Q_INVOKABLE void stopServers();
+
+    Q_INVOKABLE QString generateConnectionKey();
 
 private:
     QString m_hostKey;
 
-    ServerHttpMessenger m_httpMessenger;
+    ServerWebSocketMessenger m_webSocketMessenger;
     ServerTcpTransport m_tcpTransport;
-
-    bool m_defaultConfigEnabled{false};
-    bool m_secureConfigEnabled{false};
 };
 
 #endif // SERVER_HPP

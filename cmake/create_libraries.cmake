@@ -35,8 +35,23 @@ function(create_libraries APP_LIB)
             ${CMAKE_SOURCE_DIR}/include/managers/client
             ${CMAKE_SOURCE_DIR}/include
     )
-    target_link_libraries(Utils PUBLIC Qt6::Core Qt6::Network)
+    target_link_libraries(Utils PUBLIC Qt6::Core Qt6::Network Qt6::Xml)
     LIST(APPEND LIB_TARGETS Utils)
+
+    # SelfSignedCert lib
+    qt_add_library(SelfSignedCert STATIC)
+    target_sources(SelfSignedCert
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/src/utils/generateSslCert.cpp
+            ${CMAKE_SOURCE_DIR}/include/utils/generateSslCert.hpp
+    )
+    target_include_directories(SelfSignedCert
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/include/utils
+            ${CMAKE_SOURCE_DIR}/include
+    )
+    target_link_libraries(SelfSignedCert PUBLIC Qt6::Core Qt6::Network OpenSSL::SSL OpenSSL::Crypto)
+    LIST(APPEND LIB_TARGETS SelfSignedCert)
 
     # Client managers lib
     qt_add_library(ClientManagers STATIC)
@@ -69,8 +84,8 @@ function(create_libraries APP_LIB)
         ${CMAKE_SOURCE_DIR}/src/managers/server/server.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/server/server.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/network/server/server_http_messenger.cpp
-        ${CMAKE_SOURCE_DIR}/include/network/server/server_http_messenger.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/server/server_websocket_messenger.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/server/server_websocket_messenger.hpp
 
         ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_transport.cpp
         ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_transport.hpp
@@ -83,7 +98,7 @@ function(create_libraries APP_LIB)
             ${CMAKE_SOURCE_DIR}/include/managers/server
             ${CMAKE_SOURCE_DIR}/include/network/server
     )
-    target_link_libraries(Server PUBLIC Qt6::Core Qt6::HttpServer Utils)
+    target_link_libraries(Server PUBLIC Qt6::Core Qt6::WebSockets Utils)
     LIST(APPEND LIB_TARGETS Server)
 
     # Client lib
@@ -92,18 +107,25 @@ function(create_libraries APP_LIB)
         ${CMAKE_SOURCE_DIR}/src/managers/client/client.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/client.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/network/client/client_http_messenger.cpp
-        ${CMAKE_SOURCE_DIR}/include/network/client/client_http_messenger.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_websocket_messenger.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_websocket_messenger.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/network/client/client_tcp_transport.cpp
-        ${CMAKE_SOURCE_DIR}/include/network/client/client_tcp_transport.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_tls_transport.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_tls_transport.hpp
+
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_webdav.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_webdav.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/webdav_dir_parser.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/webdav_dir_parser.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/webdav_item.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/webdav_item.hpp
     )
     target_include_directories(Client
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/managers/client
             ${CMAKE_SOURCE_DIR}/include/network/client
     )
-    target_link_libraries(Client PUBLIC Qt6::Core ClientManagers)
+    target_link_libraries(Client PUBLIC Qt6::Core Qt6::WebSockets ClientManagers)
     LIST(APPEND LIB_TARGETS Client)
 
     # App lib
@@ -119,7 +141,7 @@ function(create_libraries APP_LIB)
         PUBLIC
             ${CMAKE_SOURCE_DIR}/include/application
     )
-    target_link_libraries(App PUBLIC Client Server Logger Qt6::Quick)
+    target_link_libraries(App PUBLIC Client Server Logger Qt6::Quick SelfSignedCert)
     LIST(APPEND LIB_TARGETS App)
     set(APP_LIB App)
 

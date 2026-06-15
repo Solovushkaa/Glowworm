@@ -1,8 +1,10 @@
 #include "initialize.hpp"
 #include <QDir>
+#include <QFileInfo>
 #include <QSettings>
 #include <QStandardPaths>
 #include "constants.hpp"
+#include "generateSslCert.hpp"
 #include "log.hpp"
 
 Q_LOGGING_CATEGORY(application_initialize, "app.initialize")
@@ -16,6 +18,8 @@ Initialize::Initialize()
     loadPath("/appdata/server/", "server");
 
     initializeSettings();
+
+    generateCerts();
 }
 
 void Initialize::loadPath(const char *path, const char *directoryName)
@@ -41,16 +45,27 @@ void Initialize::initializeSettings()
     using namespace constants;
 
     QSettings settings;
-    if (!settings.contains(kDefaultMessengerPortName)) {
-        settings.setValue(kDefaultMessengerPortName, kDefaultMessengerPortValue);
+    if (!settings.contains(kMessengerPortName)) {
+        settings.setValue(kMessengerPortName, kDefaultMessengerPortValue);
     }
-    if (!settings.contains(kSecureMessengerPortName)) {
-        settings.setValue(kSecureMessengerPortName, kSecureMessengerPortValue);
+    if (!settings.contains(kTransportPortName)) {
+        settings.setValue(kTransportPortName, kDefaultTransportPortValue);
     }
-    if (!settings.contains(kDefaultTransportPortName)) {
-        settings.setValue(kDefaultTransportPortName, kDefaultTransportPortValue);
-    }
-    if (!settings.contains(kSecureTransportPortName)) {
-        settings.setValue(kSecureTransportPortName, kSecureTransportPortValue);
+}
+
+void Initialize::generateCerts()
+{
+    QFileInfo certFileInfo(constants::kServerCertPath);
+    QFileInfo keyFileInfo(constants::kServerKeyPath);
+
+    if (!(certFileInfo.exists() && certFileInfo.size() > 40)
+        && !(keyFileInfo.exists() && keyFileInfo.size() > 40)) {
+        if (!generateSelfSignedEcdsaCertificate()) {
+            qCFatal(application_initialize) << "Security certificates not created";
+        } else {
+            qCInfo(application_initialize) << "Security certificates successful created";
+        }
+    } else {
+        qCInfo(application_initialize) << "Security certificates already exists";
     }
 }

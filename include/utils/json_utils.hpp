@@ -7,6 +7,7 @@
 #ifndef JSONUTILS_HPP
 #define JSONUTILS_HPP
 
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
 
@@ -20,7 +21,7 @@ Q_DECLARE_LOGGING_CATEGORY(json_utils)
  * @param path Path to the directory
  * @return JSON object converted to a ByteArray
  */
-QByteArray createJsonFromDirectory(const QString &dirPath);
+QJsonArray createJsonFromDirectory(const QString &dirPath);
 
 QJsonObject parseJsonToObject(const QByteArray &data);
 

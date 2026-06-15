@@ -19,12 +19,15 @@ Page {
     property int currentSize: 0
     property int fileIndex: -1
     property bool isPageInteractiveActive: false
+    property var fileBrows: fileBrowser
 
     Connections {
         target: Client
         function onConnectionStatusCodeChanged(currentStatusCode) {
             if (currentStatusCode === 200)
                 mainPage.isPageInteractiveActive = true
+            else
+                mainPage.isPageInteractiveActive = false
         }
     }
 
@@ -36,6 +39,15 @@ Page {
         fileInfo.createdName = created
         fileInfo.modifiedName = modified
         fileInfo.accessedName = accessed
+    }
+
+    function updateDownloadInfoPanel(name, type, path, size, lastReceivedByte, downloadState) {
+        downloadInfo.downloadName = name
+        downloadInfo.downloadType = type
+        downloadInfo.downloadLocation = path
+        downloadInfo.downloadSize = size
+        downloadInfo.downloadLastReceivedByte = lastReceivedByte
+        downloadInfo.downloadState = downloadState
     }
 
     BurgerMenu {
@@ -63,10 +75,9 @@ Page {
         }
     }
 
-    footer: Footer {
-        id: mainFooter
-    }
-
+    // footer: Footer {
+    //     id: mainFooter
+    // }
     ColumnLayout {
         id: contentArea
         anchors {
@@ -80,6 +91,7 @@ Page {
         spacing: 20
 
         RowLayout {
+            id: mainRowLayout
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.topMargin: 40
 
@@ -94,6 +106,136 @@ Page {
 
                 radius: 4
                 color: "white"
+
+                Rectangle {
+                    implicitWidth: 100
+                    height: mainPageHeader.height + 4
+
+                    anchors {
+                        right: fileBrowser.right
+                        rightMargin: 2
+                        bottom: fileBrowser.top
+                        bottomMargin: 4
+                    }
+                    color: "transparent"
+
+                    Text {
+                        text: "Server:"
+                        color: "#505050"
+
+                        font.pointSize: 12
+
+                        anchors {
+                            horizontalCenter: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                    }
+                    Switch {
+                        id: control
+                        implicitWidth: 60
+                        height: mainPageHeader.height + 4
+
+                        anchors {
+                            right: parent.right
+                            bottom: parent.bottom
+                        }
+
+                        checked: false
+
+                        indicator: Rectangle {
+                            width: parent.width
+                            height: parent.height
+                            radius: 20
+
+                            // color: control.checked ? "#4caf50" : "#e0e0e0"
+                            color: control.checked ? "#5371ad" : "#e0e0e0"
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+
+                            Text {
+                                visible: control.checked
+
+                                text: "ON"
+                                font.bold: true
+                                font.pixelSize: 12
+                                color: "white"
+
+                                anchors {
+                                    left: parent.left
+                                    leftMargin: 12
+                                    verticalCenter: parent.verticalCenter
+                                }
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 200
+                                    }
+                                }
+                            }
+                            Text {
+                                visible: !control.checked
+
+                                text: "OFF"
+                                font.bold: true
+                                font.pixelSize: 12
+                                color: "#757575"
+
+                                anchors {
+                                    right: parent.right
+                                    rightMargin: 12
+                                    verticalCenter: parent.verticalCenter
+                                }
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 200
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                property int ssize: parent.height - 4
+
+                                width: ssize
+                                height: ssize
+                                radius: ssize / 2
+                                y: 2
+
+                                color: "white"
+
+                                x: control.checked ? parent.width - width - 2 : 2
+
+                                Behavior on x {
+                                    NumberAnimation {
+                                        duration: 200
+                                        easing.type: Easing.OutCubic
+                                    }
+                                }
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: control.text
+                            font.pointSize: 11
+                            leftPadding: control.indicator.width + 8
+                            verticalAlignment: Text.AlignVCenter
+                            visible: control.text !== ""
+                        }
+
+                        onClicked: {
+                            if (checked) {
+                                Server.startDefaultServer()
+                            } else {
+                                Server.stopDefaultServer()
+                            }
+                        }
+                    }
+                }
 
                 ListView {
                     id: listView
@@ -241,6 +383,9 @@ Page {
                         CustomButton {
                             id: connectionButton
 
+                            visible: ClientConnectionManager.hasActiveConnection
+                                     && !isPageInteractiveActive
+
                             isActive: ClientConnectionManager.hasActiveConnection
                             buttonText: "Connect"
                             onClicked: {
@@ -263,37 +408,30 @@ Page {
                             buttonText: "Download"
                             onClicked: {
                                 if (fileIndex != -1) {
+                                    downloadMenu.headerText = currentName
                                     downloadMenu.open()
                                 } else {
                                     console.log("Download error")
                                 }
                             }
                         }
-                        CustomButton {
-                            id: startServer
+                        // CustomButton {
+                        //     id: connectToRelayServer
 
-                            buttonText: "Start server"
-                            onClicked: {
-                                Server.startDefaultServer()
-                            }
-                        }
-                        CustomButton {
-                            id: connectToRelayServer
+                        //     buttonText: "Connect relay server"
+                        //     onClicked: {
+                        //         Client.connectToRelayServer()
+                        //     }
+                        // }
+                        // CustomButton {
+                        //     id: downloadFromRelayServer
 
-                            buttonText: "Connect relay server"
-                            onClicked: {
-                                Client.connectToRelayServer()
-                            }
-                        }
-                        CustomButton {
-                            id: downloadFromRelayServer
+                        //     buttonText: "Dw Rserv"
+                        //     onClicked: {
 
-                            buttonText: "Dw Rserv"
-                            onClicked: {
-
-                                Client.getFileFromRelayServer()
-                            }
-                        }
+                        //         Client.getFileFromRelayServer()
+                        //     }
+                        // }
                         Item {
                             Layout.fillWidth: true
                         }
@@ -313,7 +451,8 @@ Page {
         RowLayout {
             ColumnLayout {
                 Rectangle {
-                    Layout.fillWidth: true
+                    Layout.preferredWidth: Window.width * 0.7
+                    Layout.minimumWidth: 100
                     // Layout.fillHeight: true
                     Layout.preferredHeight: 50
                     Layout.minimumHeight: 30
@@ -323,16 +462,78 @@ Page {
 
                 DownloadStatusPanel {}
             }
-            Image {
-                id: kitties
+
+            // Image {
+            //     id: kitties
+
+            //     Layout.fillHeight: true
+            //     Layout.fillWidth: true
+            //     Layout.margins: 20
+
+            //     source: "qrc:Images/kitties.png"
+
+            //     fillMode: Image.PreserveAspectFit
+            // }
+            Rectangle {
+                id: downloadInfo
 
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.margins: 20
 
-                source: "qrc:Images/kitties.png"
+                color: "#ffffff"
+                radius: 4
 
-                fillMode: Image.PreserveAspectFit
+                property int elementHeight: downloadInfo.height / 3
+
+                property string downloadName: ""
+                property string downloadType: ""
+                property string downloadLocation: ""
+                property string downloadSize: ""
+                property string downloadLastReceivedByte: ""
+                property int downloadState: 0
+
+                ColumnLayout {
+                    anchors.fill: parent
+
+                    spacing: 0
+
+                    Area {
+                        id: downloadNameID
+                        isDelimiterVisible: false
+                        prefix: "Name: "
+                        name: downloadInfo.downloadName
+                        elementHeight: downloadInfo.elementHeight
+                    }
+                    // Area {
+                    //     id: downloadLocationID
+                    //     prefix: "Location: "
+                    //     name: downloadLocation
+                    // }
+                    Area {
+                        id: downloadSizeID
+                        prefix: "Size: "
+                        name: downloadInfo.downloadSize
+                        postfix: downloadInfo.downloadName
+                                 === "" ? (downloadInfo.downloadType
+                                           === "Directory" ? "-" : "") : "B"
+                        elementHeight: downloadInfo.elementHeight
+                    }
+                    Area {
+                        id: downloadLastReceivedByteID
+                        prefix: "Last received byte: "
+                        name: downloadInfo.downloadLastReceivedByte
+                        postfix: downloadInfo.downloadName
+                                 === "" ? (downloadInfo.downloadType
+                                           === "Directory" ? "-" : "") : "B"
+                        elementHeight: downloadInfo.elementHeight
+                    }
+                    // Area {
+                    //     id: downloadStateID
+                    //     prefix: "Last received byte: "
+                    //     name: downloadState === 3 ? "Active" : "Pause"
+                    // }
+                }
             }
         }
     }

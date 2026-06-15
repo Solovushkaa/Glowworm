@@ -48,7 +48,8 @@ Rectangle {
             width: fileBrowser.width - 10
             height: 20
             focus: true
-            color: "white"
+            // color: "white"
+            color: ListView.isCurrentItem ? (downloadStatusList.activeFocus ? "lightgrey" : "#e9e9e9") : "white"
 
             Rectangle {
                 id: playPauseBound
@@ -143,6 +144,9 @@ Rectangle {
                 onClicked: {
                     downloadStatusList.currentIndex = index
                     downloadStatusList.forceActiveFocus()
+                    updateDownloadInfoPanel(model.name, "file", model.path,
+                                            model.size, model.lastReceivedByte,
+                                            model.downloadState)
                 }
             }
         }

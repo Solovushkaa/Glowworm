@@ -10,6 +10,7 @@ Rectangle {
     property string name: ""
     property string postfix: ""
     property bool isDelimiterVisible: true
+    property int elementHeight: 0
 
     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
     Layout.preferredHeight: elementHeight

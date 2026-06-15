@@ -22,6 +22,11 @@ function(create_qml_modules)
 
             qml/popups/AddPopup.qml
             qml/popups/StartAddPopup.qml
+            qml/popups/CustomTabBar.qml
+            qml/popups/CustomTabButton.qml
+            qml/popups/QuickAddMenu.qml
+            qml/popups/DiskAddMenu.qml
+            qml/popups/AdvancedAddMenu.qml
 
         IMPORTS
             CustomButtons

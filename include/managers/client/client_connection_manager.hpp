@@ -48,11 +48,9 @@ public:
         ConnectionInfo::ConnectionType connectionType,
         const QString &address,
         const QString &remoteUserName,
-        bool isSecureConnection,
         qint16 defaultMessengerPort = constants::kDefaultMessengerPortValue,
-        qint16 secureMessengerPort = constants::kSecureMessengerPortValue,
         qint16 defaultTransportPort = constants::kDefaultTransportPortValue,
-        qint16 secureTransportPort = constants::kSecureTransportPortValue);
+        bool isSecureConnection = false);
     /**
      * @brief Removing connection
      */

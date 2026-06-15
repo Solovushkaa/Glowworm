@@ -3,19 +3,23 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import CustomButtons
+import QtCore
 
 Popup {
     id: root
 
     property string headerText: ""
     property string savePath: ""
+    property string standardDownloadsPath: StandardPaths.writableLocation(
+                                               StandardPaths.DownloadLocation)
+    property bool isCustomSavePath: false
 
     anchors {
         centerIn: parent
     }
 
-    width: Screen.width * 0.13
-    height: Screen.height * 0.15
+    width: Screen.width * 0.17
+    height: Screen.height * 0.2
 
     focus: true
     modal: true
@@ -53,7 +57,7 @@ Popup {
             maximumLineCount: 2
             elide: Text.ElideRight
 
-            text: headerText
+            text: root.headerText
         }
 
         RowLayout {
@@ -61,14 +65,14 @@ Popup {
 
             ScrollView {
 
-                width: 130
-                height: 30
+                width: 170
+                height: 40
 
                 TextArea {
                     id: selectSaveFolderTextArea
 
                     color: "black"
-                    font.bold: true
+                    // font.bold: true
                     font.pixelSize: 14
                     wrapMode: TextArea.NoWrap
 
@@ -76,9 +80,19 @@ Popup {
                     implicitWidth: width
                     implicitHeight: height
 
-                    text: savePath
+                    text: {
+                        if (!root.isCustomSavePath) {
+                            return (root.standardDownloadsPath + "/" + root.headerText).replace(
+                                        "file://", "")
+                        } else {
+                            return savePath
+                        }
+                    }
 
                     horizontalAlignment: Text.AlignLeft
+
+                    topPadding: (height - contentHeight) / 2
+                    bottomPadding: (height - contentHeight) / 2
 
                     background: Rectangle {
                         radius: 8
@@ -94,7 +108,7 @@ Popup {
                 buttonText: "Select"
 
                 Layout.preferredWidth: 80
-                Layout.preferredHeight: 30
+                Layout.preferredHeight: 40
 
                 onClicked: {
                     console.log("FolderDialog open")
@@ -107,7 +121,10 @@ Popup {
                 currentFolder: "file:///"
                 onAccepted: {
                     savePath = folderDialog.selectedFolder.toString().replace(
-                                "file://", "") + "/"
+                                "file://", "") + "/" + root.headerText
+
+                    isCustomSavePath = true
+
                     console.log("Selected directory:", savePath)
                 }
             }
@@ -130,6 +147,8 @@ Popup {
                     if (selectSaveFolderTextArea.text !== "") {
                         Client.getFile(fileIndex, currentName,
                                        selectSaveFolderTextArea.text)
+
+                        root.isCustomSavePath = false
                         // Client.getFileFromRelayServer(
                         //             fileIndex, "user", currentName,
                         //             selectSaveFolderTextArea.text)

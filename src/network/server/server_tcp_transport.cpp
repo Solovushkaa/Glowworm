@@ -12,7 +12,7 @@ ServerTcpTransport::ServerTcpTransport(QObject *parent)
     , m_server(new QTcpServer(this))
 {
     QSettings settings;
-    m_port = settings.value(constants::kDefaultTransportPortName).toInt();
+    m_port = settings.value(constants::kTransportPortName).toInt();
 
     connect(m_server, &QTcpServer::newConnection, this, &ServerTcpTransport::onNewConnection);
 

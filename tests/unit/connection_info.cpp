@@ -11,7 +11,7 @@ TEST(ConnectionInfoTest, ClassVariableType)
 
     StaticAssertTypeEq<decltype(connectionInfo.m_address), QString>();
 
-    StaticAssertTypeEq<decltype(connectionInfo.m_remoteUserName), QString>();
+    StaticAssertTypeEq<decltype(connectionInfo.m_remoteUserUuid), QString>();
 
     StaticAssertTypeEq<decltype(connectionInfo.m_isSecureConnection), bool>();
 }

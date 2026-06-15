@@ -79,7 +79,6 @@ Rectangle {
 
                 text: name
             }
-
         }
 
         Area {
@@ -87,32 +86,38 @@ Rectangle {
             isDelimiterVisible: false
             prefix: "Type: "
             name: typeName
+            elementHeight: root.elementHeight
         }
         Area {
             id: locationID
             prefix: "Location: "
             name: locationName
+            elementHeight: root.elementHeight
         }
         Area {
             id: sizeID
             prefix: "Size: "
             name: sizeName
             postfix: name === "" ? (typeName === "Directory" ? "-" : "") : "B"
+            elementHeight: root.elementHeight
         }
         Area {
             id: createdID
             prefix: "Created: "
             name: createdName
+            elementHeight: root.elementHeight
         }
         Area {
             id: modifiedID
             prefix: "Modified: "
             name: modifiedName
+            elementHeight: root.elementHeight
         }
         Area {
             id: accessedID
             prefix: "Accessed: "
             name: accessedName
+            elementHeight: root.elementHeight
         }
     }
 }
