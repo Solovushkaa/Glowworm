@@ -54,8 +54,8 @@ void FileSender::start()
 
     m_transferActive = true;
 
-    QTcpSocket *socket = m_client->socket();
-    connect(socket, &QTcpSocket::bytesWritten, this, &FileSender::onBytesWritten);
+    QSslSocket *socket = m_client->socket();
+    connect(socket, &QSslSocket::bytesWritten, this, &FileSender::onBytesWritten);
 
     QMetaObject::invokeMethod(this, "sendNextChunk", Qt::QueuedConnection);
 }
@@ -68,7 +68,7 @@ void FileSender::sendNextChunk()
     if (!m_transferActive)
         return;
 
-    QTcpSocket *socket = m_client->socket();
+    QSslSocket *socket = m_client->socket();
 
     while (!m_file.atEnd()) {
         if (socket->bytesToWrite() > constants::kTransportMaxChunkSize) {
@@ -87,7 +87,7 @@ void FileSender::onBytesWritten(qint64 bytes)
 {
     qCDebug(server_file_sender) << "Bytes written:" << bytes;
 
-    QTcpSocket *socket = m_client->socket();
+    QSslSocket *socket = m_client->socket();
     const qint64 buffered = socket->bytesToWrite();
 
     if (m_transferActive && buffered <= constants::kTransportChunkSize && !m_file.atEnd()) {

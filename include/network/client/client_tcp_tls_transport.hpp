@@ -1,12 +1,13 @@
-#ifndef CLIENTTCPTRANSPORT_HPP
-#define CLIENTTCPTRANSPORT_HPP
+#ifndef CLIENTTCPTLSTRANSPORT_HPP
+#define CLIENTTCPTLSTRANSPORT_HPP
 
 #include <QFile>
+#include <QSslError>
 #include <QUrl>
 #include "download_info.hpp"
 #include "message_socket.hpp"
 
-Q_DECLARE_LOGGING_CATEGORY(client_tcp_transport)
+Q_DECLARE_LOGGING_CATEGORY(client_tcp_tls_transport)
 
 class ClientMessageSocket : public MessageSocket
 {
@@ -24,13 +25,13 @@ private:
     DownloadInfo *m_downloadInfo;
 };
 
-class ClientTcpTransport : public QObject
+class ClientTcpTlsTransport : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ClientTcpTransport(QObject *parent = nullptr);
-    ~ClientTcpTransport();
+    ClientTcpTlsTransport(const QString &outputFileName, QObject *parent = nullptr);
+    ~ClientTcpTlsTransport();
 
     void getFile(const QString &address, qint16 port, DownloadInfo *downloadInfo);
     void getFileFromRelay(const QString &address,
@@ -39,13 +40,10 @@ public:
                           DownloadInfo *downloadInfo);
 
 private:
-    void connectSignals(ClientMessageSocket *messenger);
+    void connectSignals();
 
-    void startNewDownload(const QString &address, qint16 port, const QString &downloadID);
-    void startNewDownload(const QString &address,
-                          qint16 port,
-                          const QString &username,
-                          const QString &downloadID);
+    void startNewDownload(const QString &address, qint16 port);
+    void startNewDownload(const QString &address, qint16 port, const QString &username);
     void requestFile(DownloadInfo *downloadInfo, const QString &username, bool isUsername);
 
 signals:
@@ -60,10 +58,16 @@ private slots:
     void onMessageReceived(const QByteArray &message);
     void onSocketError(QAbstractSocket::SocketError error);
     // void onFileReceived(const QString &);
+    void onSslError(const QList<QSslError> &errors);
+    void onEncrypted();
+    void onEnded();
 
 private:
-    QHash<QString, ClientMessageSocket *> m_sockets; // downloadID, socket
-    QHash<QString, QFile *> m_outputFiles;           // downloadID, file
+    ClientMessageSocket m_socket;
+    QFile m_outputFile;
+
+public:
+    QByteArray expectedCert;
 };
 
-#endif // CLIENTTCPTRANSPORT_HPP
+#endif // CLIENTTCPTLSTRANSPORT_HPP

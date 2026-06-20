@@ -28,29 +28,62 @@ void Client::setActiveConnection(int index)
 
     m_connectionManager.setActiveConnection(index);
 
-    if (!m_webSocketMessengers.contains(getActiveConnection()->m_name)) {
-        auto messenger
-            = new ClientWebSocketMessenger(getActiveConnection(),
-                                           getActiveConnection()->m_remoteUserUuid.right(62).toUtf8(),
-                                           m_directoryManager,
-                                           this);
-        m_webSocketMessengers.insert(getActiveConnection()->m_name, messenger);
-    }
+    if (!m_websocketMessengers.contains(getActiveConnection()->m_name)) {
+        connectToServer();
 
-    setConnectionPreferences();
+        setConnectionPreferences();
+    }
 
     qCInfo(client) << "Active connection changed";
 }
 
+void Client::connectToServer()
+{
+    if (!m_websocketMessengers.contains(getActiveConnection()->m_name)) {
+        m_websocketMessengers[getActiveConnection()->m_name]
+            = new ClientWebSocketMessenger(getActiveConnection(),
+                                           getActiveConnection()->m_remoteUserUuid.toUtf8(),
+                                           m_directoryManager,
+                                           this);
+
+        setConnectionPreferences();
+    }
+
+    m_websocketMessengers[getActiveConnection()->m_name]->connectToServer();
+}
+
+void Client::disconnectFromServer()
+{
+    if (m_websocketMessengers.contains(getActiveConnection()->m_name)) {
+        m_websocketMessengers[getActiveConnection()->m_name]->disconnectFromServer();
+    }
+}
+
 void Client::getDirectory(const QString &dirPath)
 {
-    qCDebug(client) << "Directory request";
+    qCDebug(client) << "Directory request:" << getActiveConnection()->m_webDavConnection; // TODO:
 
-    if (m_webSocketMessengers.contains(getActiveConnection()->m_name)) {
-        m_webSocketMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
+    if (m_websocketMessengers.contains(getActiveConnection()->m_name)) {
+        m_websocketMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
     } else {
         qCWarning(client) << "Directory create request error: Connection doesn't exist";
     }
+}
+
+void Client::getWebDavDirectory(const QString &dirPath)
+{
+    qCDebug(client) << "Directory WebDAV request";
+
+    if (!m_webDavMessengers.contains(getActiveConnection()->m_name)) {
+        m_webDavMessengers[getActiveConnection()->m_name]
+            = new ClientWebDAV(getActiveConnection()->m_address,
+                               getActiveConnection()->m_messengerPort,
+                               getActiveConnection()->m_webDavUsername,
+                               getActiveConnection()->m_webDavPassword,
+                               m_directoryManager);
+    }
+
+    m_webDavMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
 }
 
 void Client::getFile(int fileIndex, const QString &saveName, const QString &savePath)
@@ -88,11 +121,21 @@ void Client::getFileRange(int fileIndex,
                                   fileInfo->m_accessed,
                                   DownloadInfo::DownloadState::Wait);
 
-    connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
+    bool isWebDAV = false;
+    if (isWebDAV) {
+        // m_tcpTransports[downloadID] = new ClientWebDav;
+    } else {
+        m_tcpTransports[downloadID] = new ClientTcpTlsTransport(savePath, this);
+    }
 
-    m_dataExchanger.getFile(getActiveConnection()->m_address,
-                            getActiveConnection()->m_transportPort,
-                            m_downloadManager.getDownloadInfoDict()[downloadID]);
+    connect(m_tcpTransports[downloadID],
+            &ClientTcpTlsTransport::fileReceived,
+            this,
+            &Client::fileReceived);
+
+    m_tcpTransports[downloadID]->getFile(getActiveConnection()->m_address,
+                                         getActiveConnection()->m_transportPort,
+                                         m_downloadManager.getDownloadInfoDict()[downloadID]);
 }
 
 void Client::startDownload(int /*downloadIndex*/)
@@ -101,19 +144,19 @@ void Client::startDownload(int /*downloadIndex*/)
         return;
     }
 
-    // m_dataExchangers[downloadID].start(/**/);
+    // m_tcpTransports[downloadID].start(/**/);
 }
 
 void Client::stopDownload(int /*downloadIndex*/)
 {
-    // m_dataExchangers[downloadID].stop(/**/);
+    // m_tcpTransports[downloadID].stop(/**/);
 }
 
 void Client::connectToRelayServer()
 {
     qCDebug(client) << "Connection check realy server request";
 
-    // m_webSocketMessengers[getActiveConnection()->m_name].connectToRelayServer(getActiveConnection());
+    // m_websocketMessengers[getActiveConnection()->m_name].connectToRelayServer(getActiveConnection());
 }
 
 void Client::getFileFromRelayServer(int fileIndex,
@@ -146,12 +189,21 @@ void Client::getFileFromRelayServer(int fileIndex,
                                   fileInfo->m_accessed,
                                   DownloadInfo::DownloadState::Wait);
 
-    connect(&m_dataExchanger, &ClientTcpTransport::fileReceived, this, &Client::fileReceived);
+    connect(m_tcpTransports[downloadID],
+            &ClientTcpTlsTransport::fileReceived,
+            this,
+            &Client::fileReceived);
 
-    m_dataExchanger.getFileFromRelay(getActiveConnection()->m_address,
-                                     getActiveConnection()->m_transportPort,
-                                     userName,
-                                     m_downloadManager.getDownloadInfoDict()[downloadID]);
+    m_tcpTransports[downloadID]
+        ->getFileFromRelay(getActiveConnection()->m_address,
+                           getActiveConnection()->m_transportPort,
+                           userName,
+                           m_downloadManager.getDownloadInfoDict()[downloadID]);
+}
+
+void Client::updateConnection(ConnectionInfo *connectionInfo)
+{
+    m_connectionManager.updateConnection(connectionInfo);
 }
 
 ConnectionInfo *Client::getActiveConnection()
@@ -187,15 +239,24 @@ void Client::connectSignals()
 {
     qCDebug(client) << "Connecting slots and signals";
 
-    connect(m_webSocketMessengers[getActiveConnection()->m_name],
+    connect(m_websocketMessengers[getActiveConnection()->m_name],
             &ClientWebSocketMessenger::statusCodeChanged,
             this,
             &Client::connectionStatusCodeChanged);
 
-    connect(m_webSocketMessengers[getActiveConnection()->m_name],
+    connect(m_websocketMessengers[getActiveConnection()->m_name],
             &ClientWebSocketMessenger::currentDirectoryChanged,
             this,
             &Client::onCurrentDirectoryChanged);
+
+    connect(m_websocketMessengers[getActiveConnection()->m_name],
+            &ClientWebSocketMessenger::connected,
+            this,
+            &Client::updateConnection);
+    connect(m_websocketMessengers[getActiveConnection()->m_name],
+            &ClientWebSocketMessenger::disconnected,
+            this,
+            &Client::updateConnection);
 }
 
 void Client::onCurrentDirectoryChanged()

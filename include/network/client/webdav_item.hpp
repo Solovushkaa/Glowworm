@@ -1,5 +1,5 @@
-#ifndef QWEBDAVFILE_HPP
-#define QWEBDAVFILE_HPP
+#ifndef WEBDAVFILE_HPP
+#define WEBDAVFILE_HPP
 
 #include <QDateTime>
 #include <QLoggingCategory>
@@ -42,4 +42,4 @@ protected:
     QDateTime m_createdAt;
 };
 
-#endif // QWEBDAVFILE_HPP
+#endif // WEBDAVFILE_HPP

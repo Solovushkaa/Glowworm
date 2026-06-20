@@ -30,7 +30,7 @@ Rectangle {
         color: "#efefef"
         radius: 2
 
-        visible: isDelimiterVisible
+        visible: root.isDelimiterVisible
     }
 
     Flickable {

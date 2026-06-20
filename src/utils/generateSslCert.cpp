@@ -4,7 +4,6 @@
 #include <QFile>
 #include <QSslCertificate>
 #include <QStandardPaths>
-#include "constants.hpp"
 #include <stdexcept>
 
 QString bioToString(BIO *bio)
@@ -61,7 +60,7 @@ bool generateSelfSignedEcdsaCertificate()
     if (!X509_NAME_add_entry_by_txt(name,
                                     "CN",
                                     MBSTRING_ASC,
-                                    reinterpret_cast<const unsigned char *>("MySecureApp"),
+                                    reinterpret_cast<const unsigned char *>("Glowworm"),
                                     -1,
                                     -1,
                                     0))
@@ -89,14 +88,21 @@ bool generateSelfSignedEcdsaCertificate()
 
 bool saveCertificateToFile(const QString &certificate, const QString &privateKey)
 {
-    QFile fileCert(constants::kServerCertPath);
-    QFile fileKey(constants::kServerKeyPath);
+    const QString serverCertPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                   + "/appdata/server/server_cert.crt";
+    const QString serverKeyPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                  + "/appdata/server/server_key.key";
+
+    QFile fileCert(serverCertPath);
+    QFile fileKey(serverKeyPath);
+    qDebug() << serverCertPath;
+    qDebug() << serverKeyPath;
 
     fileCert.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     fileKey.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 
     if (!fileCert.open(QIODevice::WriteOnly)) {
-        qDebug() << "File error:" << fileCert.error();
+        qDebug() << "File error:" << fileCert.errorString();
         return false;
     } else {
         if (fileCert.write(certificate.toUtf8()) == -1) {
@@ -105,7 +111,7 @@ bool saveCertificateToFile(const QString &certificate, const QString &privateKey
     }
 
     if (!fileKey.open(QIODevice::WriteOnly)) {
-        qDebug() << "File error:" << fileKey.error();
+        qDebug() << "File error:" << fileKey.errorString();
         return false;
     } else {
         if (fileKey.write(privateKey.toUtf8()) == -1) {
@@ -118,7 +124,9 @@ bool saveCertificateToFile(const QString &certificate, const QString &privateKey
 
 QByteArray getCertificateFingerprint()
 {
-    QFile fileCert(constants::kServerCertPath);
+    const QString ServerCertPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                   + "/appdata/server/server_cert.crt";
+    QFile fileCert(ServerCertPath);
 
     if (!fileCert.open(QIODevice::ReadOnly)) {
         qDebug() << "File error:" << fileCert.error();

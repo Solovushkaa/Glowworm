@@ -59,6 +59,8 @@ Rectangle {
             color: "#cccccc"
         }
 
+        visible: false // TODO:
+
         width: 30
 
         Rectangle {

@@ -19,6 +19,9 @@ public:
                              QObject *parent = nullptr);
     ~ClientWebSocketMessenger();
 
+    void connectToServer();
+    void disconnectFromServer();
+
     void sendPing();
     void getDirectory(const QString &dirPath);
 
@@ -44,8 +47,8 @@ private slots:
     // void onRelayStatusCodeReceived();
 
 signals:
-    void connected();
-    void disconnected();
+    void connected(ConnectionInfo *connectionInfo);
+    void disconnected(ConnectionInfo *connectionInfo);
     void errorOccurred(const QString &errorString);
 
     void requestConnectionStatusReceivedError();

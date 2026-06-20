@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include <QLoggingCategory>
 #include <QObject>
-#include <QTcpSocket>
+#include <QSslSocket>
 
 Q_DECLARE_LOGGING_CATEGORY(message_socket)
 
@@ -34,13 +34,13 @@ class MessageSocket : public QObject
 
 public:
     explicit MessageSocket(QObject *parent = nullptr);
-    MessageSocket(QTcpSocket *socket, QObject *parent = nullptr);
+    MessageSocket(QSslSocket *socket, QObject *parent = nullptr);
     ~MessageSocket();
 
     void connectToHost(const QString &host, const int port);
 
     void sendMessage(const QByteArray &data);
-    QTcpSocket *socket() const;
+    QSslSocket *socket() const;
 
 private:
     void connectSignals();
@@ -52,13 +52,16 @@ signals:
     void disconnected();
     void errorOccurred(QAbstractSocket::SocketError);
     void messageReceived(const QByteArray &message);
+    void sslErrors(const QList<QSslError> &errors);
+    void encrypted();
 
 private slots:
     void onReadyRead();
     void onDisconnected();
+    void onSslError(const QList<QSslError> &errors);
 
 private:
-    QTcpSocket *m_socket;
+    QSslSocket *m_socket;
     QByteArray m_buffer;
 };
 

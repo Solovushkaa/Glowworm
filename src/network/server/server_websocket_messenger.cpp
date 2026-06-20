@@ -16,8 +16,13 @@ ServerWebSocketMessenger::ServerWebSocketMessenger(const QString &hostKey, QObje
     QSettings settings;
     m_port = settings.value(constants::kMessengerPortName).toInt();
 
-    QFile serverCertificate(constants::kServerCertPath);
-    QFile serverPrivateKey(constants::kServerKeyPath);
+    const QString serverCertPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                   + "/appdata/server/server_cert.crt";
+    const QString serverKeyPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                  + "/appdata/server/server_key.key";
+
+    QFile serverCertificate(serverCertPath);
+    QFile serverPrivateKey(serverKeyPath);
     if (!serverCertificate.open(QIODevice::ReadOnly)) {
         qFatal("Failed to load generated key/cert");
     }
@@ -72,7 +77,21 @@ void ServerWebSocketMessenger::stop()
 
     m_server.close();
 
+    for (auto *client : std::as_const(m_clients)) {
+        if (client && client->state() == QAbstractSocket::ConnectedState) {
+            client->close(QWebSocketProtocol::CloseCodeGoingAway, "Server is shutting down");
+            client->deleteLater();
+        }
+    }
+
+    m_clients.clear();
+
     qCInfo(server_websocket_messenger) << "WebSocket message server has already stopped";
+}
+
+quint16 ServerWebSocketMessenger::getPort()
+{
+    return m_port;
 }
 
 void ServerWebSocketMessenger::onNewConnection()
@@ -87,7 +106,7 @@ void ServerWebSocketMessenger::onNewConnection()
                 this,
                 &ServerWebSocketMessenger::onSocketDisconnected);
 
-        m_clients << socket;
+        m_clients.push_back(socket);
         qDebug() << "Client connected:" << socket->peerAddress().toString();
     }
 }
@@ -96,7 +115,7 @@ void ServerWebSocketMessenger::onSocketDisconnected()
 {
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     if (socket) {
-        m_clients.removeAll(socket);
+        m_clients.removeOne(socket);
         socket->deleteLater();
         qDebug() << "Client disconnected";
     }

@@ -5,14 +5,14 @@ Q_LOGGING_CATEGORY(message_socket, "utils.socket.message")
 
 MessageSocket::MessageSocket(QObject *parent)
     : QObject(parent)
-    , m_socket(new QTcpSocket(this))
+    , m_socket(new QSslSocket(this))
 {
     connectSignals();
 
     qCDebug(message_socket) << "MessageSocket" << m_socket->socketDescriptor() << "- created";
 }
 
-MessageSocket::MessageSocket(QTcpSocket *socket, QObject *parent)
+MessageSocket::MessageSocket(QSslSocket *socket, QObject *parent)
     : QObject(parent)
     , m_socket(socket)
 {
@@ -30,14 +30,14 @@ MessageSocket::~MessageSocket()
 
 void MessageSocket::connectToHost(const QString &host, const int port)
 {
-    m_socket->connectToHost(host, port);
+    m_socket->connectToHostEncrypted(host, port);
 }
 
 void MessageSocket::sendMessage(const QByteArray &data)
 {
     qCDebug(message_socket) << "Sending message";
 
-    if (!m_socket || m_socket->state() != QTcpSocket::ConnectedState) {
+    if (!m_socket || m_socket->state() != QSslSocket::ConnectedState) {
         return;
     }
 
@@ -48,22 +48,25 @@ void MessageSocket::sendMessage(const QByteArray &data)
     out << static_cast<quint32>(data.size());
     block.append(data);
     m_socket->write(block);
+    // m_socket->flush();
 
     qCDebug(message_socket) << "Another block of data has been sent:" << block.size() << "B";
 }
 
-QTcpSocket *MessageSocket::socket() const
+QSslSocket *MessageSocket::socket() const
 {
     return m_socket;
 }
 
 void MessageSocket::connectSignals()
 {
-    connect(m_socket, &QTcpSocket::readyRead, this, &MessageSocket::onReadyRead);
-    connect(m_socket, &QTcpSocket::connected, this, &MessageSocket::connected);
-    connect(m_socket, &QTcpSocket::disconnected, this, &MessageSocket::onDisconnected);
-    connect(m_socket, &QTcpSocket::disconnected, this, &MessageSocket::disconnected);
-    connect(m_socket, &QTcpSocket::errorOccurred, this, &MessageSocket::errorOccurred);
+    connect(m_socket, &QSslSocket::readyRead, this, &MessageSocket::onReadyRead);
+    connect(m_socket, &QSslSocket::connected, this, &MessageSocket::connected);
+    connect(m_socket, &QSslSocket::disconnected, this, &MessageSocket::onDisconnected);
+    connect(m_socket, &QSslSocket::disconnected, this, &MessageSocket::disconnected);
+    connect(m_socket, &QSslSocket::errorOccurred, this, &MessageSocket::errorOccurred);
+    connect(m_socket, &QSslSocket::sslErrors, this, &MessageSocket::onSslError);
+    connect(m_socket, &QSslSocket::encrypted, this, &MessageSocket::encrypted);
 }
 
 void MessageSocket::tryExtractMessages()
@@ -100,6 +103,11 @@ void MessageSocket::onDisconnected()
     qCDebug(message_socket) << "Socket" << m_socket->socketDescriptor() << "disconnected";
 
     emit disconnected();
+}
+
+void MessageSocket::onSslError(const QList<QSslError> &errors)
+{
+    emit sslErrors(errors);
 }
 
 namespace message {

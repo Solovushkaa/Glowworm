@@ -1,12 +1,12 @@
-#ifndef QWEBDAVDIRPARSER_HPP
-#define QWEBDAVDIRPARSER_HPP
+#ifndef WEBDAVDIRPARSER_HPP
+#define WEBDAVDIRPARSER_HPP
 
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDomNodeList>
 #include <QRecursiveMutex>
 
-#include "client_webdav.hpp"
+#include "client_webdav_protocol.hpp"
 #include "webdav_item.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(client_webdav_dir_parser)
@@ -20,12 +20,12 @@ public:
     ~WebdavDirParser();
 
     //! get all items of a collection
-    bool listDirectory(ClientWebDAV *pWebdav, const QString &path, bool recursive = false);
+    bool listDirectory(ClientWebDAVProtocol *pWebdav, const QString &path, bool recursive = false);
     //! get only information about the collection
-    bool getDirectoryInfo(ClientWebDAV *pWebdav, const QString &path);
+    bool getDirectoryInfo(ClientWebDAVProtocol *pWebdav, const QString &path);
     //! get only information about a file
-    bool getFileInfo(ClientWebDAV *pWebdav, const QString &path);
-    bool listItem(ClientWebDAV *pWebdav, const QString &path);
+    bool getFileInfo(ClientWebDAVProtocol *pWebdav, const QString &path);
+    bool listItem(ClientWebDAVProtocol *pWebdav, const QString &path);
 
     QList<WebdavItem> getList();
     bool isBusy() const;
@@ -54,7 +54,7 @@ protected:
 private:
     //    QScopedPointer<QMutex> m_mutex;
     QScopedPointer<QRecursiveMutex> m_mutex;
-    ClientWebDAV *m_webdav;
+    ClientWebDAVProtocol *m_webdav;
     QNetworkReply *m_reply;
     QList<WebdavItem> m_dirList;
     QString m_path;
@@ -63,4 +63,4 @@ private:
     bool m_abort;
 };
 
-#endif // QWEBDAVDIRPARSER_HPP
+#endif // WEBDAVDIRPARSER_HPP

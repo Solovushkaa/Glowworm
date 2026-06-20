@@ -33,6 +33,10 @@ inline constexpr QStringView kPort = u"port";
 inline constexpr QStringView kRemoteUserUuid = u"remoteUserUuid";
 inline constexpr QStringView kConnectionState = u"connectionState";
 inline constexpr QStringView kIsSecureConnection = u"isSecureConnection";
+inline constexpr QStringView kTemporaryConnection = u"temporaryConnection";
+inline constexpr QStringView kWebDavUsername = u"webDavUsername";
+inline constexpr QStringView kWebDavPassword = u"webDavPassword";
+inline constexpr QStringView kWebDavConnection = u"webDavConnection";
 
 inline constexpr QStringView kMessengerPort = u"messengerPort";
 inline constexpr QStringView kTransportPort = u"transportPort";
@@ -55,14 +59,6 @@ inline constexpr QStringView kTransportPortName = u"network/TransportPort";
 
 inline constexpr qint16 kDefaultMessengerPortValue = 6115;
 inline constexpr qint16 kDefaultTransportPortValue = 1274;
-
-// --- Dynamic Paths ---
-inline const QString kServerCertPath = QStandardPaths::writableLocation(
-                                           QStandardPaths::AppDataLocation)
-                                       + "/appdata/server/server_cert.crt";
-inline const QString kServerKeyPath = QStandardPaths::writableLocation(
-                                          QStandardPaths::AppDataLocation)
-                                      + "/appdata/server/server_key.key";
 
 } // namespace constants
 

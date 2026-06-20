@@ -1,7 +1,12 @@
 #include "server_utils.hpp"
 #include <QCryptographicHash>
 #include <QDebug>
+#include <QFile>
+#include <QNetworkInterface>
 #include <QRegularExpression>
+#include <QSslCertificate>
+#include <QStandardPaths>
+#include <QUuid>
 
 QString createHostKey()
 {
@@ -43,4 +48,56 @@ std::pair<qint64, qint64> parseRange(const QString &rangeRequestValue)
     }
 
     return range;
+}
+
+QString getActiveLocalIPv4()
+{
+    const auto interfaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : interfaces) {
+        if ((iface.flags() & QNetworkInterface::IsLoopBack)
+            || !(iface.flags() & QNetworkInterface::IsUp)
+            || !(iface.flags() & QNetworkInterface::IsRunning))
+            continue;
+
+        const QString name = iface.humanReadableName().toLower();
+        if (name.contains("vmnet") || name.contains("vbox") || name.contains("docker")
+            || name.contains("veth"))
+            continue;
+
+        for (auto &entry : iface.addressEntries()) {
+            QHostAddress addr = entry.ip();
+            if (addr.protocol() == QAbstractSocket::IPv4Protocol && !addr.isLoopback()
+                && !addr.isLinkLocal()) {
+                return addr.toString();
+            }
+        }
+    }
+    return QString();
+}
+
+QString createConnectionKey(quint16 messengerPort, quint16 transportPort, quint8 relayServerID)
+{
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_6_0);
+
+    stream << getActiveLocalIPv4().toUtf8();
+    stream << messengerPort;
+    stream << transportPort;
+    stream << relayServerID;
+
+    const QString serverCertPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                   + "/appdata/server/server_cert.crt";
+    QFile serverCertFile(serverCertPath);
+    if (!serverCertFile.open(QIODevice::ReadOnly)) {
+        qFatal() << serverCertFile.errorString();
+    }
+
+    QSslCertificate sslCertificate(serverCertFile.readAll(), QSsl::Pem);
+
+    qCritical() << sslCertificate.digest(QCryptographicHash::Sha256);
+
+    stream << sslCertificate.digest(QCryptographicHash::Sha256);
+
+    return data.toBase64();
 }

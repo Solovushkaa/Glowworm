@@ -50,4 +50,7 @@ ApplicationWindow {
     AddPopup {
         id: addPopup
     }
+    QuickKeyGenPopup {
+        id: keyGenPopup
+    }
 }

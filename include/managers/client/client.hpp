@@ -4,8 +4,9 @@
 #include <QObject>
 #include <QStandardPaths>
 #include "client_connection_manager.hpp"
+#include "client_tcp_tls_transport.hpp"
+#include "client_webdav.hpp"
 #include "client_websocket_messenger.hpp"
-#include "client_tls_transport.hpp"
 #include "directory_manager.hpp"
 #include "download_manager.hpp"
 
@@ -47,10 +48,15 @@ public:
      */
     // Q_INVOKABLE void checkConnectionToServer();
 
+    Q_INVOKABLE void connectToServer();
+
+    Q_INVOKABLE void disconnectFromServer();
     /**
      * @brief Getting a list of directories.
      */
     Q_INVOKABLE void getDirectory(const QString &dirPath);
+
+    Q_INVOKABLE void getWebDavDirectory(const QString &dirPath);
     /**
      * @brief Getting a file from the server.
      */
@@ -79,6 +85,8 @@ public:
                                             const QString &saveName,
                                             const QString &savePath);
 
+    void updateConnection(ConnectionInfo *connectionInfo);
+
     ClientConnectionManager &getClientConnectionManager() { return m_connectionManager; }
     DownloadManager &getDownloadManager() { return m_downloadManager; }
     DirectoryManager &getDirectoryManager() { return m_directoryManager; }
@@ -102,9 +110,11 @@ public slots:
 
     // --- Members ---
 private:
-    QHash<QString, ClientWebSocketMessenger *> m_webSocketMessengers;
+    QHash<QString, ClientWebSocketMessenger *> m_websocketMessengers; ///< Connection name, Messenger
+    QHash<QString, ClientTcpTlsTransport *> m_tcpTransports;          ///< DownloadID, Transport
 
-    ClientTcpTransport m_dataExchanger; ///< DownloadID, Transport
+    QHash<QString, ClientWebDAV *> m_webDavMessengers; ///< Connection name, Messenger
+    QHash<QString, ClientWebDAV *> m_webDavTransports; ///< DownloadID, Messenger
 
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager

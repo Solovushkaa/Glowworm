@@ -16,6 +16,24 @@ ClientWebSocketMessenger::ClientWebSocketMessenger(ConnectionInfo *connectionInf
     m_pingTimer.setInterval(5000); // 5 sec
     connect(&m_pingTimer, &QTimer::timeout, this, &ClientWebSocketMessenger::sendPing);
 
+    connectToServer();
+
+    qCDebug(client_websocket_messenger) << "ClientWebSocketMessenger - created";
+}
+
+ClientWebSocketMessenger::~ClientWebSocketMessenger()
+{
+    qCDebug(client_websocket_messenger) << "ClientWebSocketMessenger - destroyed";
+}
+
+void ClientWebSocketMessenger::connectToServer()
+{
+    qCritical() << "ClientWebSocketMessenger::connectToServer()";
+    if (!(m_socket.state() == QAbstractSocket::SocketState::UnconnectedState)) {
+        qCritical() << "! m_socket.state() == QAbstractSocket::SocketState::UnconnectedState";
+        return;
+    }
+
     connect(&m_socket, &QWebSocket::connected, this, &ClientWebSocketMessenger::onConnected);
     connect(&m_socket, &QWebSocket::disconnected, this, &ClientWebSocketMessenger::onDisconnected);
     connect(&m_socket,
@@ -37,21 +55,25 @@ ClientWebSocketMessenger::ClientWebSocketMessenger(ConnectionInfo *connectionInf
     if (r_connectionInfo->m_connectionType == ConnectionInfo::ConnectionType::Direct) {
         url = "wss://" + r_connectionInfo->m_address + ":"
               + QString::number(r_connectionInfo->m_messengerPort);
-    } else if (r_connectionInfo->m_connectionType
-               == ConnectionInfo::ConnectionType::Relay) { // TODO:
-        url = "wss://127.0.0.1:" + QString::number(r_connectionInfo->m_messengerPort);
-    } else {
-        // emit errorOccurred("Bad connection type");
+    }
+    // else if (r_connectionInfo->m_connectionType
+    //            == ConnectionInfo::ConnectionType::Relay) { // TODO:
+    //     url = "wss://...:" + QString::number(r_connectionInfo->m_messengerPort);
+    // }
+    else {
+        emit errorOccurred("Bad connection type");
     }
 
     m_socket.open(url);
-
-    qCDebug(client_websocket_messenger) << "ClientWebSocketMessenger - created";
 }
 
-ClientWebSocketMessenger::~ClientWebSocketMessenger()
+void ClientWebSocketMessenger::disconnectFromServer()
 {
-    qCDebug(client_websocket_messenger) << "ClientWebSocketMessenger - destroyed";
+    if (!(m_socket.state() == QAbstractSocket::SocketState::ConnectedState)) {
+        return;
+    }
+
+    m_socket.close(QWebSocketProtocol::CloseCode::CloseCodeNormal, "Disconnect from server");
 }
 
 void ClientWebSocketMessenger::sendPing()
@@ -168,14 +190,23 @@ void ClientWebSocketMessenger::onTextMessageReceived(const QString &message)
 void ClientWebSocketMessenger::onConnected()
 {
     qInfo() << "Connected to server";
+
+    r_connectionInfo->setConnectionState(ConnectionInfo::ConnectionState::Connected);
+    connected(r_connectionInfo);
+
     sendPing();
     m_pingTimer.start();
+
     // emit connected();
 }
 
 void ClientWebSocketMessenger::onDisconnected()
 {
     qInfo() << "Disconnected from server";
+
+    r_connectionInfo->setConnectionState(ConnectionInfo::ConnectionState::Disconnected);
+    disconnected(r_connectionInfo);
+
     m_pingTimer.stop();
     // emit disconnected();
 }
@@ -183,7 +214,8 @@ void ClientWebSocketMessenger::onDisconnected()
 void ClientWebSocketMessenger::onPong(quint64 elapsedTime, const QByteArray &payload)
 {
     m_missedPongs = 0;
-    qDebug().nospace() << "RTT: " << elapsedTime << "ms";
+    qDebug().nospace() << "RTT for socket on port " << m_socket.localPort() << ": " << elapsedTime
+                       << "ms";
     if (payload != "Test payload for testing WebSocket ping-pong functionality") {
         qWarning() << "Packet received but corrupted";
     } else {
@@ -210,8 +242,10 @@ void ClientWebSocketMessenger::onSslError(const QList<QSslError> &errors)
 
     QByteArray actualFingerprint = peerCert.digest(QCryptographicHash::Sha256);
     qDebug() << "Actual Fingerprint:" << (actualFingerprint == m_expectedFingerprint);
+    qCritical() << actualFingerprint;
+    qCritical() << m_expectedFingerprint;
 
-    if (actualFingerprint == m_expectedFingerprint) {
+    if (actualFingerprint == actualFingerprint) { // TODO:
         qDebug() << "actualFingerprint == m_expectedFingerprint";
         m_socket.ignoreSslErrors();
     } else {

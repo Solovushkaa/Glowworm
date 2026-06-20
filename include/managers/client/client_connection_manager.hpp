@@ -7,6 +7,7 @@
 
 #include <QAbstractListModel>
 #include <QJsonObject>
+#include <QSet>
 #include "connection_info.hpp"
 #include "constants.hpp"
 
@@ -43,19 +44,28 @@ private:
     bool addConnection(ConnectionInfo *info);
 
 public:
-    Q_INVOKABLE bool addConnection(
-        const QString &name,
-        ConnectionInfo::ConnectionType connectionType,
-        const QString &address,
-        const QString &remoteUserName,
-        qint16 defaultMessengerPort = constants::kDefaultMessengerPortValue,
-        qint16 defaultTransportPort = constants::kDefaultTransportPortValue,
-        bool isSecureConnection = false);
+    Q_INVOKABLE bool addConnection(const QString &name,
+                                   ConnectionInfo::ConnectionType connectionType,
+                                   const QString &address,
+                                   const QString &remoteUserName,
+                                   qint16 messengerPort = constants::kDefaultMessengerPortValue,
+                                   qint16 transportPort = constants::kDefaultTransportPortValue,
+                                   bool isSecureConnection = true,
+                                   bool temporaryConnection = false);
+
+    Q_INVOKABLE bool addQuickConnection(const QString &connectionKey, bool temporaryConnection);
+
+    Q_INVOKABLE bool addWebDavConnection(const QString &address,
+                                         const QString &name,
+                                         const QString &webDavUsername,
+                                         const QString &webDavPassword,
+                                         bool temporaryConnection);
     /**
      * @brief Removing connection
      */
     Q_INVOKABLE bool deleteConnection(int activeIndex, int deleteIndex);
     Q_INVOKABLE bool updateConnection(int index, const QString &property, const QVariant &value);
+    Q_INVOKABLE void updateConnection(ConnectionInfo *connectionInfo);
 
 public:
     /**
@@ -85,7 +95,6 @@ public:
      * @brief Get all connections as a List.
      */
     QList<ConnectionInfo *> &getConnectionInfoList() { return m_connectionInfoList; }
-    QHash<QString, ConnectionInfo *> &getConnectionInfoDict() { return m_connectionInfoDict; }
     int getConnectionCount() const { return m_connectionInfoList.size(); };
 
     /**
@@ -110,7 +119,8 @@ signals:
 
 private:
     QList<ConnectionInfo *> m_connectionInfoList;          ///< Owns ConnectionInfo objects
-    QHash<QString, ConnectionInfo *> m_connectionInfoDict; ///< Information about connections
+    QHash<ConnectionInfo *, int> m_connectionInfoIndexDict; ///<
+    QSet<QString> m_connectionNames;
     QJsonObject m_jsonSavedConnections; ///< List of a save connections in json for working with file
 
     ConnectionInfo *m_activeConnection{nullptr}; ///< Pointer to active connection

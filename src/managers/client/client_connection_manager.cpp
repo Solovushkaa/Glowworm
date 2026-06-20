@@ -1,4 +1,5 @@
 #include "client_connection_manager.hpp"
+#include "client_utils.hpp"
 #include "constants.hpp"
 #include "manager_utils.hpp"
 
@@ -71,7 +72,8 @@ bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
     setJsonObjectFromConnectionInfo(jsonObject, connectionInfo);
 
     m_jsonSavedConnections.insert(connectionInfo->m_name, std::move(jsonObject));
-    m_connectionInfoDict[connectionInfo->m_name] = connectionInfo;
+    m_connectionNames.insert(connectionInfo->m_name);
+    m_connectionInfoIndexDict[connectionInfo] = m_connectionInfoList.size() - 1;
 
     emit connectionAdded();
 
@@ -81,14 +83,15 @@ bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
 bool ClientConnectionManager::addConnection(const QString &name,
                                             ConnectionInfo::ConnectionType connectionType,
                                             const QString &address,
-                                            const QString &remoteUserName,
-                                            qint16 defaultMessengerPort,
-                                            qint16 defaultTransportPort,
-                                            bool isSecureConnection)
+                                            const QString &remoteUserUuid,
+                                            qint16 messengerPort,
+                                            qint16 transportPort,
+                                            bool isSecureConnection,
+                                            bool temporaryConnection)
 {
     qCDebug(connection_manager) << "Adding a new connection";
 
-    if (m_connectionInfoDict.contains(name)) {
+    if (m_connectionNames.contains(name)) {
         qCInfo(connection_manager) << "A connection with the name" << name << "already exists";
         return false;
     }
@@ -97,13 +100,55 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                              "",
                                              connectionType,
                                              address,
-                                             remoteUserName,
+                                             remoteUserUuid,
                                              ConnectionInfo::ConnectionState::Disconnected,
-                                             defaultMessengerPort,
-                                             defaultTransportPort,
+                                             messengerPort,
+                                             transportPort,
                                              isSecureConnection,
+                                             temporaryConnection,
+                                             "",
+                                             "",
+                                             false,
                                              this);
 
+    return addConnection(connectionInfo);
+}
+
+bool ClientConnectionManager::addQuickConnection(const QString &connectionKey,
+                                                 bool temporaryConnection)
+{
+    auto quickConnectionInfo = parseConnectionKey(connectionKey);
+
+    if (!addConnection(QUuid::createUuid().toString(QUuid::WithoutBraces).left(10),
+                       ConnectionInfo::ConnectionType::Direct,
+                       quickConnectionInfo.ip,
+                       quickConnectionInfo.serverCertFingerprint,
+                       quickConnectionInfo.messengerPort,
+                       quickConnectionInfo.transportPort,
+                       true,
+                       temporaryConnection)) {
+        return false;
+    }
+
+    qCritical() << quickConnectionInfo.ip;
+    qCritical() << quickConnectionInfo.serverCertFingerprint;
+    qCritical() << quickConnectionInfo.messengerPort;
+    qCritical() << quickConnectionInfo.transportPort;
+
+    return true;
+}
+
+bool ClientConnectionManager::addWebDavConnection(const QString &address,
+                                                  const QString &name,
+                                                  const QString &webDavUsername,
+                                                  const QString &webDavPassword,
+                                                  bool temporaryConnection)
+{
+    ConnectionInfo *connectionInfo = new ConnectionInfo(address,
+                                                        name,
+                                                        webDavUsername,
+                                                        webDavPassword,
+                                                        temporaryConnection);
     return addConnection(connectionInfo);
 }
 
@@ -121,15 +166,20 @@ bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
         emit activeConnectionChanged();
     }
 
-    QString deleteID = std::move(m_connectionInfoList[deleteIndex]->m_name);
+    QString deleteName = std::move(m_connectionInfoList[deleteIndex]->m_name);
 
     beginRemoveRows(QModelIndex(), deleteIndex, deleteIndex);
     ConnectionInfo *info = m_connectionInfoList.takeAt(deleteIndex);
+    m_connectionInfoIndexDict.remove(info);
     info->deleteLater();
     endRemoveRows();
 
-    m_connectionInfoDict.remove(deleteID);
-    m_jsonSavedConnections.remove(deleteID);
+    m_connectionNames.remove(deleteName);
+    m_jsonSavedConnections.remove(deleteName);
+
+    for (int i = 0; i < m_connectionInfoList.size(); ++i) {
+        m_connectionInfoIndexDict[m_connectionInfoList[i]] = i;
+    }
 
     emit connectionRemoved(deleteIndex);
 
@@ -176,6 +226,14 @@ bool ClientConnectionManager::updateConnection(int index,
     return rewriteSelectAppData(info);
 }
 
+void ClientConnectionManager::updateConnection(ConnectionInfo *connectionInfo)
+{
+    int connectionIndex = m_connectionInfoIndexDict[connectionInfo];
+
+    QModelIndex index = this->index(connectionIndex);
+    emit dataChanged(index, index, {ConnectionRoles::ConnectionStateRole});
+}
+
 bool ClientConnectionManager::readSavedConnections()
 {
     return readAppData(*this, m_savePath, m_jsonSavedConnections);
@@ -199,7 +257,8 @@ void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObje
     setConnectionInfoFromJsonObject(connectionInfo, jsonObject);
 
     m_connectionInfoList.push_back(connectionInfo);
-    m_connectionInfoDict.insert(connectionInfo->m_name, connectionInfo);
+    m_connectionInfoIndexDict[connectionInfo] = m_connectionInfoList.size() - 1;
+    m_connectionNames.insert(connectionInfo->m_name);
 }
 
 void ClientConnectionManager::setActiveConnection(int index)
@@ -224,6 +283,10 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     connectionInfo->m_messengerPort = jsonObject[constants::kMessengerPort].toInt();
     connectionInfo->m_transportPort = jsonObject[constants::kTransportPort].toInt();
     connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
+    connectionInfo->m_temporaryConnection = jsonObject[constants::kTemporaryConnection].toBool();
+    connectionInfo->m_webDavConnection = jsonObject[constants::kWebDavConnection].toBool();
+    connectionInfo->m_webDavUsername = jsonObject[constants::kWebDavUsername].toString();
+    connectionInfo->m_webDavPassword = jsonObject[constants::kWebDavPassword].toString();
 }
 
 void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
@@ -235,7 +298,11 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
     jsonObject[constants::kAddress] = connectionInfo->m_address;
     jsonObject[constants::kRemoteUserUuid] = connectionInfo->m_remoteUserUuid;
     jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);
-    jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
     jsonObject[constants::kMessengerPort] = connectionInfo->m_messengerPort;
     jsonObject[constants::kTransportPort] = connectionInfo->m_transportPort;
+    jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
+    jsonObject[constants::kTemporaryConnection] = connectionInfo->m_temporaryConnection;
+    jsonObject[constants::kWebDavUsername] = connectionInfo->m_webDavUsername;
+    jsonObject[constants::kWebDavPassword] = connectionInfo->m_webDavPassword;
+    jsonObject[constants::kWebDavConnection] = connectionInfo->m_webDavConnection;
 }

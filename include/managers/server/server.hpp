@@ -2,7 +2,7 @@
 #define SERVER_HPP
 
 #include "server_websocket_messenger.hpp"
-#include "server_tcp_transport.hpp"
+#include "server_tcp_tls_transport.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(server)
 
@@ -23,7 +23,7 @@ private:
     QString m_hostKey;
 
     ServerWebSocketMessenger m_webSocketMessenger;
-    ServerTcpTransport m_tcpTransport;
+    ServerTcpTlsTransport m_tcpTransport;
 };
 
 #endif // SERVER_HPP

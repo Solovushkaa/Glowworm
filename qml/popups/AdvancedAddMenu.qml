@@ -200,10 +200,10 @@ ColumnLayout {
         Text {
             textFormat: Text.RichText
             font.pointSize: 11
-            text: "Default messenger port: "
+            text: "Messenger port: "
         }
         TextArea {
-            id: newDefaultMessengerPort
+            id: newMessengerPort
 
             Layout.fillWidth: true
 
@@ -230,40 +230,10 @@ ColumnLayout {
         Text {
             textFormat: Text.RichText
             font.pointSize: 11
-            text: "Secure messenger port: "
+            text: "Transport port: "
         }
         TextArea {
-            id: newSecureMessengerPort
-
-            Layout.fillWidth: true
-
-            placeholderText: "274"
-            placeholderTextColor: "#cfcfcf"
-
-            color: "black"
-            font.pointSize: 11
-
-            background: Rectangle {
-                radius: 3
-
-                border {
-                    width: 1
-                    color: "#dddddd"
-                }
-            }
-        }
-    }
-    //===================================
-    RowLayout {
-        Layout.fillWidth: true
-
-        Text {
-            textFormat: Text.RichText
-            font.pointSize: 11
-            text: "Default transport port: "
-        }
-        TextArea {
-            id: newDefaultTransportPort
+            id: newTransportPort
 
             Layout.fillWidth: true
 
@@ -283,36 +253,7 @@ ColumnLayout {
             }
         }
     }
-    //===================================
-    RowLayout {
-        Layout.fillWidth: true
 
-        Text {
-            textFormat: Text.RichText
-            font.pointSize: 11
-            text: "Secure transport port: "
-        }
-        TextArea {
-            id: newSecureTransportPort
-
-            Layout.fillWidth: true
-
-            placeholderText: "13119"
-            placeholderTextColor: "#cfcfcf"
-
-            color: "black"
-            font.pointSize: 11
-
-            background: Rectangle {
-                radius: 3
-
-                border {
-                    width: 1
-                    color: "#dddddd"
-                }
-            }
-        }
-    }
     CustomButton {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 100
@@ -323,13 +264,12 @@ ColumnLayout {
         onClicked: {
 
             ClientConnectionManager.addConnection(
-                        newConnectionName.text, parseInt(
-                            newConnectionType.text), newConnectionURL.text,
-                        "user", newSecureConnection.checked,
-                        getTextOrPlaceholder(newDefaultMessengerPort),
-                        getTextOrPlaceholder(newSecureMessengerPort),
-                        getTextOrPlaceholder(newDefaultTransportPort),
-                        getTextOrPlaceholder(newSecureTransportPort))
+                        newConnectionName.text,
+                        parseInt(newConnectionType.text),
+                        newConnectionURL.text, "user",
+                        getTextOrPlaceholder(newMessengerPort),
+                        getTextOrPlaceholder(newTransportPort),
+                        newSecureConnection.checked, isPersistentConnection)
 
             // startAddPopup.close()
             addPopup.close()
@@ -337,11 +277,9 @@ ColumnLayout {
             newConnectionName.text = ""
             newConnectionType.text = ""
             newConnectionURL.text = ""
+            newMessengerPort.text = ""
+            newTransportPort.text = ""
             newSecureConnection.checked = true
-            newDefaultMessengerPort.text = ""
-            newSecureMessengerPort.text = ""
-            newDefaultTransportPort.text = ""
-            newSecureTransportPort.text = ""
         }
     }
     Item {

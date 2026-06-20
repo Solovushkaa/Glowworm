@@ -55,8 +55,13 @@ void Initialize::initializeSettings()
 
 void Initialize::generateCerts()
 {
-    QFileInfo certFileInfo(constants::kServerCertPath);
-    QFileInfo keyFileInfo(constants::kServerKeyPath);
+    const QString serverCertPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                   + "/appdata/server/server_cert.crt";
+    const QString serverKeyPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                  + "/appdata/server/server_key.key";
+
+    QFileInfo certFileInfo(serverCertPath);
+    QFileInfo keyFileInfo(serverKeyPath);
 
     if (!(certFileInfo.exists() && certFileInfo.size() > 40)
         && !(keyFileInfo.exists() && keyFileInfo.size() > 40)) {

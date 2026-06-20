@@ -27,7 +27,7 @@ WebdavDirParser::~WebdavDirParser()
     qCDebug(client_webdav_dir_parser) << "WebdavDirParser - destroyed";
 }
 
-bool WebdavDirParser::listDirectory(ClientWebDAV *pWebdav, const QString &path, bool recursive)
+bool WebdavDirParser::listDirectory(ClientWebDAVProtocol *pWebdav, const QString &path, bool recursive)
 {
     if (m_busy)
         return false;
@@ -59,7 +59,7 @@ bool WebdavDirParser::listDirectory(ClientWebDAV *pWebdav, const QString &path, 
     return true;
 }
 
-bool WebdavDirParser::listItem(ClientWebDAV *pWebdav, const QString &path)
+bool WebdavDirParser::listItem(ClientWebDAVProtocol *pWebdav, const QString &path)
 {
     if (m_busy)
         return false;
@@ -88,7 +88,7 @@ bool WebdavDirParser::listItem(ClientWebDAV *pWebdav, const QString &path)
     return true;
 }
 
-bool WebdavDirParser::getDirectoryInfo(ClientWebDAV *pWebdav, const QString &path)
+bool WebdavDirParser::getDirectoryInfo(ClientWebDAVProtocol *pWebdav, const QString &path)
 {
     if (!path.endsWith("/"))
         return false;
@@ -96,7 +96,7 @@ bool WebdavDirParser::getDirectoryInfo(ClientWebDAV *pWebdav, const QString &pat
     return listItem(pWebdav, path);
 }
 
-bool WebdavDirParser::getFileInfo(ClientWebDAV *pWebdav, const QString &path)
+bool WebdavDirParser::getFileInfo(ClientWebDAVProtocol *pWebdav, const QString &path)
 {
     if (path.endsWith("/"))
         return false;

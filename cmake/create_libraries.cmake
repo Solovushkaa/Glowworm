@@ -23,6 +23,9 @@ function(create_libraries APP_LIB)
         ${CMAKE_SOURCE_DIR}/src/utils/manager_utils.cpp
         ${CMAKE_SOURCE_DIR}/include/utils/manager_utils.hpp
 
+        ${CMAKE_SOURCE_DIR}/src/utils/client_utils.cpp
+        ${CMAKE_SOURCE_DIR}/include/utils/client_utils.hpp
+
         ${CMAKE_SOURCE_DIR}/src/utils/server_utils.cpp
         ${CMAKE_SOURCE_DIR}/include/utils/server_utils.hpp
 
@@ -87,8 +90,8 @@ function(create_libraries APP_LIB)
         ${CMAKE_SOURCE_DIR}/src/network/server/server_websocket_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/server/server_websocket_messenger.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_transport.cpp
-        ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_transport.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/server/server_tcp_tls_transport.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/server/server_tcp_tls_transport.hpp
 
         ${CMAKE_SOURCE_DIR}/src/network/server/file_sender.cpp
         ${CMAKE_SOURCE_DIR}/include/network/server/file_sender.hpp
@@ -110,11 +113,13 @@ function(create_libraries APP_LIB)
         ${CMAKE_SOURCE_DIR}/src/network/client/client_websocket_messenger.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/client_websocket_messenger.hpp
 
-        ${CMAKE_SOURCE_DIR}/src/network/client/client_tls_transport.cpp
-        ${CMAKE_SOURCE_DIR}/include/network/client/client_tls_transport.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_tcp_tls_transport.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_tcp_tls_transport.hpp
 
         ${CMAKE_SOURCE_DIR}/src/network/client/client_webdav.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/client_webdav.hpp
+        ${CMAKE_SOURCE_DIR}/src/network/client/client_webdav_protocol.cpp
+        ${CMAKE_SOURCE_DIR}/include/network/client/client_webdav_protocol.hpp
         ${CMAKE_SOURCE_DIR}/src/network/client/webdav_dir_parser.cpp
         ${CMAKE_SOURCE_DIR}/include/network/client/webdav_dir_parser.hpp
         ${CMAKE_SOURCE_DIR}/src/network/client/webdav_item.cpp

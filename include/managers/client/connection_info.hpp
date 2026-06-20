@@ -31,6 +31,10 @@ enum class ConnectionInfoMember {
     MessengerPort,
     TransportPort,
     SecureConnection,
+    TemporaryConnection,
+    WebDavUsername,
+    WebDavPassword,
+    WebDavConnection,
     COUNT // To get the size of the enum
 };
 
@@ -70,6 +74,7 @@ private:
     Q_PROPERTY(QString address MEMBER m_address NOTIFY urlChanged)
     Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserUuid NOTIFY remoteUserNameChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
+    Q_PROPERTY(bool webDavConnection MEMBER m_webDavConnection)
 
     // --- Constructors ---
 public:
@@ -82,7 +87,17 @@ public:
                    ConnectionState connectionState,
                    qint16 messengerPort,
                    qint16 transportPort,
-                   bool isSecureConnection,
+                   bool isSecureConnection = true,
+                   bool temporaryConnection = false,
+                   const QString &webDavUsername = "",
+                   const QString &webDavPassword = "",
+                   bool webDavConnection = false,
+                   QObject *parent = nullptr);
+    ConnectionInfo(const QString &address,
+                   const QString &name,
+                   const QString &webDavUsername,
+                   const QString &webDavPassword,
+                   bool temporaryConnection = false,
                    QObject *parent = nullptr);
 
     ConnectionInfo(const ConnectionInfo &connectionInfo);
@@ -116,7 +131,7 @@ public:
     ConnectionType m_connectionType; ///< Network connectionType
 
     QString m_address;        ///< Ip-address
-    QString m_remoteUserUuid; ///< Remote user (not needed for LAN)
+    QString m_remoteUserUuid; ///<
 
     ConnectionState m_connectionState; ///< Connection state
 
@@ -124,6 +139,11 @@ public:
     qint16 m_transportPort;
 
     bool m_isSecureConnection;
+    bool m_temporaryConnection;
+
+    QString m_webDavUsername;
+    QString m_webDavPassword;
+    bool m_webDavConnection;
 };
 
 #endif // CONNECTIONINFO_HPP

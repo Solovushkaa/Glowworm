@@ -18,19 +18,18 @@ Page {
     property string currentName: ""
     property int currentSize: 0
     property int fileIndex: -1
-    property bool isPageInteractiveActive: false
+    property bool isPageInteractiveActive: true // (ClientConnectionManager.getActiveConnection().connectionState === 1)
     property var fileBrows: fileBrowser
 
-    Connections {
-        target: Client
-        function onConnectionStatusCodeChanged(currentStatusCode) {
-            if (currentStatusCode === 200)
-                mainPage.isPageInteractiveActive = true
-            else
-                mainPage.isPageInteractiveActive = false
-        }
-    }
-
+    // Connections {
+    //     target: Client
+    //     function onConnectionStatusCodeChanged(currentStatusCode) {
+    //         if (currentStatusCode === 200)
+    //             mainPage.isPageInteractiveActive = true
+    //         else
+    //             mainPage.isPageInteractiveActive = false
+    //     }
+    // }
     function updateFileInfoPanel(name, type, location, size, created, modified, accessed) {
         fileInfo.name = name
         fileInfo.typeName = type
@@ -229,9 +228,9 @@ Page {
 
                         onClicked: {
                             if (checked) {
-                                Server.startDefaultServer()
+                                Server.startServers()
                             } else {
-                                Server.stopDefaultServer()
+                                Server.stopServers()
                             }
                         }
                     }
@@ -383,13 +382,25 @@ Page {
                         CustomButton {
                             id: connectionButton
 
-                            visible: ClientConnectionManager.hasActiveConnection
-                                     && !isPageInteractiveActive
-
-                            isActive: ClientConnectionManager.hasActiveConnection
+                            // visible: ClientConnectionManager.hasActiveConnection
+                            //          && !isPageInteractiveActive
+                            // isActive: (ClientConnectionManager.hasActiveConnection
+                            //            && ClientConnectionManager.getActiveConnection(
+                            //                ).connectionState !== ConnectionInfo.Connected)
                             buttonText: "Connect"
                             onClicked: {
-                                Client.checkConnectionToServer()
+                                Client.connectToServer()
+                            }
+                        }
+                        CustomButton {
+                            id: disconnectButton
+
+                            // visible: ClientConnectionManager.hasActiveConnection
+                            //          && isPageInteractiveActive
+                            // isActive: ClientConnectionManager.hasActiveConnection
+                            buttonText: "Disconnect"
+                            onClicked: {
+                                Client.disconnectFromServer()
                             }
                         }
                         CustomButton {
@@ -398,7 +409,12 @@ Page {
                             isActive: isPageInteractiveActive
                             buttonText: "Get directory"
                             onClicked: {
-                                Client.getDirectory(currentPath)
+                                if (!ClientConnectionManager.getActiveConnection(
+                                            ).webDavConnection) {
+                                    Client.getDirectory(currentPath)
+                                } else {
+                                    Client.getWebDavDirectory(currentPath)
+                                }
                             }
                         }
                         CustomButton {
@@ -413,6 +429,14 @@ Page {
                                 } else {
                                     console.log("Download error")
                                 }
+                            }
+                        }
+                        CustomButton {
+                            id: generateQuickConnectKeyButton
+
+                            buttonText: "Share key"
+                            onClicked: {
+                                keyGenPopup.open()
                             }
                         }
                         // CustomButton {

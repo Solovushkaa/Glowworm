@@ -17,6 +17,8 @@ public:
     bool start();
     void stop();
 
+    quint16 getPort();
+
 private slots:
     void onNewConnection();
     void onTextMessageReceived(const QString &message);
