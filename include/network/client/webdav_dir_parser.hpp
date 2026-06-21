@@ -35,6 +35,7 @@ public:
 signals:
     void finished();
     void errorChanged(QString);
+    void directoryReceived();
 
 public slots:
     void abort();

@@ -49,7 +49,7 @@ private slots:
 signals:
     void connected(ConnectionInfo *connectionInfo);
     void disconnected(ConnectionInfo *connectionInfo);
-    void errorOccurred(const QString &errorString);
+    void errorOccurred(const QString &);
 
     void requestConnectionStatusReceivedError();
     void requestDirectoryReceivedError();

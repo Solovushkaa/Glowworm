@@ -4,8 +4,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include "constants.hpp"
-#include "generateSslCert.hpp"
 #include "log.hpp"
+#include "ssl_cert.hpp"
 
 Q_LOGGING_CATEGORY(application_initialize, "app.initialize")
 

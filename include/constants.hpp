@@ -37,6 +37,7 @@ inline constexpr QStringView kTemporaryConnection = u"temporaryConnection";
 inline constexpr QStringView kWebDavUsername = u"webDavUsername";
 inline constexpr QStringView kWebDavPassword = u"webDavPassword";
 inline constexpr QStringView kWebDavConnection = u"webDavConnection";
+inline constexpr QStringView kWebDavPort = u"webDavPort";
 
 inline constexpr QStringView kMessengerPort = u"messengerPort";
 inline constexpr QStringView kTransportPort = u"transportPort";

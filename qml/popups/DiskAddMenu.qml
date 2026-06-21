@@ -40,10 +40,39 @@ ColumnLayout {
         Text {
             textFormat: Text.RichText
             font.pointSize: 11
-            text: "<font color='red'>*</font>Url: "
+            text: "<font color='red'>*</font>Address: "
         }
         TextArea {
             id: newAddress
+
+            Layout.fillWidth: true
+
+            placeholderText: "..."
+            placeholderTextColor: "#cfcfcf"
+
+            color: "black"
+            font.pointSize: 11
+
+            background: Rectangle {
+                radius: 3
+
+                border {
+                    width: 1
+                    color: "#dddddd"
+                }
+            }
+        }
+    }
+    RowLayout {
+        Layout.fillWidth: true
+
+        Text {
+            textFormat: Text.RichText
+            font.pointSize: 11
+            text: "<font color='red'>*</font>Port: "
+        }
+        TextArea {
+            id: newPort
 
             Layout.fillWidth: true
 
@@ -135,11 +164,13 @@ ColumnLayout {
                                                         newConnectionName.text,
                                                         newWebDavUsername.text,
                                                         newWebDavPassword.text,
+                                                        parseInt(newPort.text),
                                                         isPersistentConnection)
 
             addPopup.close()
 
             newAddress.text = ""
+            newPort.text = ""
             newConnectionName.text = ""
             newWebDavUsername.text = ""
             newWebDavPassword.text = ""

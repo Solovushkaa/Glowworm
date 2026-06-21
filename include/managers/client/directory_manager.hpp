@@ -43,6 +43,7 @@ public:
 public:
     bool containCachedDirectory(const QString &dirPath);
     void updateDirectory(std::vector<std::unique_ptr<FileInfo>> &&directory, const QString &dirPath);
+    void clearActiveDirectory();
 
     QList<FileInfo *> &getActiveDirectory() { return m_activeDirectory; }
 

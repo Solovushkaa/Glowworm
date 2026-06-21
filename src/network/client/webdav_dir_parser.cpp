@@ -27,7 +27,9 @@ WebdavDirParser::~WebdavDirParser()
     qCDebug(client_webdav_dir_parser) << "WebdavDirParser - destroyed";
 }
 
-bool WebdavDirParser::listDirectory(ClientWebDAVProtocol *pWebdav, const QString &path, bool recursive)
+bool WebdavDirParser::listDirectory(ClientWebDAVProtocol *pWebdav,
+                                    const QString &path,
+                                    bool recursive)
 {
     if (m_busy)
         return false;
@@ -176,6 +178,8 @@ void WebdavDirParser::replyFinished()
 
         m_reply = 0;
     }
+
+    emit directoryReceived();
 
     QMetaObject::invokeMethod(this,"replyDeleteLater", Qt::QueuedConnection, Q_ARG(QNetworkReply*, reply));
 }

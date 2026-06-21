@@ -35,6 +35,8 @@ QStringView getConnectionInfoMemberName(ConnectionInfoMember member)
         return constants::kWebDavUsername;
     case WebDavPassword:
         return constants::kWebDavPassword;
+    case WebDavPort:
+        return constants::kWebDavPort;
     case WebDavConnection:
         return constants::kWebDavConnection;
     default:
@@ -62,6 +64,7 @@ ConnectionInfo::ConnectionInfo(const QString &name,
                                bool temporaryConnection,
                                const QString &webDavUsername,
                                const QString &webDavPassword,
+                               qint16 webDavPort,
                                bool webDavConnection,
                                QObject *parent)
     : QObject(parent)
@@ -77,6 +80,7 @@ ConnectionInfo::ConnectionInfo(const QString &name,
     , m_temporaryConnection(temporaryConnection)
     , m_webDavUsername(webDavUsername)
     , m_webDavPassword(webDavPassword)
+    , m_webDavPort(webDavPort)
     , m_webDavConnection(webDavConnection)
 {
     qCDebug(connection_info) << "ConnectionInfo:" << m_name << "- created";
@@ -86,6 +90,7 @@ ConnectionInfo::ConnectionInfo(const QString &address,
                                const QString &name,
                                const QString &webDavUsername,
                                const QString &webDavPassword,
+                               qint16 webDavPort,
                                bool temporaryConnection,
                                QObject *parent)
     : QObject(parent)
@@ -94,6 +99,7 @@ ConnectionInfo::ConnectionInfo(const QString &address,
     , m_temporaryConnection(temporaryConnection)
     , m_webDavUsername(webDavUsername)
     , m_webDavPassword(webDavPassword)
+    , m_webDavPort(webDavPort)
     , m_webDavConnection(true)
 {}
 
@@ -116,6 +122,7 @@ ConnectionInfo &ConnectionInfo::operator=(const ConnectionInfo &connectionInfo)
     m_temporaryConnection = connectionInfo.m_temporaryConnection;
     m_webDavUsername = connectionInfo.m_webDavUsername;
     m_webDavPassword = connectionInfo.m_webDavPassword;
+    m_webDavPort = connectionInfo.m_webDavPort;
     m_webDavConnection = connectionInfo.m_webDavConnection;
     this->setParent(connectionInfo.parent());
 
@@ -144,6 +151,7 @@ ConnectionInfo &ConnectionInfo::operator=(ConnectionInfo &&connectionInfo)
     m_temporaryConnection = connectionInfo.m_temporaryConnection;
     m_webDavUsername = std::move(connectionInfo.m_webDavUsername);
     m_webDavPassword = std::move(connectionInfo.m_webDavPassword);
+    m_webDavPort = connectionInfo.m_webDavPort;
     m_webDavConnection = connectionInfo.m_webDavConnection;
     this->setParent(connectionInfo.parent());
 

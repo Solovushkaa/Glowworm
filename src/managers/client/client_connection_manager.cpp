@@ -41,8 +41,6 @@ QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
         return static_cast<int>(info->m_connectionType);
     case AddressRole:
         return info->m_address;
-    case RemoteUserRole:
-        return info->m_remoteUserUuid;
     case ConnectionStateRole:
         return static_cast<int>(info->m_connectionState);
     default:
@@ -56,7 +54,6 @@ QHash<int, QByteArray> ClientConnectionManager::roleNames() const
     roles[NameRole] = constants::kName.toUtf8();
     roles[ConnectionTypeRole] = constants::kConnectionType.toUtf8();
     roles[AddressRole] = constants::kAddress.toUtf8();
-    roles[RemoteUserRole] = constants::kRemoteUserUuid.toUtf8();
     roles[ConnectionStateRole] = constants::kConnectionState.toUtf8();
     return roles;
 }
@@ -108,6 +105,7 @@ bool ClientConnectionManager::addConnection(const QString &name,
                                              temporaryConnection,
                                              "",
                                              "",
+                                             0,
                                              false,
                                              this);
 
@@ -142,12 +140,14 @@ bool ClientConnectionManager::addWebDavConnection(const QString &address,
                                                   const QString &name,
                                                   const QString &webDavUsername,
                                                   const QString &webDavPassword,
+                                                  quint16 webDavPort,
                                                   bool temporaryConnection)
 {
     ConnectionInfo *connectionInfo = new ConnectionInfo(address,
                                                         name,
                                                         webDavUsername,
                                                         webDavPassword,
+                                                        webDavPort,
                                                         temporaryConnection);
     return addConnection(connectionInfo);
 }
@@ -208,15 +208,12 @@ bool ClientConnectionManager::updateConnection(int index,
         roles << ConnectionTypeRole;
     if (property == constants::kAddress.toUtf8())
         roles << AddressRole;
-    if (property == constants::kRemoteUserUuid.toUtf8())
-        roles << RemoteUserRole;
     if (property == constants::kConnectionState.toUtf8())
         roles << ConnectionStateRole;
 
     static const QVector<int> allRoles{NameRole,
                                        ConnectionTypeRole,
                                        AddressRole,
-                                       RemoteUserRole,
                                        ConnectionStateRole};
 
     QModelIndex idx = this->index(index);
@@ -284,9 +281,10 @@ void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *co
     connectionInfo->m_transportPort = jsonObject[constants::kTransportPort].toInt();
     connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
     connectionInfo->m_temporaryConnection = jsonObject[constants::kTemporaryConnection].toBool();
-    connectionInfo->m_webDavConnection = jsonObject[constants::kWebDavConnection].toBool();
     connectionInfo->m_webDavUsername = jsonObject[constants::kWebDavUsername].toString();
     connectionInfo->m_webDavPassword = jsonObject[constants::kWebDavPassword].toString();
+    connectionInfo->m_webDavPort = jsonObject[constants::kWebDavPort].toInt();
+    connectionInfo->m_webDavConnection = jsonObject[constants::kWebDavConnection].toBool();
 }
 
 void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
@@ -304,5 +302,6 @@ void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonO
     jsonObject[constants::kTemporaryConnection] = connectionInfo->m_temporaryConnection;
     jsonObject[constants::kWebDavUsername] = connectionInfo->m_webDavUsername;
     jsonObject[constants::kWebDavPassword] = connectionInfo->m_webDavPassword;
+    jsonObject[constants::kWebDavPort] = connectionInfo->m_webDavPort;
     jsonObject[constants::kWebDavConnection] = connectionInfo->m_webDavConnection;
 }

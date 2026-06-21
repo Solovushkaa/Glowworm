@@ -92,6 +92,13 @@ void DirectoryManager::updateDirectory(std::vector<std::unique_ptr<FileInfo>> &&
     endResetModel();
 }
 
+void DirectoryManager::clearActiveDirectory()
+{
+    beginResetModel();
+    m_activeDirectory.clear();
+    endResetModel();
+}
+
 void DirectoryManager::onHostChanged()
 {
     qCDebug(directory_manager) << "Clearing the directories of the old host";

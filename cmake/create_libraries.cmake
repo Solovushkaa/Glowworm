@@ -45,8 +45,8 @@ function(create_libraries APP_LIB)
     qt_add_library(SelfSignedCert STATIC)
     target_sources(SelfSignedCert
         PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/utils/generateSslCert.cpp
-            ${CMAKE_SOURCE_DIR}/include/utils/generateSslCert.hpp
+            ${CMAKE_SOURCE_DIR}/src/utils/ssl_cert.cpp
+            ${CMAKE_SOURCE_DIR}/include/utils/ssl_cert.hpp
     )
     target_include_directories(SelfSignedCert
         PUBLIC

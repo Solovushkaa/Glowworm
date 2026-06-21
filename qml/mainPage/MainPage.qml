@@ -409,12 +409,7 @@ Page {
                             isActive: isPageInteractiveActive
                             buttonText: "Get directory"
                             onClicked: {
-                                if (!ClientConnectionManager.getActiveConnection(
-                                            ).webDavConnection) {
-                                    Client.getDirectory(currentPath)
-                                } else {
-                                    Client.getWebDavDirectory(currentPath)
-                                }
+                                Client.getDirectory(currentPath)
                             }
                         }
                         CustomButton {

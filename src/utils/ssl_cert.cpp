@@ -1,4 +1,4 @@
-#include "generateSslCert.hpp"
+#include "ssl_cert.hpp"
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QFile>

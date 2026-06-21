@@ -46,17 +46,12 @@ public:
     /**
      * @brief Checking the connection to the server.
      */
-    // Q_INVOKABLE void checkConnectionToServer();
-
     Q_INVOKABLE void connectToServer();
-
     Q_INVOKABLE void disconnectFromServer();
     /**
      * @brief Getting a list of directories.
      */
     Q_INVOKABLE void getDirectory(const QString &dirPath);
-
-    Q_INVOKABLE void getWebDavDirectory(const QString &dirPath);
     /**
      * @brief Getting a file from the server.
      */
@@ -68,25 +63,27 @@ public:
                                   const QString &saveName,
                                   const QString &savePath,
                                   qint64 begin);
-    /**
-     * @brief Start current download
-     * @param downloadID Download ID
-     */
-    Q_INVOKABLE void startDownload(int downloadIndex);
-    /**
-     * @brief Stop current download
-     * @param downloadID Download ID
-     */
-    Q_INVOKABLE void stopDownload(int downloadIndex);
+    // /**
+    //  * @brief Start current download
+    //  * @param downloadID Download ID
+    //  */
+    // Q_INVOKABLE void startDownload(int downloadIndex);
+    // /**
+    //  * @brief Stop current download
+    //  * @param downloadID Download ID
+    //  */
+    // Q_INVOKABLE void stopDownload(int downloadIndex);
 
-    Q_INVOKABLE void connectToRelayServer();
-    Q_INVOKABLE void getFileFromRelayServer(int fileIndex,
-                                            const QString &userName,
-                                            const QString &saveName,
-                                            const QString &savePath);
+    // Q_INVOKABLE void connectToRelayServer();
+    // Q_INVOKABLE void getFileFromRelayServer(int fileIndex,
+    //                                         const QString &userName,
+    //                                         const QString &saveName,
+    //                                         const QString &savePath);
 
     void updateConnection(ConnectionInfo *connectionInfo);
 
+    // --- Get methods ---
+public:
     ClientConnectionManager &getClientConnectionManager() { return m_connectionManager; }
     DownloadManager &getDownloadManager() { return m_downloadManager; }
     DirectoryManager &getDirectoryManager() { return m_directoryManager; }
@@ -99,6 +96,7 @@ private:
     QString generateDownloadID(int fileIndex);
 
     void connectSignals();
+    void connectWebDavSignals();
 
 signals:
     void connectionStatusCodeChanged(int statusCode);
@@ -107,11 +105,12 @@ signals:
 
 public slots:
     void onCurrentDirectoryChanged();
+    void onActiveConnectionChanged();
 
     // --- Members ---
 private:
     QHash<QString, ClientWebSocketMessenger *> m_websocketMessengers; ///< Connection name, Messenger
-    QHash<QString, ClientTcpTlsTransport *> m_tcpTransports;          ///< DownloadID, Transport
+    QHash<QString, ClientTcpTlsTransport *> m_tcpTlsTransports;       ///< DownloadID, Transport
 
     QHash<QString, ClientWebDAV *> m_webDavMessengers; ///< Connection name, Messenger
     QHash<QString, ClientWebDAV *> m_webDavTransports; ///< DownloadID, Messenger

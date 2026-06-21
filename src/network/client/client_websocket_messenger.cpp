@@ -192,7 +192,7 @@ void ClientWebSocketMessenger::onConnected()
     qInfo() << "Connected to server";
 
     r_connectionInfo->setConnectionState(ConnectionInfo::ConnectionState::Connected);
-    connected(r_connectionInfo);
+    emit connected(r_connectionInfo);
 
     sendPing();
     m_pingTimer.start();
@@ -205,10 +205,9 @@ void ClientWebSocketMessenger::onDisconnected()
     qInfo() << "Disconnected from server";
 
     r_connectionInfo->setConnectionState(ConnectionInfo::ConnectionState::Disconnected);
-    disconnected(r_connectionInfo);
+    emit disconnected(r_connectionInfo);
 
     m_pingTimer.stop();
-    // emit disconnected();
 }
 
 void ClientWebSocketMessenger::onPong(quint64 elapsedTime, const QByteArray &payload)
@@ -223,10 +222,9 @@ void ClientWebSocketMessenger::onPong(quint64 elapsedTime, const QByteArray &pay
     }
 }
 
-void ClientWebSocketMessenger::onError(QAbstractSocket::SocketError error)
+void ClientWebSocketMessenger::onError(QAbstractSocket::SocketError)
 {
-    Q_UNUSED(error)
-    // emit errorOccurred(m_socket.errorString());
+    emit errorOccurred(m_socket.errorString());
 }
 
 void ClientWebSocketMessenger::onSslError(const QList<QSslError> &errors)

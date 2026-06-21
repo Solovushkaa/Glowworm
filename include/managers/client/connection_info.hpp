@@ -34,6 +34,7 @@ enum class ConnectionInfoMember {
     TemporaryConnection,
     WebDavUsername,
     WebDavPassword,
+    WebDavPort,
     WebDavConnection,
     COUNT // To get the size of the enum
 };
@@ -70,9 +71,8 @@ public:
 
 private:
     Q_PROPERTY(QString name MEMBER m_name NOTIFY nameChanged)
-    Q_PROPERTY(ConnectionType connectionType MEMBER m_connectionType NOTIFY transportChanged)
-    Q_PROPERTY(QString address MEMBER m_address NOTIFY urlChanged)
-    Q_PROPERTY(QString remoteUserName MEMBER m_remoteUserUuid NOTIFY remoteUserNameChanged)
+    Q_PROPERTY(ConnectionType connectionType MEMBER m_connectionType NOTIFY connectionTypeChanged)
+    Q_PROPERTY(QString address MEMBER m_address NOTIFY addressChanged)
     Q_PROPERTY(ConnectionState connectionState MEMBER m_connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(bool webDavConnection MEMBER m_webDavConnection)
 
@@ -91,12 +91,14 @@ public:
                    bool temporaryConnection = false,
                    const QString &webDavUsername = "",
                    const QString &webDavPassword = "",
+                   qint16 webDavPort = 0,
                    bool webDavConnection = false,
                    QObject *parent = nullptr);
     ConnectionInfo(const QString &address,
                    const QString &name,
                    const QString &webDavUsername,
                    const QString &webDavPassword,
+                   qint16 webDavPort = 443,
                    bool temporaryConnection = false,
                    QObject *parent = nullptr);
 
@@ -112,6 +114,7 @@ public:
 public:
     void setConnectionState(ConnectionState state)
     {
+        qDebug() << "Connection state change";
         m_connectionState = state;
         emit connectionStateChanged();
     }
@@ -119,9 +122,8 @@ public:
     // --- Signals ---
 signals:
     void nameChanged();
-    void transportChanged();
-    void urlChanged();
-    void remoteUserNameChanged();
+    void connectionTypeChanged();
+    void addressChanged();
     void connectionStateChanged();
 
 public:
@@ -143,6 +145,7 @@ public:
 
     QString m_webDavUsername;
     QString m_webDavPassword;
+    qint16 m_webDavPort;
     bool m_webDavConnection;
 };
 

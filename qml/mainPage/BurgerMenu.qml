@@ -172,6 +172,8 @@ Rectangle {
                 onDoubleClicked: {
                     savedPresets.currentIndex = index
 
+                    currentPath = "/"
+
                     Client.setActiveConnection(index)
                     activeConnectionIndex = index
 

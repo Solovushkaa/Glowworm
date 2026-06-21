@@ -27,7 +27,6 @@ class ClientConnectionManager : public QAbstractListModel
         NameRole = Qt::UserRole + 1,
         ConnectionTypeRole,
         AddressRole,
-        RemoteUserRole,
         ConnectionStateRole
     };
 
@@ -59,6 +58,7 @@ public:
                                          const QString &name,
                                          const QString &webDavUsername,
                                          const QString &webDavPassword,
+                                         quint16 webDavPort,
                                          bool temporaryConnection);
     /**
      * @brief Removing connection
