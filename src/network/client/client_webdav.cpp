@@ -66,7 +66,7 @@ void ClientWebDAV::sendPing()
     });
 }
 
-void ClientWebDAV::getDirectory(const QString &dirPath)
+void ClientWebDAV::getNetworkDirectory(const QString &dirPath)
 {
     m_path = dirPath;
     qDebug() << "Get directory";

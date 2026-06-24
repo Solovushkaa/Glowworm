@@ -23,9 +23,9 @@ public:
     void disconnectFromServer();
 
     void sendPing();
-    void getDirectory(const QString &dirPath);
+    void getNetworkDirectory(const QString &dirPath);
 
-    // void getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath);
+    // void getNetworkDirectory(ConnectionInfo *connectionInfo, const QString &dirPath);
     // void connectToRelayServer(ConnectionInfo *connectionInfo);
 
 private:

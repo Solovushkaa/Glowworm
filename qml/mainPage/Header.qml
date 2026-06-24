@@ -6,40 +6,6 @@ Rectangle {
     color: "transparent"
     height: 22
 
-    property string activeConnectionName: ""
-
-    Connections {
-        target: ClientConnectionManager
-        function onActiveConnectionChanged() {
-            activeConnectionName = ClientConnectionManager.getActiveConnection(
-                        ) !== null ? ClientConnectionManager.getActiveConnection(
-                                         ).name : ""
-        }
-    }
-
-    Rectangle {
-        color: "transparent"
-        anchors {
-            left: parent.left
-            leftMargin: 20
-            top: parent.top
-            topMargin: 30
-            bottom: parent.bottom
-        }
-
-        width: 300
-
-        Label {
-            anchors {
-                verticalCenter: parent.verticalCenter
-            }
-
-            font.pointSize: 12
-            color: "black"
-            text: activeConnectionName
-        }
-    }
-
     Rectangle {
         id: headerConnectionState
         color: "#efefef"
@@ -59,8 +25,7 @@ Rectangle {
             color: "#cccccc"
         }
 
-        visible: false // TODO:
-
+        // visible: false // TODO:
         width: 30
 
         Rectangle {
@@ -69,7 +34,7 @@ Rectangle {
             height: 14
             radius: width / 2
             // color: isPageInteractiveActive ? "#5371ad" : "#a5a5a5"
-            color: isPageInteractiveActive ? "#75e075" : "#a5a5a5"
+            color: isPageInteractiveActive ? "#3dbf5c" : "#a5a5a5"
             anchors {
                 centerIn: parent
             }

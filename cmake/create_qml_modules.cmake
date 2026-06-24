@@ -17,6 +17,10 @@ function(create_qml_modules)
             qml/mainPage/CustomProgressBar.qml
             qml/mainPage/DownloadStatusPanel.qml
             qml/mainPage/CustomImage.qml
+            qml/mainPage/FileBrowser.qml
+            qml/mainPage/FileSystemBrowser.qml
+            qml/mainPage/CustomToolTip.qml
+
 
             # qml/settingsPage/SettingsPage.qml
 

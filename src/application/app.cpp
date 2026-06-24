@@ -31,6 +31,11 @@ void App::registrateQmlTypes()
     qmlRegisterSingletonInstance("GlowwormModule",
                                  1,
                                  0,
-                                 "DirectoryManager",
-                                 &m_client.getDirectoryManager());
+                                 "SystemDirectoryManager",
+                                 &m_client.getSystemDirectoryManager());
+    qmlRegisterSingletonInstance("GlowwormModule",
+                                 1,
+                                 0,
+                                 "NetworkDirectoryManager",
+                                 &m_client.getNetworkDirectoryManager());
 }

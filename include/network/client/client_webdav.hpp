@@ -27,7 +27,7 @@ public:
     void disconnectFromServer();
 
     void sendPing();
-    void getDirectory(const QString &dirPath);
+    void getNetworkDirectory(const QString &dirPath);
 
     void getFile(DownloadInfo *downloadInfo);
 

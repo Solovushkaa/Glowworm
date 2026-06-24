@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-// import QtQuick.Layouts
+import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import CustomButtons
 
@@ -33,7 +33,7 @@ Rectangle {
     //         isPageInteractiveActive = false
     //     }
     // }
-    width: root.isOpen ? Math.min(Math.max(mainWindow.width * 0.2,
+    width: root.isOpen ? Math.min(Math.max(mainWindow.width * 0.3,
                                            50), 300) : 50
     z: 300
 
@@ -61,6 +61,25 @@ Rectangle {
             borderWidth = root.isOpen ? 0 : 1
 
             root.isAnimated = false
+        }
+    }
+
+    RowLayout {
+        anchors {
+            top: burgerButton.top
+            bottom: burgerButton.bottom
+            right: parent.right
+            rightMargin: 5
+        }
+        CustomButton {
+            id: generateQuickConnectKeyButton
+
+            visible: root.isOpen ? true : false
+
+            buttonText: "Share key"
+            onClicked: {
+                keyGenPopup.open()
+            }
         }
     }
 
@@ -127,7 +146,7 @@ Rectangle {
                 }
 
                 width: 3
-                color: model.connectionState === 1 ? "#75e075" : "#cfcfcf"
+                color: model.connectionState === 1 ? "#3dbf5c" : "#cfcfcf"
 
                 // visible: (activeConnectionIndex === index)
                 //          && activeConnectionIndex != -1
@@ -172,8 +191,7 @@ Rectangle {
                 onDoubleClicked: {
                     savedPresets.currentIndex = index
 
-                    currentPath = "/"
-
+                    // currentPath = "/"
                     Client.setActiveConnection(index)
                     activeConnectionIndex = index
 
@@ -206,8 +224,8 @@ Rectangle {
         }
 
         footer: Rectangle {
-            width: 30
-            height: 40
+            width: 50
+            height: 50
 
             color: "transparent"
 
@@ -226,17 +244,16 @@ Rectangle {
                 smooth: true
                 antialiasing: true
                 mipmap: true
-
                 fillMode: Image.PreserveAspectFit
             }
+
             ColorOverlay {
                 anchors.fill: plus
                 source: plus
-                color: "#3d5482"
+                color: "#5371ad"
 
-                opacity: 0.6
+                // opacity: 0.6
             }
-
             MouseArea {
                 anchors.fill: parent
 

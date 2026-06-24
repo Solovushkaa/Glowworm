@@ -1,5 +1,7 @@
 #include "client.hpp"
 #include "constants.hpp"
+#include "json_utils.hpp"
+#include "manager_utils.hpp"
 
 Q_LOGGING_CATEGORY(client, "client")
 
@@ -45,7 +47,7 @@ void Client::connectToServer()
             m_websocketMessengers[getActiveConnection()->m_name]
                 = new ClientWebSocketMessenger(getActiveConnection(),
                                                getActiveConnection()->m_remoteUserUuid.toUtf8(),
-                                               m_directoryManager,
+                                               m_networkDirectoryManager,
                                                this);
 
             setConnectionPreferences();
@@ -56,7 +58,7 @@ void Client::connectToServer()
     } else if (getActiveConnection() != nullptr) {
         if (!m_webDavMessengers.contains(getActiveConnection()->m_name)) {
             m_webDavMessengers[getActiveConnection()->m_name]
-                = new ClientWebDAV(getActiveConnection(), m_directoryManager);
+                = new ClientWebDAV(getActiveConnection(), m_networkDirectoryManager);
 
             setConnectionPreferences();
         }
@@ -80,20 +82,20 @@ void Client::disconnectFromServer()
     }
 }
 
-void Client::getDirectory(const QString &dirPath)
+void Client::getNetworkDirectory(const QString &dirPath)
 {
     qCDebug(client) << "Directory request";
 
     bool error{false};
     if (getActiveConnection() != nullptr && !getActiveConnection()->m_webDavConnection) {
         if (m_websocketMessengers.contains(getActiveConnection()->m_name)) {
-            m_websocketMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
+            m_websocketMessengers[getActiveConnection()->m_name]->getNetworkDirectory(dirPath);
         } else {
             error = true;
         }
     } else if (getActiveConnection() != nullptr) {
         if (m_webDavMessengers.contains(getActiveConnection()->m_name)) {
-            m_webDavMessengers[getActiveConnection()->m_name]->getDirectory(dirPath);
+            m_webDavMessengers[getActiveConnection()->m_name]->getNetworkDirectory(dirPath);
         } else {
             error = true;
         }
@@ -101,6 +103,14 @@ void Client::getDirectory(const QString &dirPath)
     if (error) {
         qCWarning(client) << "Directory create request error: Connection doesn't exist";
     }
+}
+
+void Client::getSystemDirectory(const QString &dirPath)
+{
+    auto newActiveDirectory = fromJsonToFileInfo(createJsonFromDirectory(dirPath));
+    m_systemDirectoryManager.updateDirectory(std::move(newActiveDirectory), dirPath);
+
+    emit currentSystemDirectoryChanged();
 }
 
 void Client::getFile(int fileIndex, const QString &saveName, const QString &savePath)
@@ -114,7 +124,7 @@ void Client::getFileRange(int fileIndex,
                           qint64 begin)
 {
     qCDebug(client) << "Getting file:"
-                    << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
+                    << m_networkDirectoryManager.getActiveDirectory()[fileIndex]->m_path;
 
     if (getActiveConnection()->m_connectionState != ConnectionInfo::ConnectionState::Connected) {
         return;
@@ -123,7 +133,7 @@ void Client::getFileRange(int fileIndex,
     const QString downloadID = generateDownloadID(fileIndex);
 
     auto activeConnection = getActiveConnection();
-    auto fileInfo = m_directoryManager.getActiveDirectory()[fileIndex];
+    auto fileInfo = m_networkDirectoryManager.getActiveDirectory()[fileIndex];
     m_downloadManager.addDownload(downloadID,
                                   activeConnection->m_address,
                                   activeConnection->m_hostKey,
@@ -139,7 +149,8 @@ void Client::getFileRange(int fileIndex,
                                   DownloadInfo::DownloadState::Wait);
 
     if (getActiveConnection()->m_webDavConnection) {
-        m_webDavTransports[downloadID] = new ClientWebDAV(getActiveConnection(), m_directoryManager);
+        m_webDavTransports[downloadID] = new ClientWebDAV(getActiveConnection(),
+                                                          m_networkDirectoryManager);
         m_webDavTransports[downloadID]->setDownloadInfo(
             m_downloadManager.getDownloadInfoDict()[downloadID]);
 
@@ -190,7 +201,7 @@ void Client::getFileRange(int fileIndex,
 //                                     const QString &savePath)
 // {
 //     qCDebug(client) << "Getting file:"
-//                     << m_directoryManager.getActiveDirectory()[fileIndex]->m_path;
+//                     << m_networkDirectoryManager.getActiveDirectory()[fileIndex]->m_path;
 
 //     if (getActiveConnection()->m_connectionState != ConnectionInfo::ConnectionState::Connected) {
 //         return;
@@ -199,7 +210,7 @@ void Client::getFileRange(int fileIndex,
 //     const QString downloadID = generateDownloadID(fileIndex);
 
 //     auto activeConnection = getActiveConnection();
-//     auto fileInfo = m_directoryManager.getActiveDirectory()[fileIndex];
+//     auto fileInfo = m_networkDirectoryManager.getActiveDirectory()[fileIndex];
 //     m_downloadManager.addDownload(downloadID,
 //                                   activeConnection->m_address,
 //                                   activeConnection->m_hostKey,
@@ -229,6 +240,11 @@ void Client::getFileRange(int fileIndex,
 void Client::updateConnection(ConnectionInfo *connectionInfo)
 {
     m_connectionManager.updateConnection(connectionInfo);
+
+    if (!m_isActiveConnectionConnected) {
+        m_isActiveConnectionConnected = true;
+        emit connected();
+    }
 }
 
 ConnectionInfo *Client::getActiveConnection()
@@ -254,7 +270,7 @@ void Client::setConnectionPreferences()
 QString Client::generateDownloadID(int fileIndex)
 {
     QString downloadID
-        = QCryptographicHash::hash((m_directoryManager.getActiveDirectory()[fileIndex]->m_path
+        = QCryptographicHash::hash((m_networkDirectoryManager.getActiveDirectory()[fileIndex]->m_path
                                     + getActiveConnection()->m_hostKey)
                                        .toUtf8(),
                                    QCryptographicHash::Sha256)
@@ -312,10 +328,10 @@ void Client::connectWebDavSignals()
 
 void Client::onCurrentDirectoryChanged()
 {
-    emit currentDirectoryChanged(m_directoryManager.getActiveDirectory());
+    emit currentDirectoryChanged(m_networkDirectoryManager.getActiveDirectory());
 }
 
 void Client::onActiveConnectionChanged()
 {
-    m_directoryManager.clearActiveDirectory();
+    m_networkDirectoryManager.clearActiveDirectory();
 }

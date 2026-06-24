@@ -6,7 +6,7 @@ import Qt5Compat.GraphicalEffects
 Rectangle {
     id: root
 
-    Layout.preferredWidth: fileBrowser.width
+    Layout.preferredWidth: contentArea.width
     Layout.minimumWidth: 100
     Layout.fillHeight: true
     Layout.minimumHeight: 15
@@ -45,7 +45,7 @@ Rectangle {
 
         delegate: Rectangle {
             id: click
-            width: fileBrowser.width - 10
+            width: contentArea.width - 10
             height: 20
             focus: true
             // color: "white"
@@ -121,17 +121,58 @@ Rectangle {
                 font.pixelSize: 14
             }
 
+            Text {
+                id: progressBarTextBlack
+                // anchors.centerIn: parent
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                }
+
+                textFormat: Text.RichText
+
+                text: "<font size = 4>" + Math.round(
+                          (model.lastReceivedByte
+                           === 0) ? 0 : (model.lastReceivedByte / model.size)
+                                    * 1000) / 10 + "</font><font size=4>%</font>"
+
+                color: "black"
+                visible: true
+            }
+
             CustomProgressBar {
+                id: progressBar
+
                 anchors {
                     top: parent.top
-                    topMargin: parent.height * 0.12
-                    right: parent.right
+                    topMargin: parent.height * 0.1
+                    right: progressBarTextBlack.left
+                    rightMargin: 5
                     bottom: parent.bottom
-                    bottomMargin: parent.height * 0.12
+                    bottomMargin: parent.height * 0.1
                 }
                 value: (model.lastReceivedByte === 0) ? 0 : (model.lastReceivedByte / model.size)
 
                 width: parent.width * 0.15
+            }
+
+            Text {
+                id: progressBarTextBytes
+                // anchors.centerIn: parent
+                anchors {
+                    right: progressBar.left
+                    rightMargin: 120
+                    verticalCenter: parent.verticalCenter
+                }
+
+                textFormat: Text.RichText
+
+                text: "<font size = 4>" + Math.round(
+                          model.lastReceivedByte / (1024 * 1024)) + "/" + Math.round(
+                          model.size / (1024 * 1024)) + " MB</font>"
+
+                color: "black"
+                visible: true
             }
 
             MouseArea {

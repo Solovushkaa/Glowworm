@@ -7,6 +7,7 @@
 
 Q_LOGGING_CATEGORY(json_utils, "utils.json")
 
+// TODO: Adding SymLink support
 QJsonArray createJsonFromDirectory(const QString &dirPath)
 {
     qCDebug(json_utils) << "Generating JSON from the directory at the path:" << dirPath;
@@ -14,7 +15,7 @@ QJsonArray createJsonFromDirectory(const QString &dirPath)
     // All elements from the directory are selected
     // except the pointer to the current directory.
     QDir dir(dirPath);
-    QFileInfoList dirList = dir.entryInfoList(QDir::AllEntries | QDir::NoDot);
+    QFileInfoList dirList = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
 
     QJsonArray jsonArray;
     QJsonObject jsonObject;

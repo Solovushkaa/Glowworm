@@ -91,9 +91,9 @@ void ClientWebSocketMessenger::sendPing()
     }
 }
 
-void ClientWebSocketMessenger::getDirectory(const QString &dirPath)
+void ClientWebSocketMessenger::getNetworkDirectory(const QString &dirPath)
 {
-    qDebug() << "getDirectory";
+    qDebug() << "getNetworkDirectory";
     if (m_socket.state() == QAbstractSocket::ConnectedState) {
         QJsonObject request;
         request["action"] = "list_directory";
@@ -130,7 +130,7 @@ void ClientWebSocketMessenger::onTextMessageReceived(const QString &message)
     }
 }
 
-// void ClientWebSocketMessenger::getDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
+// void ClientWebSocketMessenger::getNetworkDirectory(ConnectionInfo *connectionInfo, const QString &dirPath)
 // {
 //     QString fullUrl = "http://" + connectionInfo->m_address + ":"
 //                       + QString::number(connectionInfo->m_defaultMessengerPort) + dirPath;

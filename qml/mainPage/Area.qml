@@ -10,6 +10,7 @@ Rectangle {
     property string name: ""
     property string postfix: ""
     property bool isDelimiterVisible: true
+    property bool isAlignHCenter: false
     property int elementHeight: 0
 
     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
@@ -44,26 +45,24 @@ Rectangle {
         }
         height: textContent.height
 
-        contentWidth: textContent.width
+        contentWidth: Math.max(textContent.width, width)
         contentHeight: textContent.height
 
         flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
-
         clip: true
 
         Text {
             id: textContent
+            width: Math.max(implicitWidth, scrollZone.width)
 
-            horizontalAlignment: Text.AlignLeft
+            horizontalAlignment: root.isAlignHCenter ? Text.AlignHCenter : Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
-
             font.pointSize: 12
 
-            textFormat: Text.RichText
-
-            text: "<font color='#505050'>" + prefix
-                  + "</font><font color='#000000'>" + name + postfix + "</font>"
+            textFormat: Text.StyledText
+            text: "<font color='#505050'>" + prefix + "</font>"
+                  + "<font color='#000000'>" + name + postfix + "</font>"
         }
 
         ScrollBar.horizontal: ScrollBar {
@@ -77,56 +76,55 @@ Rectangle {
         }
     }
 
-    TextEdit {
-        id: copyToClipBoard
-        text: name + postfix
-        visible: false
-    }
+    // TextEdit {
+    //     id: copyToClipBoard
+    //     text: name + postfix
+    //     visible: false
+    // }
 
-    Rectangle {
-        anchors {
-            top: parent.top
-            topMargin: 3
-            right: parent.right
-            rightMargin: 3
-        }
+    // Rectangle {
+    //     anchors {
+    //         top: parent.top
+    //         topMargin: 3
+    //         right: parent.right
+    //         rightMargin: 3
+    //     }
 
-        height: 10
-        width: 10
+    //     height: 10
+    //     width: 10
 
-        color: "transparent"
+    //     color: "transparent"
 
-        Image {
-            id: copy
+    // Image {
+    //     id: copy
 
-            anchors.fill: parent
+    //     anchors.fill: parent
 
-            source: "qrc:Icons/copy.svg"
+    //     source: "qrc:Icons/copy.svg"
 
-            visible: false
+    //     visible: false
 
-            smooth: true
-            antialiasing: true
-            mipmap: true
+    //     smooth: true
+    //     antialiasing: true
+    //     mipmap: true
 
-            fillMode: Image.PreserveAspectFit
-        }
-        ColorOverlay {
-            anchors.fill: copy
-            source: copy
-            color: "#3d5482"
-        }
+    //     fillMode: Image.PreserveAspectFit
+    // }
+    // ColorOverlay {
+    //     anchors.fill: copy
+    //     source: copy
+    //     color: "#3d5482"
+    // }
+    // MouseArea {
+    //     anchors.centerIn: parent
 
-        MouseArea {
-            anchors.centerIn: parent.centerIn
+    //     height: 13
+    //     width: 13
 
-            height: 13
-            width: 13
-
-            onClicked: {
-                copyToClipBoard.selectAll()
-                copyToClipBoard.copy()
-            }
-        }
-    }
+    //     onClicked: {
+    //         copyToClipBoard.selectAll()
+    //         copyToClipBoard.copy()
+    //     }
+    // }
+    // }
 }

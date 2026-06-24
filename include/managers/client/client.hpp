@@ -51,7 +51,9 @@ public:
     /**
      * @brief Getting a list of directories.
      */
-    Q_INVOKABLE void getDirectory(const QString &dirPath);
+    Q_INVOKABLE void getNetworkDirectory(const QString &dirPath);
+
+    Q_INVOKABLE void getSystemDirectory(const QString &dirPath);
     /**
      * @brief Getting a file from the server.
      */
@@ -86,7 +88,9 @@ public:
 public:
     ClientConnectionManager &getClientConnectionManager() { return m_connectionManager; }
     DownloadManager &getDownloadManager() { return m_downloadManager; }
-    DirectoryManager &getDirectoryManager() { return m_directoryManager; }
+
+    DirectoryManager &getSystemDirectoryManager() { return m_systemDirectoryManager; }
+    DirectoryManager &getNetworkDirectoryManager() { return m_networkDirectoryManager; }
 
     // --- Signal Slot Connection ---
 private:
@@ -100,8 +104,13 @@ private:
 
 signals:
     void connectionStatusCodeChanged(int statusCode);
+
     void currentDirectoryChanged(QList<FileInfo *> directoryList);
+    void currentSystemDirectoryChanged();
+
     void fileReceived(const QString &filePath);
+
+    void connected();
 
 public slots:
     void onCurrentDirectoryChanged();
@@ -118,7 +127,10 @@ private:
     ClientConnectionManager m_connectionManager; ///< Connection manager
     DownloadManager m_downloadManager;           ///< Download manager
 
-    DirectoryManager m_directoryManager;
+    DirectoryManager m_systemDirectoryManager;
+    DirectoryManager m_networkDirectoryManager;
+
+    bool m_isActiveConnectionConnected{false};
 };
 
 #endif // CLIENT_HPP

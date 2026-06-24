@@ -13,18 +13,6 @@ Rectangle {
         color: "lightgrey"
     }
 
-    Text {
-        id: progressBarTextBlack
-        anchors.centerIn: parent
-
-        textFormat: Text.RichText
-
-        text: "<font size = 4>" + Math.round(parent.value * 10000) / 100 + "</font><font size=3>%</font>"
-
-        color: "black"
-        visible: true
-    }
-
     Rectangle {
         id: progress
         anchors {
@@ -36,27 +24,40 @@ Rectangle {
 
         radius: parent.radius
 
-        color: "#009e05"
+        color: "#3dbf5c"
     }
 
-    Item {
-        x: progress.x
-        y: progress.y
+    // Text {
+    //     id: progressBarTextBlack
+    //     anchors.centerIn: parent
 
-        width: progress.width
-        height: progress.height
+    //     textFormat: Text.RichText
 
-        clip: true
-        Text {
-            id: progressBarTextWhite
-            x: progressBarTextBlack.x
-            y: progressBarTextBlack.y
+    //     text: "<font size = 4>" + Math.round(
+    //               parent.value * 1000) / 10 + "</font><font size=3>%</font>"
 
-            textFormat: Text.RichText
+    //     color: "black"
+    //     visible: true
+    // }
 
-            text: progressBarTextBlack.text
+    // Item {
+    //     x: progress.x
+    //     y: progress.y
 
-            color: "white"
-        }
-    }
+    //     width: progress.width
+    //     height: progress.height
+
+    //     clip: true
+    //     Text {
+    //         id: progressBarTextWhite
+    //         x: progressBarTextBlack.x
+    //         y: progressBarTextBlack.y
+
+    //         textFormat: Text.RichText
+
+    //         text: progressBarTextBlack.text
+
+    //         color: "white"
+    //     }
+    // }
 }
