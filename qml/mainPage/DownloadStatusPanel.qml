@@ -2,95 +2,26 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import HttpClient
-import SavedConnectionManager
 
 Rectangle {
     id: root
 
-    Layout.preferredWidth: fileBrowser.width
+    Layout.preferredWidth: contentArea.width
     Layout.minimumWidth: 100
     Layout.fillHeight: true
     Layout.minimumHeight: 15
     Layout.bottomMargin: 20
 
-    function openUnfinishedDownloads() {
-        var unfinishedDownloads = Client.getUnfinishedDownloads()
+    // function finishDownload(downloadID) {
+    //     // some code
+    // }
+    // Connections {
+    //     target: Client
 
-        if (unfinishedDownloads.length === 0) {
-            console.log(unfinishedDownloads.length)
-        } else {
-            for (var i = 0; i < unfinishedDownloads.length; i++) {
-                fileModelDownloadStatus.append({
-                                                   "fileName": unfinishedDownloads[i]["fileName"],
-                                                   "downloadID": unfinishedDownloads[i]["downloadID"],
-                                                   "fileSize": parseInt(
-                                                                   unfinishedDownloads[i]["fileSize"]),
-                                                   "fileLastReceivedByte": parseInt(unfinishedDownloads[i]["fileLastReceivedByte"]),
-                                                   "isPlayPauseButtonActive": true,
-                                                   "isBlockedPlayPause": false
-                                               })
-            }
-        }
-    }
-
-    function finishDownload(downloadID) {
-        console.log("Finish Download")
-        for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-            if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                fileModelDownloadStatus.get(i).isPlayPauseButtonActive = false
-                fileModelDownloadStatus.get(
-                            i).fileLastReceivedByte = fileModelDownloadStatus.get(
-                            i).fileSize
-                break
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        openUnfinishedDownloads()
-    }
-
-    Connections {
-        target: Client
-        function onNewDownload(fileName, downloadID, fileSize) {
-            fileModelDownloadStatus.append({
-                                               "fileName": fileName,
-                                               "downloadID": downloadID,
-                                               "fileSize": fileSize,
-                                               "fileLastReceivedByte": 0,
-                                               "isPlayPauseButtonActive": true,
-                                               "isBlockedPlayPause": false
-                                           })
-        }
-
-        function onChangeProgress(downloadID, bytesReceived) {
-            for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-                if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                    fileModelDownloadStatus.get(
-                                i).fileLastReceivedByte = bytesReceived
-                    fileModelDownloadStatus.get(i).isBlockedPlayPause = false
-                    break
-                }
-            }
-        }
-
-        function onStopProgress(downloadID, bytesReceived) {
-            for (var i = 0; i < fileModelDownloadStatus.count; i++) {
-                if (fileModelDownloadStatus.get(i).downloadID === downloadID) {
-                    fileModelDownloadStatus.get(
-                                i).fileLastReceivedByte = bytesReceived
-                    fileModelDownloadStatus.get(i).isBlockedPlayPause = false
-                    break
-                }
-            }
-        }
-
-        function onRangeRequestSuccessfulFinished(downloadID) {
-            finishDownload(downloadID)
-        }
-    }
-
+    //     function onFileSuccessfulReceived(downloadID) {
+    //         finishDownload(downloadID)
+    //     }
+    // }
     radius: 8
 
     ListView {
@@ -109,18 +40,15 @@ Rectangle {
 
         currentIndex: -1
 
-        model: ListModel {
-            id: fileModelDownloadStatus
-        }
+        model: DownloadManager
 
         delegate: Rectangle {
             id: click
-            width: fileBrowser.width - 10
-            height: 20
+            width: contentArea.width - 10
+            height: 22
             focus: true
-            color: "white"
 
-            property bool isDownloadActive: false
+            color: ListView.isCurrentItem ? (downloadStatusList.activeFocus ? "lightgrey" : "#e9e9e9") : "white"
 
             Rectangle {
                 id: playPauseBound
@@ -130,8 +58,8 @@ Rectangle {
                     top: parent.top
                     bottom: parent.bottom
                 }
-                width: model.isPlayPauseButtonActive ? parent.width * 0.05 : parent.width * 0.01
-                visible: model.isPlayPauseButtonActive
+                visible: (model.downloadState !== 3)
+                width: parent.width * 0.03
 
                 color: "transparent"
 
@@ -146,38 +74,38 @@ Rectangle {
                     id: playPause
                     anchors {
                         fill: parent
-                        topMargin: 3
-                        bottomMargin: 3
+                        margins: 5
                     }
-                    source: isDownloadActive ? "qrc:/Content/Icons/pause.svg" : "qrc:/Content/Icons/play.svg"
+                    source: model.downloadState === 2 ? "qrc:Icons/pause.svg" : "qrc:Icons/play.svg"
+                    sourceSize.width: 100
+                    sourceSize.height: 100
 
-                    fillMode: Image.PreserveAspectFit
-
-                    smooth: true
+                    // smooth: true
                     antialiasing: true
                     mipmap: true
+
+                    fillMode: Image.PreserveAspectFit
                 }
                 ColorOverlay {
                     anchors.fill: playPause
                     source: playPause
-                    color: isDownloadActive ? "#cc1616" : "#14cc1b"
-
-                    opacity: 0.6
+                    color: "#5371ad"
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     visible: !model.isBlockedPlayPause
                     onClicked: {
-                        isDownloadActive = !isDownloadActive
-                        model.isBlockedPlayPause = true
-
-                        if (!isDownloadActive) {
-                            console.log("Скачивание продолжено")
-                            Client.startDownload(model.downloadID)
-                        } else {
-                            console.log("Скачивание остановлено")
+                        if (model.downloadState === 2) {
+                            model.downloadState = 0
                             Client.stopDownload(model.downloadID)
+
+                            console.log("Download stopped")
+                        } else if (model.downloadState === 0) {
+                            model.downloadState = 2
+                            Client.startDownload(model.downloadID)
+
+                            console.log("Download continued")
                         }
                     }
                 }
@@ -188,22 +116,65 @@ Rectangle {
                     left: playPauseBound.right
                     verticalCenter: parent.verticalCenter
                 }
-                text: fileName
-                font.pixelSize: 14
+                text: model.name
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
+            }
+
+            Text {
+                id: progressBarTextBlack
+                // anchors.centerIn: parent
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                }
+
+                // textFormat: Text.RichText
+                text: Math.round(
+                          (model.lastReceivedByte
+                           === 0) ? 0 : (model.lastReceivedByte / model.size) * 1000) / 10 + "%"
+
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
+
+                color: "black"
+                visible: true
             }
 
             CustomProgressBar {
+                id: progressBar
+
                 anchors {
                     top: parent.top
-                    topMargin: parent.height * 0.12
-                    right: parent.right
+                    topMargin: parent.height * 0.1
+                    right: progressBarTextBlack.left
+                    rightMargin: 5
                     bottom: parent.bottom
-                    bottomMargin: parent.height * 0.12
+                    bottomMargin: parent.height * 0.1
                 }
-                value: (model.fileLastReceivedByte
-                        === 0) ? 0 : (model.fileLastReceivedByte / model.fileSize)
+                value: (model.lastReceivedByte === 0) ? 0 : (model.lastReceivedByte / model.size)
 
                 width: parent.width * 0.15
+            }
+
+            Text {
+                id: progressBarTextBytes
+                // anchors.centerIn: parent
+                anchors {
+                    right: progressBar.left
+                    rightMargin: 120
+                    verticalCenter: parent.verticalCenter
+                }
+
+                text: Math.round(
+                          model.lastReceivedByte / (1024 * 1024) * 10) / 10 + "/"
+                      + Math.round(model.size / (1024 * 1024) * 10) / 10 + " MB"
+
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
+
+                color: "black"
+                visible: true
             }
 
             MouseArea {
@@ -216,6 +187,9 @@ Rectangle {
                 onClicked: {
                     downloadStatusList.currentIndex = index
                     downloadStatusList.forceActiveFocus()
+                    updateDownloadInfoPanel(model.name, "file", model.path,
+                                            model.size, model.lastReceivedByte,
+                                            model.downloadState)
                 }
             }
         }

@@ -3,8 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import CustomButtons
-import SavedConnectionManager
-import HttpClient
+import QtQuick.Effects
 
 Rectangle {
     id: root
@@ -14,45 +13,44 @@ Rectangle {
         bottom: parent.bottom
     }
 
-    property int m_activeConnection: 0
+    property ApplicationWindow mainWindow: null
+
     property bool isOpen: false
     property bool isAnimated: true
-    property int animationInterval: 150
+    property int animationInterval: 250
 
-    function loadPresetsToList() {
-        presetsModel.clear()
+    property int activeConnectionIndex: -1
 
-        var presets = ConnectionManager.getConnections()
+    property bool isSelectActive: false
 
-        for (var i = 0; i < presets.length; i++) {
-            presetsModel.append(presets[i])
-        }
-
-        loadActivePreset()
-    }
-
-    Connections {
-        target: ConnectionManager
-        function onConnectionsLoaded() {
-            if (ConnectionManager.isEmpty()) {
-                startAddPopup.open()
-            } else {
-                loadPresetsToList()
-            }
-        }
-        function onConnectionsChanged() {
-            isPageInteractiveActive = false
-        }
-    }
-
-    width: isOpen ? Math.min(Math.max(window.width * 0.2, 50), 400) : 50
+    // Connections {
+    //     target: ClientConnectionManager
+    //     function onConnectionsLoaded() {
+    //         if (ConnectionManager.isEmpty()) {
+    //             startAddPopup.open()
+    //         } else {
+    //             loadPresetsToList()
+    //         }
+    //     }
+    //     function onConnectionsChanged() {
+    //         isPageInteractiveActive = false
+    //     }
+    // }
+    width: root.isOpen ? Math.min(Math.max(mainWindow.width * 0.3,
+                                           50), 300) : 50
     z: 300
 
-    color: "#efefef"
+    color: root.isOpen ? "#ffffff" : "#efefef"
+
+    Behavior on color {
+        ColorAnimation {
+            duration: root.animationInterval
+        }
+    }
 
     Rectangle {
 
-        visible: isOpen
+        visible: root.isOpen
 
         anchors {
             top: parent.top
@@ -67,18 +65,19 @@ Rectangle {
     BurgerButton {
         id: burgerButton
         onClicked: {
-            isAnimated = true
-            isOpen = !isOpen
-            borderWidth = isOpen ? 0 : 1
+            root.isAnimated = true
+            root.isOpen = !root.isOpen
+            borderWidth = root.isOpen ? 0 : 1
 
-            isAnimated = false
+            root.isAnimated = false
         }
     }
 
     Behavior on width {
-        enabled: isAnimated
+        enabled: root.isAnimated
         NumberAnimation {
-            duration: animationInterval
+            duration: root.animationInterval
+            easing.type: Easing.OutCubic
         }
     }
 
@@ -94,73 +93,69 @@ Rectangle {
             bottom: settingsGear.top
             leftMargin: 5
             rightMargin: 5
-            topMargin: 10
+            topMargin: 4
             bottomMargin: 10
         }
 
         clip: true
-
+        boundsBehavior: Flickable.StopAtBounds
+        visible: root.isOpen
         currentIndex: -1
 
-        boundsBehavior: Flickable.StopAtBounds
-
-        visible: isOpen
-
-        model: ListModel {
-            id: presetsModel
-        }
+        model: ClientConnectionManager
 
         delegate: Rectangle {
+            id: delegateID
+
+            property bool isSelect: false
 
             anchors {
                 left: parent.left
                 right: parent.right
             }
-            height: 40
+            height: 50
 
-            color: ListView.isCurrentItem ? "#cfcfcf" : "transparent"
+            color: ListView.isCurrentItem ? "#efefef" : "transparent"
 
             radius: 4
 
-            Rectangle {
-                anchors {
-                    top: parent.top
-                    horizontalCenter: parent.horizontalCenter
-                    topMargin: -1
-                }
-                width: parent.width * 0.75
-                height: 1
-                opacity: 0.3
-                color: "#3d5482"
-            }
-
+            // Rectangle {
+            //     anchors {
+            //         top: parent.top
+            //         horizontalCenter: parent.horizontalCenter
+            //         topMargin: -1
+            //     }
+            //     width: parent.width * 0.75
+            //     height: 1
+            //     opacity: 0.3
+            //     color: "#3d5482"
+            // }
             Rectangle {
                 anchors {
                     left: parent.left
                     top: parent.top
+                    topMargin: 5
                     bottom: parent.bottom
+                    bottomMargin: 5
                 }
 
                 width: 3
-                color: "lightgreen"
-
-                visible: (m_activeConnection === index)
+                color: model.connectionState === 1 ? "#3dbf5c" : "#cfcfcf"
 
                 radius: 2
             }
 
             Text {
                 anchors {
-                    fill: parent
-                    leftMargin: 7
-                    rightMargin: 7
+                    verticalCenter: parent.verticalCenter
+                    left: delimiterID.left
                 }
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
 
                 color: "black"
 
-                text: name
+                text: model.name
                 clip: true
 
                 elide: Text.ElideRight
@@ -169,55 +164,179 @@ Rectangle {
             }
 
             Rectangle {
+                id: delimiterID
+
                 anchors {
                     bottom: parent.bottom
+                    // bottomMargin: 1
                     horizontalCenter: parent.horizontalCenter
                 }
-                width: parent.width * 0.75
+                width: parent.width * 0.9
                 height: 1
-                opacity: 0.3
-                color: "#3d5482"
+
+                color: "#efefef"
+                radius: 2
+
+                visible:
+                    /*!ListView.isCurrentItem
+                         || */ (savedPresets.currentIndex !== index + 1)
             }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    savedPresets.currentIndex = index
-                }
-                onDoubleClicked: {
-                    savedPresets.currentIndex = index
-
-                    ConnectionManager.setActive(index)
-                    m_activeConnection = index
-                    fileModel.clear()
-                    mainPageHeader.m_activeConnection = ConnectionManager.getActive(
-                                )["name"].toString()
-                    Client.checkConnectionToServer()
-                }
-            }
-
-            CustomImage {
+            Rectangle {
                 anchors {
                     top: parent.top
                     right: parent.right
                     margins: 4
                 }
-                width: 15
-                height: 15
+                width: 20
+                height: 20
 
-                source: "qrc:/Content/Icons/delete.svg"
+                radius: 4
+
+                border {
+                    width: 2
+                    color: "#5371ad"
+                }
+
+                visible: root.isSelectActive
+
+                // CustomImage {
+                //     anchors.fill: parent
+
+                //     source: "qrc:Icons/check.svg"
+
+                //     visible: delegateID.isSelect
+                // }
+                Rectangle {
+                    anchors.fill: parent
+
+                    visible: delegateID.isSelect
+
+                    color: "transparent"
+
+                    Image {
+                        id: check
+
+                        anchors {
+                            fill: parent
+                        }
+
+                        source: "qrc:Icons/check.svg"
+                        sourceSize.width: 200
+                        sourceSize.height: 200
+
+                        visible: false
+
+                        // smooth: true
+                        antialiasing: true
+                        mipmap: true
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    ColorOverlay {
+                        anchors.fill: check
+                        source: check
+                        color: "#5371ad"
+                    }
+                }
 
                 MouseArea {
-                    anchors.centerIn: parent.centerIn
+                    anchors.centerIn: parent
                     width: parent.width + 4
                     height: parent.height + 4
+
+                    onClicked: {
+                        delegateID.isSelect = !delegateID.isSelect
+                    }
                 }
             }
+
+            MouseArea {
+                id: mouse
+
+                anchors.fill: parent
+
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                onClicked: function (mouse) {
+                    savedPresets.currentIndex = index
+
+                    if (mouse.button === Qt.RightButton) {
+                        root.isSelectActive = !root.isSelectActive
+                    }
+                }
+                onDoubleClicked: function (mouse) {
+                    if (mouse.button === Qt.LeftButton) {
+                        savedPresets.currentIndex = index
+
+                        // currentPath = "/"
+                        Client.setActiveConnection(index)
+                        activeConnectionIndex = index
+
+                        // mainPageHeader.activeConnectionName
+                        //         = ClientConnectionManager.getActiveConnection().name
+                    }
+                }
+
+                CustomToolTip {
+                    id: tooltipRi
+
+                    visibilityController: mouse
+                    visibilityMode: root.isSelectActive && delegateID.isSelect
+
+                    delay: 0
+
+                    onClosed: {
+                        root.isSelectActive = false
+                        mouse.isSelect = false
+                    }
+                    contentItem: FileManagement {
+
+                        width: Screen.width * 0.08 - 2
+                        height: Screen.height * 0.15 - 2
+
+                        anchors.centerIn: parent
+                        opacity: tooltipRi.visible ? 1 : 0
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
+
+                    onVisibleChanged: {
+                        delegateID.isSelect = false
+                    }
+                }
+            }
+            // CustomImage {
+            //     anchors {
+            //         top: parent.top
+            //         right: parent.right
+            //         margins: 4
+            //     }
+            //     width: 15
+            //     height: 15
+
+            //     source: "qrc:Icons/delete.svg"
+
+            //     MouseArea {
+            //         anchors.centerIn: parent.centerIn
+            //         width: parent.width + 4
+            //         height: parent.height + 4
+
+            //         onClicked: {
+            //             ClientConnectionManager.deleteConnection(
+            //                         savedPresets.currentIndex, index)
+            //         }
+            //     }
+            // }
         }
 
         footer: Rectangle {
-            width: 30
-            height: 40
+            width: 43
+            height: width
 
             color: "transparent"
 
@@ -229,24 +348,23 @@ Rectangle {
                     topMargin: 10
                 }
 
-                source: "qrc:/Content/Icons/plus.svg"
+                source: "qrc:Icons/plus.svg"
+                sourceSize.width: 300
+                sourceSize.height: 300
 
                 visible: false
 
-                smooth: true
+                // smooth: true
                 antialiasing: true
                 mipmap: true
-
                 fillMode: Image.PreserveAspectFit
             }
+
             ColorOverlay {
                 anchors.fill: plus
                 source: plus
-                color: "#3d5482"
-
-                opacity: 0.6
+                color: "#5371ad"
             }
-
             MouseArea {
                 anchors.fill: parent
 
@@ -260,26 +378,22 @@ Rectangle {
     Rectangle {
         id: settingsGear
 
-        visible: isOpen
+        visible: root.isOpen
 
         anchors {
             left: parent.left
             bottom: parent.bottom
-            right: parent.right
+            margins: 5
         }
 
-        height: 60
+        width: 35
+        height: width
 
         color: "transparent"
 
         Button {
             anchors {
                 fill: parent
-                topMargin: 5
-                leftMargin: 5
-                bottomMargin: 5
-
-                rightMargin: parent.width * 0.8
             }
 
             background: Rectangle {
@@ -292,11 +406,13 @@ Rectangle {
 
                 anchors.fill: parent
 
-                source: "qrc:/Content/Icons/settings.svg"
+                source: "qrc:Icons/settings.svg"
+                sourceSize.width: 300
+                sourceSize.height: 300
 
                 visible: false
 
-                smooth: true
+                // smooth: true
                 antialiasing: true
                 mipmap: true
 
@@ -305,7 +421,7 @@ Rectangle {
             ColorOverlay {
                 anchors.fill: settings
                 source: settings
-                color: "#3d5482"
+                color: "#5371ad"
             }
 
             onClicked: {
@@ -315,16 +431,16 @@ Rectangle {
     }
 
     Rectangle {
-        visible: isOpen
+        visible: root.isOpen
         z: 200
         anchors {
             top: root.top
             left: root.right
             bottom: root.bottom
         }
-        width: window.width - root.width
+        width: root.mainWindow.width - root.width
         color: "#000"
-        opacity: isOpen ? 0.2 : 0
+        opacity: root.isOpen ? 0.2 : 0
 
         MouseArea {
             anchors.fill: parent
@@ -335,7 +451,8 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 100
+                duration: root.animationInterval
+                easing.type: Easing.OutCubic
             }
         }
     }

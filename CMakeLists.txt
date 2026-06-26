@@ -1,112 +1,56 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
+project(Glowworm VERSION 0.1 LANGUAGES CXX)
 
-set(QML_IMPORT_PATH
-    "${CMAKE_BINARY_DIR}/qml/buttons"
-    CACHE STRING "Path for QML modules"
-)
+enable_testing()
 
-project(DFSystem VERSION 0.1 LANGUAGES CXX)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Network WebSockets Xml)
+find_package(OpenSSL REQUIRED)
+find_package(GTest REQUIRED)
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS HttpServer)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-
-qt_standard_project_setup(REQUIRES 6.8)
+qt_standard_project_setup(REQUIRES 6.9)
 
 add_subdirectory(qml/buttons)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
-qt_add_executable(appDFSystem
-    src/main.cpp
-)
-
-qt_add_qml_module(appDFSystem
-    URI DFSystem
-    VERSION 1.0
-    QML_FILES
-        qml/Main.qml
-    QML_FILES
-        qml/mainPage/MainPage.qml
-        qml/mainPage/BurgerMenu.qml
-        qml/mainPage/Footer.qml
-        qml/mainPage/FileInfoPanel.qml
-        qml/mainPage/Header.qml
-        qml/mainPage/Area.qml
-        qml/mainPage/DownloadMenu.qml
-        qml/mainPage/CustomProgressBar.qml
-        qml/mainPage/DownloadStatusPanel.qml
-        qml/mainPage/CustomImage.qml
-    QML_FILES
-        qml/settingsPage/SettingsPage.qml
-
-    QML_FILES
-        qml/popups/AddPopup.qml
-        qml/popups/StartAddPopup.qml
-
-    SOURCES
-        include/network/httpclient.h
-        src/network/httpclient.cpp
-    SOURCES
-        include/network/httpserver.h
-        src/network/httpserver.cpp
-    SOURCES
-        include/json/jsonhelperfunctions.h
-        src/json/jsonhelperfunctions.cpp
-    SOURCES
-        include/managers/savedconnectionmanager.h
-        src/managers/savedconnectionmanager.cpp
-    SOURCES
-        include/network/downloadinfo.h
-        src/network/downloadinfo.cpp
-    SOURCES
-        include/managers/unfinisheddownloadmanager.h
-        src/managers/unfinisheddownloadmanager.cpp
-    SOURCES
-        include/managers/initialize.h
-        src/managers/initialize.cpp
-
-    RESOURCES
-        Resource.qrc
-    )
+# === LIBS ===
+# Creating all library targets
+include(cmake/create_libraries.cmake)
+create_libraries(APP_LIB) # Return application library targets in APP_LIB
 
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting
-# explicit, fixed bundle identifier manually though.
-set_target_properties(appDFSystem PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appDFSystem
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-)
+# === APP ===
+# Main target
+qt_add_executable(Glowworm ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
-target_include_directories(appDFSystem PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/network
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/json
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/managers
-)
-
-target_link_libraries(appDFSystem
-    PRIVATE
+target_link_libraries(Glowworm
+    PUBLIC
         Qt6::Quick
-        Qt6::Core
-        Qt6::Network
-        Qt6::HttpServer
+        ${APP_LIB}
         CustomButtonsLib
 )
-target_link_libraries(appDFSystem PRIVATE Qt6::Quick)
 
-include(GNUInstallDirs)
-install(TARGETS appDFSystem
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+
+# === QML ===
+# Creating all qml modules
+include(cmake/create_qml_modules.cmake)
+create_qml_modules() # Creating qml modules
+
+
+# === Resources ===
+# Adding all application resources
+include(cmake/add_resources.cmake)
+add_resources(Glowworm)
+
+
+# # === TESTS ===
+# include(GoogleTest)
+
+# # Creating all unit test targets
+# include(cmake/create_unit_tests.cmake)
+# file(GLOB TEST_FILES tests/unit/*.cpp)
+# create_unit_tests("${TEST_FILES}")
+
+# # Creating all functional test targets
+# include(cmake/create_functional_tests.cmake)
+# file(GLOB TEST_FILES tests/functional/*.cpp)
+# create_functional_tests("${TEST_FILES}")

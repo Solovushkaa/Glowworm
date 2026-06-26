@@ -1,37 +1,13 @@
 import QtQuick
 import QtQuick.Controls
-import HttpClient
+import QtQuick.Effects
 
 Rectangle {
     color: "transparent"
     height: 22
 
-    property string m_activeConnection: ""
-
     Rectangle {
-        color: "transparent"
-        anchors {
-            left: parent.left
-            leftMargin: 20
-            top: parent.top
-            topMargin: 30
-            bottom: parent.bottom
-        }
-
-        width: 300
-
-        Label {
-            anchors {
-                verticalCenter: parent.verticalCenter
-            }
-
-            font.pointSize: 12
-            color: "black"
-            text: "Active: " + m_activeConnection
-        }
-    }
-
-    Rectangle {
+        id: headerConnectionState
         color: "#efefef"
         anchors {
             right: parent.right
@@ -39,37 +15,44 @@ Rectangle {
             bottom: parent.bottom
         }
 
-        radius: 6
+        topLeftRadius: 6
+        bottomLeftRadius: 6
+        bottomRightRadius: 6
 
+        // radius: 6
         border {
             width: 1
             color: "#cccccc"
         }
 
-        width: isPageInteractiveActive ? 100 : 110
+        // visible: false // TODO:
+        width: 30
 
         Rectangle {
-            width: 10
-            height: 10
-            radius: width/2
-            color: isPageInteractiveActive ? "#009e05" : "gray"
+            id: connLight
+            width: 14
+            height: 14
+            radius: width / 2
+            // color: isPageInteractiveActive ? "#5371ad" : "#a5a5a5"
+            color: isPageInteractiveActive ? "#3dbf5c" : "#a5a5a5"
             anchors {
-                left: parent.left
-                leftMargin: 10
-                verticalCenter: parent.verticalCenter
+                centerIn: parent
             }
-        }
 
-        Text {
-            anchors {
-                fill: parent
-                rightMargin: 5
+            border {
+                width: 1
+                color: "#dddddd"
             }
-            font.pointSize: 10
-            color: "black"
-            text: isPageInteractiveActive ? "Connected" : "Disconnected"
 
-            horizontalAlignment: Text.AlignRight
+            // Shadow
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowBlur: 0.5
+                shadowHorizontalOffset: 2
+                shadowVerticalOffset: 2
+                shadowColor: "#20000000"
+            }
         }
     }
 }

@@ -1,45 +1,38 @@
-#include <QGuiApplication>
-#include <QLoggingCategory>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QQuickWindow>
-#include <QSGRendererInterface>
-#include "httpclient.h"
-#include "httpserver.h"
-#include "initialize.h"
-#include "savedconnectionmanager.h"
+/**
+ * @file main.cpp
+ * @brief Main function 
+ *  Cross-platform network file manager
+ * @author Solovey Alexey <solovushka.al@yandex.ru>
+ */
 
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include "app.hpp"
+
+/**
+ * @brief The main function of the program
+ * @param argc Number of command line arguments
+ * @param argv Сommand line arguments
+ * @return Exit code
+ */
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
-    // QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
+    QGuiApplication qtApp(argc, argv);
+
+    QGuiApplication::setOrganizationName("Glowworm");
+    QGuiApplication::setApplicationName("Glowworm");
 
     QQmlApplicationEngine engine;
 
-    Initialize initialize;
-
-    HttpServer httpServer;
-    httpServer.startHttpServer();
-
-    HttpClient client;
-    qmlRegisterSingletonInstance("HttpClient", 1, 0, "Client", &client);
-
-    SavedConnectionManager connectionManager(client);
-    qmlRegisterSingletonInstance("SavedConnectionManager",
-                                 1,
-                                 0,
-                                 "ConnectionManager",
-                                 &connectionManager);
-
-    // QLoggingCategory::setFilterRules("*.debug=false");
+    App application;
 
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
-        &app,
+        &qtApp,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("DFSystem", "Main");
+    engine.loadFromModule("GlowwormModule", "Main");
 
-    return app.exec();
+    return qtApp.exec();
 }

@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
@@ -8,7 +7,7 @@ Rectangle {
     color: "#ffffff"
     radius: 4
 
-    property int elementHeight: root.height / 7
+    property int elementHeight: root.height / 6
 
     property string name: ""
     property string typeName: ""
@@ -23,96 +22,109 @@ Rectangle {
 
         spacing: 0
 
-        Rectangle {
-            id: nameID
+        // Rectangle {
+        //     id: nameID
 
-            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-            Layout.preferredHeight: elementHeight
-            Layout.fillWidth: true
+        //     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+        //     Layout.preferredHeight: elementHeight
+        //     Layout.fillWidth: true
 
-            color: "#cccccc"
-            radius: 4
+        //     color: "#cccccc"
+        //     radius: 4
 
-            Rectangle {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
-                }
-                height: elementHeight / 2
+        //     Rectangle {
+        //         anchors {
+        //             left: parent.left
+        //             right: parent.right
+        //             bottom: parent.bottom
+        //         }
+        //         height: elementHeight / 2
 
-                color: "#cccccc"
-            }
-            Rectangle {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
-                }
+        //         color: "#cccccc"
+        //     }
+        //     Rectangle {
+        //         anchors {
+        //             left: parent.left
+        //             right: parent.right
+        //             bottom: parent.bottom
+        //         }
 
-                height: 4
+        //         height: 1
 
-                color: "#bfbfbf"
-            }
+        //         color: "#bfbfbf"
+        //     }
 
-            Text {
-                id: nameTextID
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                    bottom: parent.bottom
-                    margins: 5
-                }
+        //     Text {
+        //         id: nameTextID
+        //         anchors {
+        //             left: parent.left
+        //             right: parent.right
+        //             top: parent.top
+        //             bottom: parent.bottom
+        //             margins: 5
+        //         }
 
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+        //         horizontalAlignment: Text.AlignHCenter
+        //         verticalAlignment: Text.AlignVCenter
 
-                font.pointSize: 12
+        //         font.pointSize: 12
 
-                wrapMode: Text.WrapAnywhere
+        //         wrapMode: Text.WrapAnywhere
 
-                maximumLineCount: 2
-                elide: Text.ElideRight
+        //         maximumLineCount: 2
+        //         elide: Text.ElideRight
 
-                clip: true
+        //         clip: true
 
-                text: name
-            }
+        //         text: root.typeName + " " + root.name
+        //     }
+        // }
 
-        }
-
+        // Area {
+        //     id: typeID
+        //     isDelimiterVisible: false
+        //     prefix: "Type: "
+        //     name: typeName
+        //     elementHeight: root.elementHeight
+        // }
         Area {
-            id: typeID
+            id: nameID
+            prefix: ""
+            name: root.typeName + " " + root.name
             isDelimiterVisible: false
-            prefix: "Type: "
-            name: typeName
+            isAlignHCenter: true
+            elementHeight: root.elementHeight
         }
         Area {
             id: locationID
             prefix: "Location: "
             name: locationName
+            elementHeight: root.elementHeight
         }
         Area {
             id: sizeID
             prefix: "Size: "
             name: sizeName
             postfix: name === "" ? (typeName === "Directory" ? "-" : "") : "B"
+            elementHeight: root.elementHeight
         }
         Area {
             id: createdID
             prefix: "Created: "
             name: createdName
+            elementHeight: root.elementHeight
         }
         Area {
             id: modifiedID
             prefix: "Modified: "
             name: modifiedName
+            elementHeight: root.elementHeight
         }
         Area {
             id: accessedID
             prefix: "Accessed: "
             name: accessedName
+            elementHeight: root.elementHeight
         }
     }
 }

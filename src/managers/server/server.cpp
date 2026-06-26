@@ -1,0 +1,51 @@
+#include "server.hpp"
+#include "server_utils.hpp"
+
+Q_LOGGING_CATEGORY(server, "server")
+
+Server::Server(QObject *parent)
+    : QObject(parent)
+    , m_hostKey(createHostKey())
+    , m_webSocketMessenger(m_hostKey)
+    , m_tcpTransport()
+{
+    qCDebug(server) << "Server - created";
+}
+
+Server::~Server()
+{
+    stopServers();
+    qCDebug(server) << "Server - destroyed";
+}
+
+bool Server::startServers()
+{
+    qCDebug(server) << "Starting server";
+
+    bool started = true;
+    started &= m_webSocketMessenger.start();
+    started &= m_tcpTransport.start();
+
+    if (started) {
+        qCInfo(server) << "Server started";
+    } else {
+        qCCritical(server) << "Error starting server";
+    }
+
+    return started;
+}
+
+void Server::stopServers()
+{
+    qCDebug(server) << "Stopping server";
+
+    m_webSocketMessenger.stop();
+    m_tcpTransport.stop();
+
+    qCInfo(server) << "Server stopped";
+}
+
+QString Server::generateConnectionKey()
+{
+    return createConnectionKey(m_webSocketMessenger.getPort(), m_tcpTransport.getPort(), 0);
+}

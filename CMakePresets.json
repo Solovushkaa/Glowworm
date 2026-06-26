@@ -1,0 +1,84 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "multi-config-base",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/cmake/toolchain.cmake",
+      "description": "Multi-Configure build preset"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "multi-config-base",
+      "configuration": "Debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "multi-config-base",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-base",
+      "hidden": true,
+      "configurePreset": "multi-config-base",
+      "output":{
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "unit-debug",
+      "inherits": "test-base",
+      "configuration": "Debug",
+      "filter": {
+        "include": {
+          "label": "UnitTests"
+        }
+      }
+    },
+    {
+      "name": "functional-debug",
+      "inherits": "test-base",
+      "configuration": "Debug",
+      "filter": {
+        "include": {
+          "label": "FunctionalTests"
+        }
+      }
+    },
+    {
+      "name": "unit-release",
+      "inherits": "test-base",
+      "configuration": "Release",
+      "filter": {
+        "include": {
+          "label": "UnitTests"
+        }
+      }
+    },
+    {
+      "name": "functional-release",
+      "inherits": "test-base",
+      "configuration": "Release",
+      "filter": {
+        "include": {
+          "label": "FunctionalTests"
+        }
+      }
+    },
+    {
+      "name": "all-tests-debug",
+      "inherits": "test-base",
+      "configuration": "Debug"
+    },
+    {
+      "name": "all-tests-release",
+      "inherits": "test-base",
+      "configuration": "Release"
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+#include "client_connection_manager.hpp"
+#include "client_utils.hpp"
+#include "constants.hpp"
+#include "manager_utils.hpp"
+
+Q_LOGGING_CATEGORY(connection_manager, "connection.manager")
+
+ClientConnectionManager::ClientConnectionManager(const QString &savePath, QObject *parent)
+    : QAbstractListModel(parent)
+    , m_savePath(savePath)
+{
+    qCDebug(connection_manager) << "ClientConnectionManager - created";
+}
+
+ClientConnectionManager::~ClientConnectionManager()
+{
+    qCDebug(connection_manager) << "ClientConnectionManager - destroyed";
+}
+
+int ClientConnectionManager::rowCount(const QModelIndex &parent) const
+{
+    if (parent.isValid()) {
+        qCDebug(connection_manager) << "QModelIndex parent is not valid";
+        return 0;
+    }
+    return m_connectionInfoList.size();
+}
+
+QVariant ClientConnectionManager::data(const QModelIndex &index, int role) const
+{
+    qCDebug(connection_manager) << "Getting ClientConnectionManager data for the QML List Model";
+
+    if (!index.isValid() || index.row() >= m_connectionInfoList.size())
+        return QVariant();
+
+    ConnectionInfo *info = m_connectionInfoList[index.row()];
+    switch (role) {
+    case NameRole:
+        return info->m_name;
+    case ConnectionTypeRole:
+        return static_cast<int>(info->m_connectionType);
+    case AddressRole:
+        return info->m_address;
+    case ConnectionStateRole:
+        return static_cast<int>(info->m_connectionState);
+    default:
+        return QVariant();
+    }
+}
+
+QHash<int, QByteArray> ClientConnectionManager::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[NameRole] = constants::kName.toUtf8();
+    roles[ConnectionTypeRole] = constants::kConnectionType.toUtf8();
+    roles[AddressRole] = constants::kAddress.toUtf8();
+    roles[ConnectionStateRole] = constants::kConnectionState.toUtf8();
+    return roles;
+}
+
+bool ClientConnectionManager::addConnection(ConnectionInfo *connectionInfo)
+{
+    const int row = m_connectionInfoList.size();
+    beginInsertRows(QModelIndex(), row, row);
+    m_connectionInfoList.append(connectionInfo);
+    endInsertRows();
+
+    QJsonObject jsonObject;
+    setJsonObjectFromConnectionInfo(jsonObject, connectionInfo);
+
+    m_jsonSavedConnections.insert(connectionInfo->m_name, std::move(jsonObject));
+    m_connectionNames.insert(connectionInfo->m_name);
+    m_connectionInfoIndexDict[connectionInfo] = m_connectionInfoList.size() - 1;
+
+    emit connectionAdded();
+
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
+}
+
+bool ClientConnectionManager::addConnection(const QString &name,
+                                            ConnectionInfo::ConnectionType connectionType,
+                                            const QString &address,
+                                            const QString &remoteUserUuid,
+                                            qint16 messengerPort,
+                                            qint16 transportPort,
+                                            bool isSecureConnection,
+                                            bool temporaryConnection)
+{
+    qCDebug(connection_manager) << "Adding a new connection";
+
+    if (m_connectionNames.contains(name)) {
+        qCInfo(connection_manager) << "A connection with the name" << name << "already exists";
+        return false;
+    }
+
+    auto connectionInfo = new ConnectionInfo(name,
+                                             "",
+                                             connectionType,
+                                             address,
+                                             remoteUserUuid,
+                                             ConnectionInfo::ConnectionState::Disconnected,
+                                             messengerPort,
+                                             transportPort,
+                                             isSecureConnection,
+                                             temporaryConnection,
+                                             "",
+                                             "",
+                                             0,
+                                             false,
+                                             this);
+
+    return addConnection(connectionInfo);
+}
+
+bool ClientConnectionManager::addQuickConnection(const QString &connectionKey,
+                                                 bool temporaryConnection)
+{
+    auto quickConnectionInfo = parseConnectionKey(connectionKey);
+
+    if (!addConnection(QUuid::createUuid().toString(QUuid::WithoutBraces).left(10),
+                       ConnectionInfo::ConnectionType::Direct,
+                       quickConnectionInfo.ip,
+                       quickConnectionInfo.serverCertFingerprint,
+                       quickConnectionInfo.messengerPort,
+                       quickConnectionInfo.transportPort,
+                       true,
+                       temporaryConnection)) {
+        return false;
+    }
+
+    qCritical() << quickConnectionInfo.ip;
+    qCritical() << quickConnectionInfo.serverCertFingerprint;
+    qCritical() << quickConnectionInfo.messengerPort;
+    qCritical() << quickConnectionInfo.transportPort;
+
+    return true;
+}
+
+bool ClientConnectionManager::addWebDavConnection(const QString &address,
+                                                  const QString &name,
+                                                  const QString &webDavUsername,
+                                                  const QString &webDavPassword,
+                                                  quint16 webDavPort,
+                                                  bool temporaryConnection)
+{
+    ConnectionInfo *connectionInfo = new ConnectionInfo(address,
+                                                        name,
+                                                        webDavUsername,
+                                                        webDavPassword,
+                                                        webDavPort,
+                                                        temporaryConnection);
+    return addConnection(connectionInfo);
+}
+
+bool ClientConnectionManager::deleteConnection(int activeIndex, int deleteIndex)
+{
+    qCDebug(connection_manager) << "Deleting a connection";
+
+    if (deleteIndex < 0 || deleteIndex >= m_connectionInfoList.size()) {
+        qCCritical(connection_manager) << "Bad ConnectionInfo delete index!";
+        return false;
+    }
+
+    if (activeIndex == deleteIndex) {
+        m_activeConnection = nullptr;
+        emit activeConnectionChanged();
+    }
+
+    QString deleteName = std::move(m_connectionInfoList[deleteIndex]->m_name);
+
+    beginRemoveRows(QModelIndex(), deleteIndex, deleteIndex);
+    ConnectionInfo *info = m_connectionInfoList.takeAt(deleteIndex);
+    m_connectionInfoIndexDict.remove(info);
+    info->deleteLater();
+    endRemoveRows();
+
+    m_connectionNames.remove(deleteName);
+    m_jsonSavedConnections.remove(deleteName);
+
+    for (int i = 0; i < m_connectionInfoList.size(); ++i) {
+        m_connectionInfoIndexDict[m_connectionInfoList[i]] = i;
+    }
+
+    emit connectionRemoved(deleteIndex);
+
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
+}
+
+bool ClientConnectionManager::updateConnection(int index,
+                                               const QString &property,
+                                               const QVariant &value)
+{
+    qCDebug(connection_manager) << "Updating ClientConnectioManager data for the QML List Model";
+
+    if (index < 0 || index >= m_connectionInfoList.size()) {
+        qCCritical(connection_manager) << "Bad ConnectionInfo update index!";
+        return false;
+    }
+
+    ConnectionInfo *info = m_connectionInfoList[index];
+
+    info->setProperty(property.toUtf8().constData(), value);
+
+    QVector<int> roles;
+    if (property == constants::kName.toUtf8())
+        roles << NameRole;
+    if (property == constants::kConnectionType.toUtf8())
+        roles << ConnectionTypeRole;
+    if (property == constants::kAddress.toUtf8())
+        roles << AddressRole;
+    if (property == constants::kConnectionState.toUtf8())
+        roles << ConnectionStateRole;
+
+    static const QVector<int> allRoles{NameRole,
+                                       ConnectionTypeRole,
+                                       AddressRole,
+                                       ConnectionStateRole};
+
+    QModelIndex idx = this->index(index);
+
+    emit dataChanged(idx, idx, roles.isEmpty() ? allRoles : roles);
+
+    return rewriteSelectAppData(info);
+}
+
+void ClientConnectionManager::updateConnection(ConnectionInfo *connectionInfo)
+{
+    int connectionIndex = m_connectionInfoIndexDict[connectionInfo];
+
+    QModelIndex index = this->index(connectionIndex);
+    emit dataChanged(index, index, {ConnectionRoles::ConnectionStateRole});
+}
+
+bool ClientConnectionManager::readSavedConnections()
+{
+    return readAppData(*this, m_savePath, m_jsonSavedConnections);
+}
+
+bool ClientConnectionManager::rewriteSelectAppData(ConnectionInfo *connectionInfo)
+{
+    QJsonObject jsonObject;
+    setJsonObjectFromConnectionInfo(jsonObject, connectionInfo);
+    m_jsonSavedConnections[connectionInfo->m_name] = jsonObject;
+
+    return rewriteAppDataFile(m_savePath, m_jsonSavedConnections);
+}
+
+void ClientConnectionManager::initInfo(ConnectionInfo *connectionInfo, QJsonObject &jsonObject)
+{
+    qCDebug(connection_manager) << "Filling in connection information from JSON";
+
+    connectionInfo->setParent(this);
+
+    setConnectionInfoFromJsonObject(connectionInfo, jsonObject);
+
+    m_connectionInfoList.push_back(connectionInfo);
+    m_connectionInfoIndexDict[connectionInfo] = m_connectionInfoList.size() - 1;
+    m_connectionNames.insert(connectionInfo->m_name);
+}
+
+void ClientConnectionManager::setActiveConnection(int index)
+{
+    qCDebug(connection_manager) << "Changing the active connection";
+
+    m_activeConnection = m_connectionInfoList[index];
+    emit activeConnectionChanged();
+
+    qCInfo(connection_manager) << "Active connection changed to" << index;
+}
+
+void ClientConnectionManager::setConnectionInfoFromJsonObject(ConnectionInfo *connectionInfo,
+                                                              QJsonObject &jsonObject)
+{
+    connectionInfo->m_name = jsonObject[constants::kName].toString();
+    connectionInfo->m_connectionType = static_cast<ConnectionInfo::ConnectionType>(
+        jsonObject[constants::kConnectionType].toInt());
+    connectionInfo->m_address = jsonObject[constants::kAddress].toString();
+    connectionInfo->m_remoteUserUuid = jsonObject[constants::kRemoteUserUuid].toString();
+    connectionInfo->m_connectionState = ConnectionInfo::ConnectionState::Disconnected;
+    connectionInfo->m_messengerPort = jsonObject[constants::kMessengerPort].toInt();
+    connectionInfo->m_transportPort = jsonObject[constants::kTransportPort].toInt();
+    connectionInfo->m_isSecureConnection = jsonObject[constants::kIsSecureConnection].toBool();
+    connectionInfo->m_temporaryConnection = jsonObject[constants::kTemporaryConnection].toBool();
+    connectionInfo->m_webDavUsername = jsonObject[constants::kWebDavUsername].toString();
+    connectionInfo->m_webDavPassword = jsonObject[constants::kWebDavPassword].toString();
+    connectionInfo->m_webDavPort = jsonObject[constants::kWebDavPort].toInt();
+    connectionInfo->m_webDavConnection = jsonObject[constants::kWebDavConnection].toBool();
+}
+
+void ClientConnectionManager::setJsonObjectFromConnectionInfo(QJsonObject &jsonObject,
+                                                              ConnectionInfo *connectionInfo)
+{
+    jsonObject[constants::kName] = connectionInfo->m_name;
+    jsonObject[constants::kHostkey] = connectionInfo->m_hostKey;
+    jsonObject[constants::kConnectionType] = static_cast<int>(connectionInfo->m_connectionType);
+    jsonObject[constants::kAddress] = connectionInfo->m_address;
+    jsonObject[constants::kRemoteUserUuid] = connectionInfo->m_remoteUserUuid;
+    jsonObject[constants::kConnectionState] = static_cast<int>(connectionInfo->m_connectionState);
+    jsonObject[constants::kMessengerPort] = connectionInfo->m_messengerPort;
+    jsonObject[constants::kTransportPort] = connectionInfo->m_transportPort;
+    jsonObject[constants::kIsSecureConnection] = connectionInfo->m_isSecureConnection;
+    jsonObject[constants::kTemporaryConnection] = connectionInfo->m_temporaryConnection;
+    jsonObject[constants::kWebDavUsername] = connectionInfo->m_webDavUsername;
+    jsonObject[constants::kWebDavPassword] = connectionInfo->m_webDavPassword;
+    jsonObject[constants::kWebDavPort] = connectionInfo->m_webDavPort;
+    jsonObject[constants::kWebDavConnection] = connectionInfo->m_webDavConnection;
+}

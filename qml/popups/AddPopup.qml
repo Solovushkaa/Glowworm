@@ -1,18 +1,26 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import CustomButtons
-import SavedConnectionManager
 
 Popup {
     id: root
+
+    property bool isPersistentConnection: persistentConnection.checked
+
+    function getTextOrPlaceholder(textArea) {
+        return parseInt(
+                    textArea.text !== "" ? textArea.text : textArea.placeholderText)
+    }
 
     anchors {
         centerIn: parent
     }
 
-    width: parent.width * 0.4
-    height: parent.height * 0.42
+    // width: parent.width * 0.4
+    // height: parent.height * 0.42
+    padding: 10
 
     modal: true
     focus: true
@@ -23,14 +31,30 @@ Popup {
         color: "white"
 
         radius: 30
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowBlur: 0.5
+            // shadowHorizontalOffset: 2
+            // shadowVerticalOffset: 2
+            shadowColor: "#20000000"
+        }
     }
 
+    // implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
+    // implicitHeight: contentItem.implicitHeight + topPadding + bottomPadding
+    width: parent.width * 0.4
+    implicitHeight: layout.implicitHeight + topPadding + bottomPadding
+
     ColumnLayout {
+        id: layout
+
+        // anchors.centerIn: parent
         anchors {
             fill: parent
             margins: 10
         }
-
         spacing: 10
 
         Text {
@@ -39,104 +63,153 @@ Popup {
             font.pointSize: 12
             text: "Add Connection"
         }
-        RowLayout {
+
+        CustomTabBar {
+            id: tabBar
+        }
+
+        Rectangle {
             Layout.fillWidth: true
+            Layout.preferredHeight: 30
 
             Text {
-                font.pointSize: 11
-                text: "name: "
+                Layout.alignment: Qt.AlignLeft
+                anchors {
+                    left: parent.left
+                    verticalCenter: parent.verticalCenter
+                }
+                font.pointSize: 12
+
+                text: "Persistent connection:"
             }
-            TextArea {
-                id: newPresetName
 
-                Layout.fillWidth: true
+            Switch {
+                id: persistentConnection
 
-                placeholderText: "..."
+                height: 27
+                width: 65
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                }
 
-                color: "black"
-                font.pointSize: 11
+                checked: true
 
-                background: Rectangle {
-                    radius: 3
+                indicator: Rectangle {
+                    width: parent.width
+                    height: parent.height
+                    radius: 20
 
-                    border {
-                        width: 1
-                        color: "#dddddd"
+                    color: persistentConnection.checked ? "#5371ad" : "#e0e0e0"
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    Text {
+                        visible: persistentConnection.checked
+
+                        text: "ON"
+                        font.bold: true
+                        font.pixelSize: 12
+                        color: "white"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 12
+                            verticalCenter: parent.verticalCenter
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+                    Text {
+                        visible: !persistentConnection.checked
+
+                        text: "OFF"
+                        font.bold: true
+                        font.pixelSize: 12
+                        color: "#757575"
+
+                        anchors {
+                            right: parent.right
+                            rightMargin: 12
+                            verticalCenter: parent.verticalCenter
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        property int ssize: parent.height - 4
+
+                        width: ssize
+                        height: ssize
+                        radius: ssize / 2
+                        y: 2
+
+                        color: "white"
+
+                        x: persistentConnection.checked ? parent.width - width - 2 : 2
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
                     }
                 }
+
+                contentItem: Text {
+                    text: persistentConnection.text
+                    font.pointSize: 11
+                    leftPadding: persistentConnection.indicator.width + 8
+                    verticalAlignment: Text.AlignVCenter
+                    visible: persistentConnection.text !== ""
+                }
+            }
+
+            Rectangle {
+                anchors {
+                    bottom: parent.bottom
+                    bottomMargin: -6
+                    horizontalCenter: parent.horizontalCenter
+                }
+                height: 1
+                width: parent.width * 0.85
+
+                color: "#efefef"
+                radius: 2
             }
         }
-        RowLayout {
+
+        StackLayout {
+            id: stackLayout
             Layout.fillWidth: true
-
-            Text {
-                font.pointSize: 11
-                text: "ip: "
-            }
-            TextArea {
-                id: newPresetIp
-
-                Layout.fillWidth: true
-
-                placeholderText: "..."
-
-                color: "black"
-                font.pointSize: 11
-
-                background: Rectangle {
-                    radius: 3
-
-                    border {
-                        width: 1
-                        color: "#dddddd"
-                    }
-                }
-            }
-        }
-        RowLayout {
-            Layout.fillWidth: true
-
-            Text {
-                font.pointSize: 11
-                text: "port: "
-            }
-            TextArea {
-                id: newPresetPort
-
-                Layout.fillWidth: true
-
-                placeholderText: "..."
-
-                color: "black"
-                font.pointSize: 11
-
-                background: Rectangle {
-                    radius: 3
-
-                    border {
-                        width: 1
-                        color: "#dddddd"
-                    }
-                }
-            }
-        }
-        CustomButton {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 100
-            Layout.preferredHeight: 40
-
-            buttonText: "Add"
-
-            onClicked: {
-
-                ConnectionManager.add(newPresetName.text, "HTTP",
-                                      newPresetIp.text, newPresetPort.text)
-                startAddPopup.close()
-                root.close()
-            }
-        }
-        Item {
             Layout.fillHeight: true
+            Layout.margins: 15
+            currentIndex: tabBar.currentIndex
+
+            QuickAddMenu {
+                id: quickAddMenu
+            }
+            DiskAddMenu {
+                id: diskAddMenu
+            }
+            AdvancedAddMenu {
+                id: advancedAddMenu
+            }
         }
     }
 }

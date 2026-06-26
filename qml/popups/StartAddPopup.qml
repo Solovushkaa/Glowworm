@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 Popup {
 
@@ -28,7 +29,7 @@ Popup {
         }
     }
 
-    closePolicy: Popup.NoAutoClose
+    closePolicy: Popup.CloseOnEscape
 
     ColumnLayout {
         anchors {
@@ -42,19 +43,40 @@ Popup {
         Text {
             text: "Add connection"
             Layout.alignment: Qt.AlignCenter
+            font.pointSize: 16
+            renderTypeQuality: Text.HighRenderTypeQuality
+            renderType: Text.NativeRendering
         }
-        Image {
-            source: "qrc:/Content/Icons/plus.svg"
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
+        Rectangle {
             Layout.alignment: Qt.AlignCenter
 
-            smooth: true
-            antialiasing: true
-            mipmap: true
+            Layout.preferredWidth: 50
+            Layout.preferredHeight: 50
 
-            fillMode: Image.PreserveAspectFit
+            Image {
+                id: plus
+
+                anchors.fill: parent
+
+                source: "qrc:Icons/plus.svg"
+                sourceSize.width: 300
+                sourceSize.height: 300
+
+                visible: false
+
+                // smooth: true
+                antialiasing: true
+                mipmap: true
+                fillMode: Image.PreserveAspectFit
+            }
+
+            ColorOverlay {
+                anchors.fill: plus
+                source: plus
+                color: "#5371ad"
+            }
         }
+
         Item {
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignCenter
