@@ -15,14 +15,13 @@ Rectangle {
     // function finishDownload(downloadID) {
     //     // some code
     // }
-    Connections {
-        target: Client
+    // Connections {
+    //     target: Client
 
-        // function onFileSuccessfulReceived(downloadID) {
-        //     finishDownload(downloadID)
-        // }
-    }
-
+    //     function onFileSuccessfulReceived(downloadID) {
+    //         finishDownload(downloadID)
+    //     }
+    // }
     radius: 8
 
     ListView {
@@ -46,9 +45,9 @@ Rectangle {
         delegate: Rectangle {
             id: click
             width: contentArea.width - 10
-            height: 20
+            height: 22
             focus: true
-            // color: "white"
+
             color: ListView.isCurrentItem ? (downloadStatusList.activeFocus ? "lightgrey" : "#e9e9e9") : "white"
 
             Rectangle {
@@ -75,22 +74,22 @@ Rectangle {
                     id: playPause
                     anchors {
                         fill: parent
-                        topMargin: 3
-                        bottomMargin: 3
+                        margins: 5
                     }
                     source: model.downloadState === 2 ? "qrc:Icons/pause.svg" : "qrc:Icons/play.svg"
-                    fillMode: Image.PreserveAspectFit
+                    sourceSize.width: 100
+                    sourceSize.height: 100
 
-                    smooth: true
+                    // smooth: true
                     antialiasing: true
                     mipmap: true
+
+                    fillMode: Image.PreserveAspectFit
                 }
                 ColorOverlay {
                     anchors.fill: playPause
                     source: playPause
                     color: "#5371ad"
-
-                    opacity: 0.6
                 }
 
                 MouseArea {
@@ -118,7 +117,8 @@ Rectangle {
                     verticalCenter: parent.verticalCenter
                 }
                 text: model.name
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
 
             Text {
@@ -129,12 +129,13 @@ Rectangle {
                     verticalCenter: parent.verticalCenter
                 }
 
-                textFormat: Text.RichText
-
-                text: "<font size = 4>" + Math.round(
+                // textFormat: Text.RichText
+                text: Math.round(
                           (model.lastReceivedByte
-                           === 0) ? 0 : (model.lastReceivedByte / model.size)
-                                    * 1000) / 10 + "</font><font size=4>%</font>"
+                           === 0) ? 0 : (model.lastReceivedByte / model.size) * 1000) / 10 + "%"
+
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
 
                 color: "black"
                 visible: true
@@ -165,11 +166,12 @@ Rectangle {
                     verticalCenter: parent.verticalCenter
                 }
 
-                textFormat: Text.RichText
+                text: Math.round(
+                          model.lastReceivedByte / (1024 * 1024) * 10) / 10 + "/"
+                      + Math.round(model.size / (1024 * 1024) * 10) / 10 + " MB"
 
-                text: "<font size = 4>" + Math.round(
-                          model.lastReceivedByte / (1024 * 1024)) + "/" + Math.round(
-                          model.size / (1024 * 1024)) + " MB</font>"
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
 
                 color: "black"
                 visible: true

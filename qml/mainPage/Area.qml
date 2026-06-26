@@ -58,7 +58,8 @@ Rectangle {
 
             horizontalAlignment: root.isAlignHCenter ? Text.AlignHCenter : Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
-            font.pointSize: 12
+            font.pointSize: 11
+            renderTypeQuality: Text.NormalRenderTypeQuality
 
             textFormat: Text.StyledText
             text: "<font color='#505050'>" + prefix + "</font>"

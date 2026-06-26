@@ -6,12 +6,12 @@ ToolTip {
     id: tooltip
 
     property var visibilityController: null
-    property bool visibilityMode: false
+    property bool visibilityMode: true
 
     property double saveMouseX: !tooltip.visible ? visibilityController.mouseX : saveMouseX
     property double saveMouseY: !tooltip.visible ? visibilityController.mouseY : saveMouseY
 
-    visible: visibilityMode || tooltipMouseArea.containsMouse
+    visible: visibilityMode /*&& tooltipMouseArea.containsMouse*/
     opacity: tooltip.visible ? 1 : 0
 
     delay: 350

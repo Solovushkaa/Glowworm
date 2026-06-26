@@ -190,8 +190,4 @@ Page {
             // }
         }
     }
-
-    DownloadMenu {
-        id: downloadMenu
-    }
 }

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 
 Button {
     id: internal_button
@@ -17,10 +18,19 @@ Button {
 
     background: Rectangle {
         radius: 4
-        border {
-            width: internal_button.borderWidth
-            color: "#cccccc"
-        }
+
+        // border {
+        //     width: internal_button.borderWidth
+        //     color: "#cccccc"
+        // }
+        // layer.enabled: true
+        // layer.effect: MultiEffect {
+        //     shadowEnabled: true
+        //     shadowBlur: 0.5
+        //     // shadowHorizontalOffset: 2
+        //     // shadowVerticalOffset: 2
+        //     shadowColor: "#20000000"
+        // }
     }
 
     ColumnLayout {

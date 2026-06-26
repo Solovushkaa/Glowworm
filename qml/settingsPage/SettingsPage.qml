@@ -1,39 +1,304 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Effects
 import CustomButtons
 
 Page {
+    id: root
+
     anchors.fill: parent
-    Rectangle {
-        anchors.fill: parent
 
-        color: "white"
+    background: Rectangle {
+        color: "#eeeeee"
+    }
 
-        Button {
-            anchors {
-                left: parent.left
-                leftMargin: 5
-                top: parent.top
-                topMargin: 5
-            }
+    ColumnLayout {
 
-            height: 40
-            width: 40
+        anchors {
+            fill: parent
+            margins: 5
+            // topMargin: 30
+        }
 
-            background: Image {
-                anchors {
-                    fill: parent
-                    margins: 10
+        RowLayout {
+            id: mainLayer
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            spacing: 5
+
+            ColumnLayout {
+
+                Layout.preferredWidth: 150
+                Layout.fillHeight: true
+
+                Item {
+                    Layout.preferredWidth: 150
+                    Layout.preferredHeight: 30
                 }
 
-                source: "qrc:/Content/Icons/close.svg"
+                Rectangle {
+                    id: settingCategory
 
-                fillMode: Image.PreserveAspectFit
+                    Layout.preferredWidth: 150
+                    Layout.fillHeight: true
+
+                    color: "#ffffff"
+
+                    radius: 5
+
+                    border {
+                        width: 1
+                        color: "#cccccc"
+                    }
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowBlur: 0.5
+                        // shadowHorizontalOffset: 2
+                        // shadowVerticalOffset: 2
+                        shadowColor: "#20000000"
+                    }
+
+                    ListModel {
+                        id: settingsList
+
+                        ListElement {
+                            name: "Network"
+                        }
+                        ListElement {
+                            name: "Privacy"
+                        }
+                    }
+
+                    ListView {
+                        id: settingsListView
+
+                        anchors {
+                            fill: parent
+                            margins: 3
+                        }
+
+                        model: settingsList
+
+                        delegate: Rectangle {
+
+                            radius: 5
+
+                            width: parent.width
+                            height: 30
+
+                            anchors {
+                                horizontalCenter: parent.horizontalCenter
+                            }
+
+                            // border {
+                            //     width: 1
+                            //     color: "#cccccc"
+                            // }
+                            color: ListView.isCurrentItem ? (settingsListView.activeFocus ? "lightgrey" : "#e9e9e9") : "white"
+
+                            Text {
+                                anchors {
+                                    centerIn: parent
+                                }
+
+                                text: model.name
+                                font.pointSize: 12
+                                renderTypeQuality: Text.VeryHighRenderTypeQuality
+                            }
+
+                            MouseArea {
+                                id: mouseArea
+
+                                anchors.fill: parent
+
+                                onClicked: {
+                                    settingsListView.currentIndex = index
+                                }
+                            }
+                        }
+                    }
+
+                    // ColumnLayout {
+                    //     id: settingList
+
+                    //     anchors {
+                    //         fill: parent
+                    //         margins: 3
+                    //     }
+
+                    //     Area {
+                    //         id: networkSettings
+                    //         name: "Network"
+                    //         isDelimiterVisible: false
+                    //         isAlignHCenter: true
+                    //         Layout.preferredHeight: 30
+                    //     }
+                    //     Area {
+                    //         id: privacySettings
+                    //         name: "Privacy"
+                    //         isAlignHCenter: true
+                    //         Layout.preferredHeight: 30
+                    //     }
+
+                    //     Item {
+                    //         Layout.fillWidth: true
+                    //         Layout.fillHeight: true
+                    //     }
+                    // }
+                }
             }
 
-            onClicked: {
-                pagesStack.pop()
+            ColumnLayout {
+                id: settingAdditions
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Rectangle {
+                    id: settingName
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 30
+
+                    color: "transparent"
+
+                    Text {
+                        text: "Network"
+
+                        anchors {
+                            bottom: parent.bottom
+                            left: parent.left
+                            leftMargin: 5
+                        }
+
+                        font.pointSize: 14
+
+                        // renderTypeQuality: Text.HighRenderTypeQuality
+                        renderType: Text.NativeRendering
+                    }
+                }
+
+                Rectangle {
+                    id: settings
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    color: "#ffffff"
+
+                    radius: 5
+
+                    ColumnLayout {
+                        anchors {
+                            fill: parent
+                            margins: 15
+                        }
+
+                        spacing: 15
+
+                        SettingArea {
+                            areaName: "Server"
+                            settings: ListModel {
+                                ListElement {
+                                    prefix: "Server messenger port:"
+                                    value: "6115"
+                                    postfix: ""
+                                }
+                                ListElement {
+                                    prefix: "Server transport port:"
+                                    value: "1274"
+                                    postfix: ""
+                                }
+                            }
+                        }
+                        SettingArea {
+                            areaName: "Timeout"
+                            settings: ListModel {
+                                ListElement {
+                                    prefix: "Reconnect timeout:"
+                                    value: "5"
+                                    postfix: "second"
+                                }
+                            }
+                        }
+                        Item {
+                            Layout.fillHeight: true
+                        }
+                    }
+
+                    border {
+                        width: 1
+                        color: "#cccccc"
+                    }
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowBlur: 0.5
+                        // shadowHorizontalOffset: 2
+                        // shadowVerticalOffset: 2
+                        shadowColor: "#20000000"
+                    }
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 30
+            Layout.alignment: Qt.AlignRight
+
+            CustomButton {
+                buttonText: "Ok"
+                Layout.preferredHeight: 30
+                Layout.preferredWidth: 80
+            }
+            CustomButton {
+                buttonText: "Apply"
+                Layout.preferredHeight: 30
+                Layout.preferredWidth: 80
+            }
+            CustomButton {
+                buttonText: "Cancel"
+                Layout.preferredHeight: 30
+                Layout.preferredWidth: 80
             }
         }
     }
+
+    // Rectangle {
+    //     anchors.fill: parent
+
+    //     color: "white"
+
+    //     Button {
+    //         anchors {
+    //             left: parent.left
+    //             leftMargin: 5
+    //             top: parent.top
+    //             topMargin: 5
+    //         }
+
+    //         height: 40
+    //         width: 40
+
+    //         background: Image {
+    //             anchors {
+    //                 fill: parent
+    //                 margins: 10
+    //             }
+
+    //             source: "qrc:/Content/Icons/close.svg"
+
+    //             fillMode: Image.PreserveAspectFit
+    //         }
+
+    //         onClicked: {
+    //             pagesStack.pop()
+    //         }
+    //     }
+    // }
 }

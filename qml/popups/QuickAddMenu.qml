@@ -11,6 +11,35 @@ ColumnLayout {
         Text {
             textFormat: Text.RichText
             font.pointSize: 11
+            text: "<font color='red'></font>Name: "
+        }
+        TextArea {
+            id: newQuickConnectionName
+
+            Layout.fillWidth: true
+
+            placeholderText: "..."
+            placeholderTextColor: "#cfcfcf"
+
+            color: "black"
+            font.pointSize: 11
+
+            background: Rectangle {
+                radius: 3
+
+                border {
+                    width: 1
+                    color: "#dddddd"
+                }
+            }
+        }
+    }
+    RowLayout {
+        Layout.fillWidth: true
+
+        Text {
+            textFormat: Text.RichText
+            font.pointSize: 11
             text: "<font color='red'>*</font>Key: "
         }
         TextArea {

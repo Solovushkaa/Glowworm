@@ -2,27 +2,27 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 
 Item {
-    property string source: ""
-    property string color: ""
+        property string source: ""
+        property string color: ""
 
-    Image {
-        id: image
+        Image {
+            id: image
 
-        anchors.fill: parent
+            anchors.fill: parent
 
-        source: parent.source
+            source: parent.source
 
-        visible: false
+            visible: false
 
-        smooth: true
-        antialiasing: true
-        mipmap: true
+            smooth: true
+            antialiasing: true
+            mipmap: true
 
-        fillMode: Image.PreserveAspectFit
-    }
-    ColorOverlay {
-        anchors.fill: image
-        source: image
-        color: parent.color
-    }
+            fillMode: Image.PreserveAspectFit
+        }
+        ColorOverlay {
+            anchors.fill: image
+            source: image
+            color: parent.color
+        }
 }

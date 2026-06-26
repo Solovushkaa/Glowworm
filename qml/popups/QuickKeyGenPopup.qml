@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import CustomButtons
 
 Popup {
@@ -28,18 +29,27 @@ Popup {
         color: "white"
 
         radius: 30
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowBlur: 0.5
+            // shadowHorizontalOffset: 2
+            // shadowVerticalOffset: 2
+            shadowColor: "#20000000"
+        }
     }
 
     // implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
     // implicitHeight: contentItem.implicitHeight + topPadding + bottomPadding
     width: parent.width * 0.4
-    implicitHeight: layout.implicitHeight + topPadding + bottomPadding
+    height: parent.height * 0.2
 
     ColumnLayout {
         id: layout
 
-        // anchors.centerIn: parent
         anchors {
+            centerIn: parent
             fill: parent
             margins: 10
         }
@@ -49,7 +59,7 @@ Popup {
             Layout.alignment: Qt.AlignHCenter
 
             font.pointSize: 12
-            text: "Generate quick connection key"
+            text: "Quick connection key"
         }
 
         RowLayout {
@@ -71,18 +81,39 @@ Popup {
 
                 text: Server.generateConnectionKey()
 
+                persistentSelection: false
+                selectByMouse: true
+                selectByKeyboard: true
+
+                wrapMode: TextArea.NoWrap
+                clip: true
+
+                color: "transparent"
+
                 placeholderText: "..."
                 placeholderTextColor: "#cfcfcf"
 
-                color: "black"
                 font.pointSize: 11
 
                 background: Rectangle {
                     radius: 3
-
                     border {
                         width: 1
                         color: "#dddddd"
+                    }
+
+                    Text {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        verticalAlignment: Text.AlignVCenter
+
+                        text: keyID.text
+                        elide: Text.ElideRight
+                        font: keyID.font
+                        color: "black"
+                        renderType: Text.NativeRendering
+
+                        enabled: false
                     }
                 }
 
@@ -97,6 +128,7 @@ Popup {
                 onClicked: {
                     keyID.selectAll()
                     keyID.copy()
+                    keyID.deselect()
                 }
             }
         }

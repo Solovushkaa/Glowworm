@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import CustomButtons
 
 Popup {
@@ -30,6 +31,15 @@ Popup {
         color: "white"
 
         radius: 30
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowBlur: 0.5
+            // shadowHorizontalOffset: 2
+            // shadowVerticalOffset: 2
+            shadowColor: "#20000000"
+        }
     }
 
     // implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
@@ -76,7 +86,7 @@ Popup {
             Switch {
                 id: persistentConnection
 
-                height: parent.height * 0.8
+                height: 27
                 width: 65
                 anchors {
                     right: parent.right

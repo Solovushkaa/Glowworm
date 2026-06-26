@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import CustomButtons
 
 Rectangle {
     id: root
@@ -9,6 +10,8 @@ Rectangle {
     property string currentName: ""
     property int currentSize: 0
     property int fileIndex: -1
+
+    property bool isRightClicked: false
 
     Component.onCompleted: {
         Client.getSystemDirectory(currentPath)
@@ -48,7 +51,8 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
             }
 
-            font.pointSize: 12
+            font.pointSize: 13
+            renderTypeQuality: Text.HighRenderTypeQuality
             color: "black"
             text: "File System"
         }
@@ -68,7 +72,8 @@ Rectangle {
                 text: root.currentPath
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
         }
 
@@ -87,15 +92,17 @@ Rectangle {
 
             Text {
                 anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
                 text: "📁"
-                font.pixelSize: 14
-                renderType: Text.NativeRendering
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
             Text {
                 anchors.left: parent.left
                 anchors.margins: 20
                 text: ".."
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
 
             MouseArea {
@@ -125,6 +132,7 @@ Rectangle {
 
         ListView {
             id: listView
+
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -149,21 +157,32 @@ Rectangle {
 
                 Text {
                     anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
                     text: model.isReadable ? (model.isDir ? "📁" : "📄") : "🔒"
-                    font.pixelSize: 14
                     renderType: Text.NativeRendering
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                 }
                 Text {
                     anchors.left: parent.left
+                    anchors.right: sizeID.left
                     anchors.margins: 20
                     text: model.name
-                    font.pixelSize: 14
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                 }
                 Text {
+                    id: sizeID
                     anchors.right: parent.right
-                    text: model.isDir ? "" : model.size.toString()
-                    font.pixelSize: 14
+                    text: model.isDir ? "" : (Math.round(
+                                                  (model.size / (1024 * 1024))
+                                                  * 100) / 100).toString(
+                                            ) + "MB"
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                 }
+
+                property bool isRightClickedLocal: false
 
                 MouseArea {
                     id: mouse
@@ -184,25 +203,26 @@ Rectangle {
                                             model.accessed)
                     }
                     onClicked: function (mouse) {
-                        if (mouse.button === Qt.LeftButton) {
-                            listView.currentIndex = index
+                        listView.currentIndex = index
 
-                            console.log("Element selected:", model.name)
+                        console.log("Element selected:", model.name)
 
-                            currentName = model.name
-                            currentSize = model.size
+                        currentName = model.name
+                        currentSize = model.size
 
-                            fileIndex = listView.currentIndex
-                            listView.forceActiveFocus()
+                        fileIndex = listView.currentIndex
+                        listView.forceActiveFocus()
 
-                            updateFileInfoPanel(fileInfo, model.name,
-                                                model.isDir ? "📁" : "📄",
-                                                model.path,
-                                                model.isDir ? "" : model.size,
-                                                model.created, model.modified,
-                                                model.accessed)
-                        } else if (mouse.button === Qt.RightButton) {
-                            isRightClicked = true
+                        updateFileInfoPanel(fileInfo, model.name,
+                                            model.isDir ? "📁" : "📄",
+                                            model.path,
+                                            model.isDir ? "" : model.size,
+                                            model.created, model.modified,
+                                            model.accessed)
+
+                        if (mouse.button === Qt.RightButton) {
+                            click.isRightClickedLocal = !click.isRightClickedLocal
+                            root.isRightClicked = !root.isRightClicked
                         }
                     }
                     onDoubleClicked: function (mouse) {
@@ -220,17 +240,21 @@ Rectangle {
                         }
                     }
 
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
                     CustomToolTip {
                         id: tooltip
 
                         visibilityController: mouse
                         visibilityMode: mouse.containsMouse
-                                        && !mouse.isRightClicked
+                                        && !root.isRightClicked
 
                         contentItem: FileInfoPanel {
                             id: fileInfo
+
                             width: Screen.width * 0.08 - 2
                             height: Screen.height * 0.15 - 2
+
                             anchors.centerIn: parent
                             opacity: tooltip.visible ? 1 : 0
                             Behavior on opacity {
@@ -242,28 +266,36 @@ Rectangle {
                         }
                     }
 
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-                    property bool isRightClicked: false
-
                     CustomToolTip {
                         id: tooltipRi
 
                         visibilityController: mouse
-                        visibilityMode: mouse.isRightClicked
+                        visibilityMode: root.isRightClicked
+                                        && click.isRightClickedLocal
 
-                        contentItem: Rectangle {
-                            color: "red"
+                        delay: 0
+
+                        onClosed: {
+                            root.isRightClicked = false
+                            mouse.isRightClickedLocal = false
+                        }
+                        contentItem: FileManagement {
+
                             width: Screen.width * 0.08 - 2
                             height: Screen.height * 0.15 - 2
+
                             anchors.centerIn: parent
-                            opacity: tooltip.visible ? 1 : 0
+                            opacity: tooltipRi.visible ? 1 : 0
                             Behavior on opacity {
                                 NumberAnimation {
                                     duration: 200
                                     easing.type: Easing.OutCubic
                                 }
                             }
+                        }
+
+                        onVisibleChanged: {
+                            click.isRightClickedLocal = false
                         }
                     }
                 }
@@ -352,14 +384,15 @@ Rectangle {
                 leftMargin: 5
             }
 
-            // CustomButton {
-            //     id: connectionButton
+            CustomButton {
+                id: generateQuickConnectKeyButton
 
-            //     buttonText: "Connect"
-            //     onClicked: {
-            //         Client.connectToServer()
-            //     }
-            // }
+                buttonText: "Share key"
+                onClicked: {
+                    keyGenPopup.open()
+                }
+            }
+
             Item {
                 Layout.fillWidth: true
             }

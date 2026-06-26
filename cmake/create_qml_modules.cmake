@@ -20,9 +20,12 @@ function(create_qml_modules)
             qml/mainPage/FileBrowser.qml
             qml/mainPage/FileSystemBrowser.qml
             qml/mainPage/CustomToolTip.qml
+            qml/mainPage/FileManagement.qml
 
 
-            # qml/settingsPage/SettingsPage.qml
+            qml/settingsPage/SettingsPage.qml
+            qml/settingsPage/SettingArea.qml
+            qml/settingsPage/SettingRow.qml
 
             qml/popups/AddPopup.qml
             qml/popups/QuickKeyGenPopup.qml

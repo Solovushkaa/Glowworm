@@ -62,7 +62,8 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
             }
 
-            font.pointSize: 12
+            font.pointSize: 13
+            renderTypeQuality: Text.NormalRenderTypeQuality
             color: "black"
             text: activeConnectionName
         }
@@ -84,7 +85,8 @@ Rectangle {
             text: "Server:"
             color: "#505050"
 
-            font.pointSize: 12
+            font.pointSize: 11
+            renderTypeQuality: Text.HighRenderTypeQuality
 
             anchors {
                 horizontalCenter: parent.left
@@ -123,7 +125,8 @@ Rectangle {
 
                     text: "ON"
                     font.bold: true
-                    font.pixelSize: 12
+                    font.pointSize: 10
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                     color: "white"
 
                     anchors {
@@ -143,7 +146,8 @@ Rectangle {
 
                     text: "OFF"
                     font.bold: true
-                    font.pixelSize: 12
+                    font.pointSize: 10
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                     color: "#757575"
 
                     anchors {
@@ -183,6 +187,7 @@ Rectangle {
             contentItem: Text {
                 text: control.text
                 font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
                 leftPadding: control.indicator.width + 8
                 verticalAlignment: Text.AlignVCenter
                 visible: control.text !== ""
@@ -212,7 +217,8 @@ Rectangle {
                 text: root.currentPath
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
         }
 
@@ -232,14 +238,16 @@ Rectangle {
             Text {
                 anchors.left: parent.left
                 text: "📁"
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
                 renderType: Text.NativeRendering
             }
             Text {
                 anchors.left: parent.left
                 anchors.margins: 20
                 text: ".."
-                font.pixelSize: 14
+                font.pointSize: 11
+                renderTypeQuality: Text.NormalRenderTypeQuality
             }
 
             MouseArea {
@@ -292,8 +300,10 @@ Rectangle {
 
                 Text {
                     anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
                     text: model.isReadable ? (model.isDir ? "📁" : "📄") : "🔒"
-                    font.pixelSize: 14
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                     renderType: Text.NativeRendering
                 }
 
@@ -301,13 +311,18 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.margins: 20
                     text: model.name
-                    font.pixelSize: 14
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                 }
 
                 Text {
                     anchors.right: parent.right
-                    text: model.isDir ? "" : model.size.toString()
-                    font.pixelSize: 14
+                    text: model.isDir ? "" : (Math.round(
+                                                  (model.size / (1024 * 1024))
+                                                  * 100) / 100).toString(
+                                            ) + "MB"
+                    font.pointSize: 11
+                    renderTypeQuality: Text.NormalRenderTypeQuality
                 }
 
                 MouseArea {
@@ -500,5 +515,9 @@ Rectangle {
                 Layout.fillWidth: true
             }
         }
+    }
+
+    DownloadMenu {
+        id: downloadMenu
     }
 }

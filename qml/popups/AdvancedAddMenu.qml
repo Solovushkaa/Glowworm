@@ -104,7 +104,8 @@ ColumnLayout {
         Switch {
             id: newSecureConnection
 
-            Layout.preferredWidth: 80
+            Layout.preferredWidth: 65
+            Layout.preferredHeight: 27
 
             checked: true
 

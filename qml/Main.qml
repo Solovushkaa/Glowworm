@@ -23,6 +23,7 @@ ApplicationWindow {
         anchors.fill: parent
 
         initialItem: mainPage
+        // initialItem: settingsPage
         popEnter: null
         popExit: null
         pushEnter: null
@@ -36,17 +37,21 @@ ApplicationWindow {
 
         MainPage {
             mainWindow: window
+
+            // Component.onCompleted: {
+            //     startAddPopup.open()
+            // }
         }
     }
+    Component {
+        id: settingsPage
 
-    // Component {
-    //     id: settingsPage
-    //     SettingsPage {}
-    // }
+        SettingsPage {}
+    }
 
-    // StartAddPopup {
-    //     id: startAddPopup
-    // }
+    StartAddPopup {
+        id: startAddPopup
+    }
     AddPopup {
         id: addPopup
     }

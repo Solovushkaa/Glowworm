@@ -16,7 +16,7 @@ TabButton {
     }
     contentItem: Text {
         text: parent.text
-        font.pointSize: 10
+        font.pointSize: 11
 
         font.weight: parent.checked ? Font.DemiBold : Font.Normal
 
