@@ -7,7 +7,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml Test Network WebSockets Xml)
 find_package(OpenSSL REQUIRED)
 find_package(GTest REQUIRED)
 
-qt_standard_project_setup(REQUIRES 6.9)
+qt_standard_project_setup(REQUIRES 6.8)
 
 add_subdirectory(qml/buttons)
 

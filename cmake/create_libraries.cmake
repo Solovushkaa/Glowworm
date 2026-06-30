@@ -2,7 +2,7 @@ function(create_libraries APP_LIB)
     set(LIB_TARGETS "")
 
     # Logger lib
-    qt_add_library(Logger STATIC)
+    qt_add_library(Logger)
     target_sources(Logger PRIVATE
         ${CMAKE_SOURCE_DIR}/src/application/log.cpp
         ${CMAKE_SOURCE_DIR}/include/application/log.hpp
@@ -15,7 +15,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS Logger)
 
     # Utils lib
-    qt_add_library(Utils STATIC)
+    qt_add_library(Utils)
     target_sources(Utils PRIVATE
         ${CMAKE_SOURCE_DIR}/src/utils/json_utils.cpp
         ${CMAKE_SOURCE_DIR}/include/utils/json_utils.hpp
@@ -42,7 +42,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS Utils)
 
     # SelfSignedCert lib
-    qt_add_library(SelfSignedCert STATIC)
+    qt_add_library(SelfSignedCert)
     target_sources(SelfSignedCert
         PRIVATE
             ${CMAKE_SOURCE_DIR}/src/utils/ssl_cert.cpp
@@ -57,7 +57,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS SelfSignedCert)
 
     # Client managers lib
-    qt_add_library(ClientManagers STATIC)
+    qt_add_library(ClientManagers)
     target_sources(ClientManagers PRIVATE
         ${CMAKE_SOURCE_DIR}/src/managers/client/download_info.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/download_info.hpp
@@ -82,7 +82,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS ClientManagers)
 
     # Server lib
-    qt_add_library(Server STATIC)
+    qt_add_library(Server)
     target_sources(Server PRIVATE
         ${CMAKE_SOURCE_DIR}/src/managers/server/server.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/server/server.hpp
@@ -105,7 +105,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS Server)
 
     # Client lib
-    qt_add_library(Client STATIC)
+    qt_add_library(Client)
     target_sources(Client PRIVATE
         ${CMAKE_SOURCE_DIR}/src/managers/client/client.cpp
         ${CMAKE_SOURCE_DIR}/include/managers/client/client.hpp
@@ -134,7 +134,7 @@ function(create_libraries APP_LIB)
     LIST(APPEND LIB_TARGETS Client)
 
     # App lib
-    qt_add_library(App STATIC)
+    qt_add_library(App)
     target_sources(App PRIVATE
         ${CMAKE_SOURCE_DIR}/src/application/app.cpp
         ${CMAKE_SOURCE_DIR}/include/application/app.hpp
