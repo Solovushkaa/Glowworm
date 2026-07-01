@@ -35,11 +35,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     rotateLogFileIfNeeded();
 
     // Open file
-#ifdef QT_DEBUG
-    QFile logFile(logs::kLogFileName);
-#else
     QFile logFile(LogPath());
-#endif
     if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
         fprintf(stderr,
                 "Unable to open file %s for writing: %s\n",
