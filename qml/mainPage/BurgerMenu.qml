@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import CustomButtons
 import QtQuick.Effects
 
 Rectangle {
@@ -22,6 +21,11 @@ Rectangle {
     property int activeConnectionIndex: -1
 
     property bool isSelectActive: false
+
+    onIsOpenChanged: {
+        burgerMenuOpen = root.isOpen
+        console.log("Burger menu open:", burgerMenuOpen)
+    }
 
     // Connections {
     //     target: ClientConnectionManager

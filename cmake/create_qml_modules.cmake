@@ -9,7 +9,6 @@ function(create_qml_modules)
         QML_FILES
             qml/mainPage/MainPage.qml
             qml/mainPage/BurgerMenu.qml
-            qml/mainPage/Footer.qml
             qml/mainPage/FileInfoPanel.qml
             qml/mainPage/Header.qml
             qml/mainPage/Area.qml
@@ -36,10 +35,10 @@ function(create_qml_modules)
             qml/popups/DiskAddMenu.qml
             qml/popups/AdvancedAddMenu.qml
 
-            qml/utils/Colors.qml
+            qml/buttons/BurgerButton.qml
+            qml/buttons/CustomButton.qml
 
-        IMPORTS
-            CustomButtons
+            qml/utils/Colors.qml
     )
 
 endfunction()

@@ -2,10 +2,11 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
-import CustomButtons
 
 Page {
     id: root
+
+    property string active: "Network"
 
     anchors.fill: parent
 
@@ -117,6 +118,7 @@ Page {
 
                                 onClicked: {
                                     settingsListView.currentIndex = index
+                                    root.active = model.name
                                 }
                             }
                         }
@@ -167,7 +169,7 @@ Page {
                     color: "transparent"
 
                     Text {
-                        text: "Network"
+                        text: active
 
                         anchors {
                             bottom: parent.bottom
@@ -198,6 +200,8 @@ Page {
                             margins: 15
                         }
 
+                        visible: active === "Network"
+
                         spacing: 15
 
                         SettingArea {
@@ -207,11 +211,13 @@ Page {
                                     prefix: "Server messenger port:"
                                     value: "6115"
                                     postfix: ""
+                                    isSwitch: false
                                 }
                                 ListElement {
                                     prefix: "Server transport port:"
                                     value: "1274"
                                     postfix: ""
+                                    isSwitch: false
                                 }
                             }
                         }
@@ -222,6 +228,32 @@ Page {
                                     prefix: "Reconnect timeout:"
                                     value: "5"
                                     postfix: "second"
+                                    isSwitch: false
+                                }
+                            }
+                        }
+                        Item {
+                            Layout.fillHeight: true
+                        }
+                    }
+
+                    ColumnLayout {
+                        anchors {
+                            fill: parent
+                            margins: 15
+                        }
+
+                        visible: active === "Privacy"
+
+                        spacing: 15
+
+                        SettingArea {
+                            areaName: "Session key"
+                            settings: ListModel {
+                                ListElement {
+                                    prefix: "Enable session key:"
+                                    postfix: ""
+                                    isSwitch: true
                                 }
                             }
                         }
@@ -252,19 +284,29 @@ Page {
             Layout.alignment: Qt.AlignRight
 
             CustomButton {
+                Layout.preferredHeight: 30
+                Layout.preferredWidth: 80
                 buttonText: "Ok"
-                Layout.preferredHeight: 30
-                Layout.preferredWidth: 80
+                onClicked: {
+                    pagesStack.pop()
+                }
             }
             CustomButton {
+                Layout.preferredHeight: 30
+                Layout.preferredWidth: 80
                 buttonText: "Apply"
-                Layout.preferredHeight: 30
-                Layout.preferredWidth: 80
+                onClicked: {
+
+                    // Save settings
+                }
             }
             CustomButton {
-                buttonText: "Cancel"
                 Layout.preferredHeight: 30
                 Layout.preferredWidth: 80
+                buttonText: "Cancel"
+                onClicked: {
+                    pagesStack.pop()
+                }
             }
         }
     }

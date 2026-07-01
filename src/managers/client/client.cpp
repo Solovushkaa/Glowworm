@@ -63,7 +63,7 @@ void Client::connectToServer()
             setConnectionPreferences();
         }
 
-        m_webDavMessengers[getActiveConnection()->m_name]->connectToServer(); // TODO:
+        m_webDavMessengers[getActiveConnection()->m_name]->connectToServer();
     }
 }
 
@@ -75,10 +75,10 @@ void Client::disconnectFromServer()
         }
     } else if (getActiveConnection() != nullptr) {
         if (m_webDavMessengers.contains(getActiveConnection()->m_name)) {
-            m_webDavMessengers[getActiveConnection()->m_name]->disconnectFromServer(); // TODO:
+            m_webDavMessengers[getActiveConnection()->m_name]->disconnectFromServer();
         }
     } else {
-        qCWarning(client) << "No active connection"; // TODO:
+        qCWarning(client) << "No active connection";
     }
 }
 
@@ -243,7 +243,10 @@ void Client::updateConnection(ConnectionInfo *connectionInfo)
 
     if (!m_isActiveConnectionConnected) {
         m_isActiveConnectionConnected = true;
+        qCritical(client) << "UpdateConnection";
         emit connected();
+    } else {
+        emit disconnected();
     }
 }
 

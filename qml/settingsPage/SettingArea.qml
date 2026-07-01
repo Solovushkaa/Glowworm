@@ -91,6 +91,8 @@ Rectangle {
             TextArea {
                 id: value
 
+                visible: !model.isSwitch
+
                 anchors {
                     left: prefix.right
                     leftMargin: 5
@@ -118,6 +120,105 @@ Rectangle {
                         width: 1
                         color: "#bbbbbb"
                     }
+                }
+            }
+            Switch {
+                id: switchID
+
+                visible: model.isSwitch
+
+                height: 27
+                width: 65
+                anchors {
+                    left: prefix.right
+                    leftMargin: 5
+                    verticalCenter: parent.verticalCenter
+                }
+
+                checked: SecurityOptions.sessionKeyEnabled() // TODO:
+
+                indicator: Rectangle {
+                    width: parent.width
+                    height: parent.height
+                    radius: 20
+
+                    color: switchID.checked ? "#5371ad" : "#e0e0e0"
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    Text {
+                        visible: switchID.checked
+
+                        text: "ON"
+                        font.bold: true
+                        font.pixelSize: 12
+                        color: "white"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 12
+                            verticalCenter: parent.verticalCenter
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+                    Text {
+                        visible: !switchID.checked
+
+                        text: "OFF"
+                        font.bold: true
+                        font.pixelSize: 12
+                        color: "#757575"
+
+                        anchors {
+                            right: parent.right
+                            rightMargin: 12
+                            verticalCenter: parent.verticalCenter
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        property int ssize: parent.height - 4
+
+                        width: ssize
+                        height: ssize
+                        radius: ssize / 2
+                        y: 2
+
+                        color: "white"
+
+                        x: switchID.checked ? parent.width - width - 2 : 2
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+                    }
+                }
+
+                contentItem: Text {
+                    text: switchID.text
+                    font.pointSize: 11
+                    leftPadding: switchID.indicator.width + 8
+                    verticalAlignment: Text.AlignVCenter
+                    visible: switchID.text !== ""
                 }
             }
 

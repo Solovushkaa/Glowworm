@@ -9,6 +9,7 @@ Rectangle {
     radius: 4
 
     property int elementHeight: root.height / 5
+    property bool systemDirectory: false
 
     ColumnLayout {
         anchors.fill: parent
@@ -17,7 +18,7 @@ Rectangle {
 
         Area {
             id: downloadID
-            name: "Download"
+            name: systemDirectory ? "Upload" : "Download"
             isDelimiterVisible: false
             elementHeight: root.elementHeight
         }

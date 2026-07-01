@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import CustomButtons
 
 Rectangle {
     id: root
@@ -24,16 +23,6 @@ Rectangle {
 
     radius: 4
     color: "white"
-
-    function updateFileInfoPanel(fileInfo, name, type, location, size, created, modified, accessed) {
-        fileInfo.name = name
-        fileInfo.typeName = type
-        fileInfo.locationName = location
-        fileInfo.sizeName = size
-        fileInfo.createdName = created
-        fileInfo.modifiedName = modified
-        fileInfo.accessedName = accessed
-    }
 
     Rectangle {
         color: "transparent"
@@ -107,6 +96,9 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
+
+                visible: !burgerMenuOpen
+
                 hoverEnabled: true
                 onClicked: {
                     listView.currentIndex = -1
@@ -188,6 +180,8 @@ Rectangle {
                     id: mouse
                     anchors.fill: parent
 
+                    visible: !burgerMenuOpen
+
                     hoverEnabled: true
                     onHoveredChanged: {
                         console.log("Hovered element:", listView.currentIndex)
@@ -248,6 +242,7 @@ Rectangle {
                         visibilityController: mouse
                         visibilityMode: mouse.containsMouse
                                         && !root.isRightClicked
+                                        && !burgerMenuOpen
 
                         contentItem: FileInfoPanel {
                             id: fileInfo
@@ -272,6 +267,7 @@ Rectangle {
                         visibilityController: mouse
                         visibilityMode: root.isRightClicked
                                         && click.isRightClickedLocal
+                                        && !burgerMenuOpen
 
                         delay: 0
 
@@ -280,6 +276,8 @@ Rectangle {
                             mouse.isRightClickedLocal = false
                         }
                         contentItem: FileManagement {
+
+                            systemDirectory: true
 
                             width: Screen.width * 0.08 - 2
                             height: Screen.height * 0.15 - 2

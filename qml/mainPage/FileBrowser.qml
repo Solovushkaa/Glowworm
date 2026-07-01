@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import CustomButtons
 
 Rectangle {
     id: root
@@ -11,7 +10,9 @@ Rectangle {
     property int currentSize: 0
     property int fileIndex: -1
 
-    property bool isConnect: true
+    property bool isRightClicked: false
+
+    property bool isConnect: false
 
     Layout.fillWidth: true
     Layout.minimumWidth: 100
@@ -29,10 +30,17 @@ Rectangle {
             activeConnectionName = ClientConnectionManager.getActiveConnection(
                         ) !== null ? ClientConnectionManager.getActiveConnection(
                                          ).name : ""
+            root.isConnect = false
         }
+    }
+    Connections {
+        target: Client
         function onConnected() {
-            isConnect = false
             Client.getNetworkDirectory(currentPath)
+            root.isConnect = true
+        }
+        function onDisconnected() {
+            root.isConnect = false
         }
     }
 
@@ -252,11 +260,14 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
+
+                visible: !burgerMenuOpen
+
                 hoverEnabled: true
                 onClicked: {
                     listView.currentIndex = -1
                     listView.forceActiveFocus()
-                    // Обновляем информационную панель (аналогично делегату)
+
                     currentName = ".."
                     currentSize = ""
                     fileIndex = -1
@@ -325,8 +336,12 @@ Rectangle {
                     renderTypeQuality: Text.NormalRenderTypeQuality
                 }
 
+                property bool isRightClickedLocal: false
+
                 MouseArea {
                     id: mouse
+
+                    visible: !burgerMenuOpen
 
                     anchors.fill: parent
 
@@ -361,29 +376,43 @@ Rectangle {
                                             model.isDir ? "" : model.size,
                                             model.created, model.modified,
                                             model.accessed)
-                    }
-                    onDoubleClicked: {
-                        console.log("File path:", model.path)
 
-                        listView.currentIndex = index
-                        listView.forceActiveFocus()
-
-                        if (model.isDir && model.isReadable) {
-                            currentPath = model.path
-                            Client.getNetworkDirectory(currentPath)
-                            fileIndex = -1
+                        if (mouse.button === Qt.RightButton) {
+                            click.isRightClickedLocal = !click.isRightClickedLocal
+                            root.isRightClicked = !root.isRightClicked
                         }
                     }
+                    onDoubleClicked: function (mouse) {
+                        if (mouse.button === Qt.LeftButton) {
+                            console.log("File path:", model.path)
+
+                            listView.currentIndex = index
+                            listView.forceActiveFocus()
+
+                            if (model.isDir && model.isReadable) {
+                                root.currentPath = model.path
+                                Client.getNetworkDirectory(root.currentPath)
+                                fileIndex = -1
+                            }
+                        }
+                    }
+
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                     CustomToolTip {
                         id: tooltip
 
                         visibilityController: mouse
+                        visibilityMode: mouse.containsMouse
+                                        && !root.isRightClicked
+                                        && !burgerMenuOpen
 
                         contentItem: FileInfoPanel {
                             id: fileInfo
+
                             width: Screen.width * 0.08 - 2
                             height: Screen.height * 0.15 - 2
+
                             anchors.centerIn: parent
                             opacity: tooltip.visible ? 1 : 0
                             Behavior on opacity {
@@ -392,6 +421,40 @@ Rectangle {
                                     easing.type: Easing.OutCubic
                                 }
                             }
+                        }
+                    }
+
+                    CustomToolTip {
+                        id: tooltipRi
+
+                        visibilityController: mouse
+                        visibilityMode: root.isRightClicked
+                                        && click.isRightClickedLocal
+                                        && !burgerMenuOpen
+
+                        delay: 0
+
+                        onClosed: {
+                            root.isRightClicked = false
+                            mouse.isRightClickedLocal = false
+                        }
+                        contentItem: FileManagement {
+
+                            width: Screen.width * 0.08 - 2
+                            height: Screen.height * 0.15 - 2
+
+                            anchors.centerIn: parent
+                            opacity: tooltipRi.visible ? 1 : 0
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+                        }
+
+                        onVisibleChanged: {
+                            click.isRightClickedLocal = false
                         }
                     }
                 }
@@ -470,20 +533,19 @@ Rectangle {
             CustomButton {
                 id: connectDisconnectButton
 
-                buttonText: root.isConnect ? "Connect" : "Disconnect"
+                buttonText: root.isConnect ? "Disconnect" : "Connect"
                 onClicked: {
-                    // if (root.isConnect) {
-                    //     Client.connectToServer()
-                    // } else {
-                    //     Client.disconnectFromServer()
-                    // }
-                    Client.getNetworkDirectory(currentPath)
+                    if (root.isConnect) {
+                        Client.connectToServer()
+                    } else {
+                        Client.disconnectFromServer()
+                    }
                 }
             }
             CustomButton {
                 id: downloadContentButton
 
-                isActive: mainPage.isPageInteractiveActive
+                isActive: root.isConnect
                 buttonText: "Download"
                 onClicked: {
                     if (fileIndex != -1) {
@@ -494,23 +556,6 @@ Rectangle {
                     }
                 }
             }
-            // CustomButton {
-            //     id: connectToRelayServer
-
-            //     buttonText: "Connect relay server"
-            //     onClicked: {
-            //         Client.connectToRelayServer()
-            //     }
-            // }
-            // CustomButton {
-            //     id: downloadFromRelayServer
-
-            //     buttonText: "Dw Rserv"
-            //     onClicked: {
-
-            //         Client.getFileFromRelayServer()
-            //     }
-            // }
             Item {
                 Layout.fillWidth: true
             }

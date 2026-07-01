@@ -111,6 +111,7 @@ signals:
     void fileReceived(const QString &filePath);
 
     void connected();
+    void disconnected();
 
 public slots:
     void onCurrentDirectoryChanged();

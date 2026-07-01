@@ -12,28 +12,29 @@ Page {
 
     property ApplicationWindow mainWindow: null
 
-    property bool isPageInteractiveActive: true // (ClientConnectionManager.getActiveConnection().connectionState === 1)
-    // property var fileBrows: fileBrowser
+    property bool isPageInteractiveActive: false
 
-    // Connections {
-    //     target: Client
-    //     function onConnectionStatusCodeChanged(currentStatusCode) {
-    //         if (currentStatusCode === 200)
-    //             mainPage.isPageInteractiveActive = true
-    //         else
-    //             mainPage.isPageInteractiveActive = false
-    //     }
-    // }
-    // function updateFileInfoPanel(name, type, location, size, created, modified, accessed) {
-    //     fileInfo.name = name
-    //     fileInfo.typeName = type
-    //     fileInfo.locationName = location
-    //     fileInfo.sizeName = size
-    //     fileInfo.createdName = created
-    //     fileInfo.modifiedName = modified
-    //     fileInfo.accessedName = accessed
-    // }
+    property bool burgerMenuOpen: false
 
+    Connections {
+        target: Client
+        function onConnectionStatusCodeChanged(currentStatusCode) {
+            if (currentStatusCode === 200)
+                mainPage.isPageInteractiveActive = true
+            else
+                mainPage.isPageInteractiveActive = false
+        }
+    }
+
+    function updateFileInfoPanel(fileInfo, name, type, location, size, created, modified, accessed) {
+        fileInfo.name = name
+        fileInfo.typeName = type
+        fileInfo.locationName = location
+        fileInfo.sizeName = size
+        fileInfo.createdName = created
+        fileInfo.modifiedName = modified
+        fileInfo.accessedName = accessed
+    }
     // function updateDownloadInfoPanel(name, type, path, size, lastReceivedByte, downloadState) {
     //     downloadInfo.downloadName = name
     //     downloadInfo.downloadType = type
@@ -77,11 +78,9 @@ Page {
         }
     }
 
-    // footer: Footer {
-    //     id: mainFooter
-    // }
     ColumnLayout {
         id: contentArea
+
         anchors {
             top: parent.top
             left: burgerCollision.right

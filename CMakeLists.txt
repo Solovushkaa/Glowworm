@@ -9,8 +9,6 @@ find_package(GTest REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-add_subdirectory(qml/buttons)
-
 
 # === LIBS ===
 # Creating all library targets
@@ -26,7 +24,6 @@ target_link_libraries(Glowworm
     PUBLIC
         Qt6::Quick
         ${APP_LIB}
-        CustomButtonsLib
 )
 
 
@@ -58,21 +55,21 @@ add_resources(Glowworm)
 # find_package(Qt6 REQUIRED COMPONENTS WaylandClient)
 # qt_import_plugins(Glowworm INCLUDE Qt6::QWaylandIntegrationPlugin)
 
-include(GNUInstallDirs)
+# include(GNUInstallDirs)
 
-install(TARGETS Glowworm
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+# install(TARGETS Glowworm
+#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+# )
 
-qt_generate_deploy_app_script(
-    TARGET Glowworm
-    OUTPUT_SCRIPT deploy_script
-)
-install(SCRIPT ${deploy_script})
+# qt_generate_deploy_app_script(
+#     TARGET Glowworm
+#     OUTPUT_SCRIPT deploy_script
+# )
+# install(SCRIPT ${deploy_script})
 
-install(FILES ${CMAKE_SOURCE_DIR}/Content/Glowworm.desktop
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
-)
-install(FILES ${CMAKE_SOURCE_DIR}/Content/Icons/glowworm.svg
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
-)
+# install(FILES ${CMAKE_SOURCE_DIR}/Content/Glowworm.desktop
+#     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+# )
+# install(FILES ${CMAKE_SOURCE_DIR}/Content/Icons/glowworm.svg
+#     DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+# )
