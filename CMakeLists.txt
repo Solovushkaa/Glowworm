@@ -54,3 +54,25 @@ add_resources(Glowworm)
 # include(cmake/create_functional_tests.cmake)
 # file(GLOB TEST_FILES tests/functional/*.cpp)
 # create_functional_tests("${TEST_FILES}")
+
+# find_package(Qt6 REQUIRED COMPONENTS WaylandClient)
+# qt_import_plugins(Glowworm INCLUDE Qt6::QWaylandIntegrationPlugin)
+
+include(GNUInstallDirs)
+
+install(TARGETS Glowworm
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET Glowworm
+    OUTPUT_SCRIPT deploy_script
+)
+install(SCRIPT ${deploy_script})
+
+install(FILES ${CMAKE_SOURCE_DIR}/Content/Glowworm.desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+)
+install(FILES ${CMAKE_SOURCE_DIR}/Content/Icons/glowworm.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+)
